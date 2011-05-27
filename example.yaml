@@ -8,5 +8,9 @@ entries:
                   type: T(unsigned long)
                   default: 0UL
                   quantity: SINGLE
+                - name: field2
+                  type: S(timestamp)
+                  default: 0UL
+                  quantity: SINGLE
         
         

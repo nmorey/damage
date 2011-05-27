@@ -48,6 +48,7 @@ module Damage
         when /(S|STRUCT)\(([\w+ ]*)\)/
           @data_type = $2
           @category = :intern
+          puts "This format is not DTD compatible (Field #{@name} has type #{@data_type})" if (@data_type != @name) 
         else
           raise("Field #{@name} has no data type...")
         end
