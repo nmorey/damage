@@ -1,0 +1,12 @@
+config:
+        libname: test
+structs:
+        - name: top_struct
+          attribute: top
+          fields:
+                - name: field1
+                  type: T(unsigned long)
+                  default: 0UL
+                  single: 1
+        
+        
