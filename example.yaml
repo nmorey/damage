@@ -1,8 +1,8 @@
 config:
-        libname: test
+        libname: sigmac
 entries:
-        - name: top_struct
-          attribute: top
+        - name: DB
+          attribute: TOP
           fields:
                 - name: field1
                   type: T(unsigned long)

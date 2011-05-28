@@ -1,7 +1,7 @@
 module Damage
   module Description
     class Field
-      attr_accessor :name, :data_type, :default_val, :category, :attribute, :qty
+      attr_accessor :name, :data_type, :default_val, :category, :attribute, :qty, :c_type
 
       # Data used only for SORT fields
       attr_accessor :sort_field, :sort_key
@@ -15,8 +15,8 @@ module Damage
           @qty = :single
         when "LIST"
           @qty = :list
-        when "ARRAY"
-          @qty = :array
+        # when "ARRAY"
+        #   @qty = :array
         end
         case field["attribute"]
         when "META"
@@ -29,6 +29,7 @@ module Damage
           @attribute = :pass
         when "CONTAINER"
           @attribute = :container
+        when nil
         else
           raise("Unknown field attribute #{field["attribute"]}")
         end
@@ -80,17 +81,17 @@ module Damage
         @libname = config["libname"]
       end
     end
-    class Descriptrion
+    class Description
       attr_accessor :config
       attr_accessor :entries, :top_entry
 
       def initialize(tree)
         @config = Config.new(tree["config"])
-        @entries = []
+        @entries = {}
         tree["entries"].each() { |entry|
           _entry = Entry.new(entry)
           @top_entry = _entry if (_entry.attribute == :top)
-          @entries << _entry
+          @entries[_entry.name] = _entry
         }
       end
     end
