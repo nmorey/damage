@@ -6,6 +6,7 @@ module Damage
       # Data used only for SORT fields
       attr_accessor :sort_field, :sort_key
       def initialize(field)
+
         @name = field["name"]
         @default_val = field["default"]
         @attribute = :none
@@ -52,6 +53,11 @@ module Damage
           @category = :simple
           @is_attribute = true if @qty == :single
           @default_val = "0UL"
+        when "DL"
+          @data_type="double"
+          @category = :simple
+          @is_attribute = true if @qty == :single
+          @default_val = "0.0"
         when /T\(([\w+ ]*)\)/
           @data_type = $1
           @category = :simple
