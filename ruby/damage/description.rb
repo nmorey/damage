@@ -1,7 +1,7 @@
 module Damage
   module Description
     class Field
-      attr_accessor :name, :data_type, :default_val, :category, :attribute, :qty, :target, :is_attribute
+      attr_accessor :name, :data_type, :default_val, :category, :attribute, :qty, :target, :is_attribute, :required, :enum
 
       # Data used only for SORT fields
       attr_accessor :sort_field, :sort_key
@@ -14,6 +14,11 @@ module Damage
         @target = :both
         @is_attribute = false
 
+        @required = false
+        @required = true if field["required"] != nil
+
+        @enum=field["enum"]
+        
         case field["quantity"]
         when "SINGLE", nil
           @qty = :single
