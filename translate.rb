@@ -1,5 +1,5 @@
 #!/usr/bin/ruby
-$LOAD_PATH.push("./ruby/")
+$LOAD_PATH.push(File.dirname(__FILE__) + "/ruby/")
 
 require 'yaml'
 require 'damage'
