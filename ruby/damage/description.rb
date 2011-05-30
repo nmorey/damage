@@ -7,7 +7,9 @@ module Damage
       attr_accessor :sort_field, :sort_key
       def initialize(field)
 
+        raise ("Field #{field} has no name!") if field["name"] == nil
         @name = field["name"]
+        
         @default_val = field["default"]
         @attribute = :none
         @qty = :single
