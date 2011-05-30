@@ -23,6 +23,7 @@ module Damage
             containers[field.name] = field.data_type
           end
         }
+        strList=[]
         output.printf("<!ELEMENT #{entry.name} ");
         if has_children == true then
           output.printf("(");
@@ -35,8 +36,9 @@ module Damage
               maxOccurs = "*"
             end
             if ( field.target != :mem && field.is_attribute != true) then
-              if field.attribute == :container then
+              if field.attribute == :container || field.category == :simple then
                 output.printf("#{comma}#{field.name}#{maxOccurs}")
+                strList << "<!ELEMENT #{field.name} CDATA \"\">\n"
               else
                 output.printf("#{comma}#{field.data_type}#{maxOccurs}")
               end
@@ -60,6 +62,9 @@ module Damage
           output.printf("<!ATTLIST #{entry.name} xmlns:xsi CDATA #IMPLIED>\n");
         end
         output.printf("\n");
+        strList.each() { |strEntry|
+          output.printf(strEntry)
+        }
       }
       containers.each() { |name, type|
         output.printf("<!ELEMENT #{name} (#{type}*)>\n");
