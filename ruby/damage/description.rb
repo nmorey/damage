@@ -93,7 +93,7 @@ module Damage
         end
         entry["fields"].each() { |field|
           @fields << Field.new(field)
-        }
+        } if entry["fields"] != nil
       end
     end
     class Config
