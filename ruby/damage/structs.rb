@@ -4,7 +4,7 @@ module Damage
     @OUTFILE = "structs.h"
     def write(description)
       
-      output = Damage::Files.createAndOpen("./include/#{description.config.libname}", @OUTFILE)
+      output = Damage::Files.createAndOpen("gen/#{description.config.libname}/include/#{description.config.libname}", @OUTFILE)
       genH(output, description)
       output.close()
     end

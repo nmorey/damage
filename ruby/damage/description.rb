@@ -1,7 +1,7 @@
 module Damage
   module Description
     class Field
-      attr_accessor :name, :data_type, :default_val, :category, :attribute, :qty, :c_type
+      attr_accessor :name, :data_type, :default_val, :category, :attribute, :qty, :target, :is_attribute
 
       # Data used only for SORT fields
       attr_accessor :sort_field, :sort_key
@@ -10,6 +10,9 @@ module Damage
         @default_val = field["default"]
         @attribute = :none
         @qty = :single
+        @target = :both
+        @is_attribute = false
+
         case field["quantity"]
         when "SINGLE", nil
           @qty = :single
@@ -21,14 +24,18 @@ module Damage
         case field["attribute"]
         when "META"
           @attribute = :meta
+          @target = :mem
         when "SORT"
           @attribute = :sort
           @sort_field = field["sort_field"]
           @sort_key = field["sort_key"]
+          @target = :mem
         when "PASS"
           @attribute = :pass
+          @target = :parser
         when "CONTAINER"
           @attribute = :container
+          @target = :parser
         when nil
         else
           raise("Unknown field attribute #{field["attribute"]}")
@@ -67,6 +74,7 @@ module Damage
         case entry["attribute"]
         when "TOP"
           @attribute = :top
+        when nil
         else
           raise("Unknown entry attribute #{entry["attribute"]}")
         end

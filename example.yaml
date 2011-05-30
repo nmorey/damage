@@ -8,9 +8,18 @@ entries:
                   type: T(unsigned long)
                   default: 0UL
                   quantity: SINGLE
-                - name: field2
+                - name: timestamp
                   type: S(timestamp)
                   default: 0UL
                   quantity: SINGLE
-        
-        
+                - name: container
+                  type: S(timestamp)
+                  attribute: CONTAINER
+        - name : timestamp
+          fields:
+                - name: tv_sec
+                  type: T(unsigned long)
+                  default: 0UL
+                - name: tv_nsec
+                  type: T(unsigned long)
+                  default: 0UL
