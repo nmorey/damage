@@ -43,7 +43,8 @@ module Damage
 
           end
 
-        }
+        }        
+        output.printf("\tstruct ___#{libPrefix}_%s* next;\n", entry.name) if entry.attribute == :listable
         output.printf("\tvoid* _private;\n");
         output.printf("} __#{libPrefix}_%s;\n\n", entry.name);
       }
