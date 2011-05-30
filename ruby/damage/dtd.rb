@@ -41,11 +41,7 @@ module Damage
               if field.attribute == :container || field.category == :simple then
                 output.printf("#{comma}#{field.name}#{maxOccurs}")
                 if field.category == :simple
-                  required= "#IMPLIED"
-                  required= "#REQUIRED" if field.required == true
-                  xmlType = "CDATA"
-                  xmlType = field.enum if field.enum != nil
-                  strList << "<!ELEMENT #{field.name} #{xmlType} #{required}>\n"
+                  strList << "<!ELEMENT #{field.name} (#PCDATA)>\n"
                 end
               else
                 output.printf("#{comma}#{field.data_type}#{maxOccurs}")
