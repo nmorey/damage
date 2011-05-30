@@ -52,7 +52,7 @@ module Damage
 
         entry.fields.each() {|field|
           if ( field.target != :mem && field.is_attribute == true) then
-            output.printf("<!ATTLIST #{entry.name} #{field.name} CDATA #IMPLIED>\n")
+            output.printf("<!ATTLIST #{entry.name} #{field.name} CDATA  \"\">\n")
           end
         }
         if entry.attribute == :top
