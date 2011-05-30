@@ -40,7 +40,7 @@ module Damage
             if ( field.target != :mem && field.is_attribute != true) then
               if field.attribute == :container || field.category == :simple then
                 output.printf("#{comma}#{field.name}#{maxOccurs}")
-                if field.category
+                if field.category == :simple
                   required= "#IMPLIED"
                   required= "#REQUIRED" if field.required == true
                   xmlType = "CDATA"
