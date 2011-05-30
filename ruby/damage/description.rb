@@ -100,6 +100,8 @@ module Damage
         case entry["attribute"]
         when "TOP"
           @attribute = :top
+        when "LISTABLE"
+          @attribute = :listable
         when nil
         else
           raise("Unknown entry attribute #{entry["attribute"]}")
