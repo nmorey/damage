@@ -43,7 +43,7 @@ module Damage
           @target = :parser
         when "CONTAINER"
           @attribute = :container
-          @target = :parser
+          @target = :both
         when nil
         else
           raise("Unknown field attribute #{field["attribute"]}")
