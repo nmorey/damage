@@ -46,6 +46,12 @@ module Damage
           @data_type = "char*"
           @category = :simple
           @is_attribute = true if @qty == :single
+          @default_val = "NULL"
+        when "UL"
+          @data_type="unsigned long"
+          @category = :simple
+          @is_attribute = true if @qty == :single
+          @default_val = "0UL"
         when /T\(([\w+ ]*)\)/
           @data_type = $1
           @category = :simple
@@ -56,7 +62,14 @@ module Damage
         when /(S|STRUCT)\(([\w+ ]*)\)/
           @data_type = $2
           @category = :intern
-          puts "This format is not DTD compatible (Field #{@name} has type #{@data_type})" if (@data_type != @name) 
+          @default_val = "NULL"
+          puts "This format is not DTD compatible (Field #{@name} has type #{@data_type})" if ((@data_type != @name) && (@target != :mem) && (@attribute != :container))
+        when nil
+          @data_type = @name
+          @category = :intern
+          @default_val = "NULL"
+          puts "This format is not DTD compatible (Field #{@name} has type #{@data_type})" if ((@data_type != @name) && (@target != :mem) && (@attribute != :container))
+
         else
           raise("Field #{@name} has no data type...")
         end
