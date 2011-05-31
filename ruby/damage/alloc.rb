@@ -49,6 +49,7 @@ module Damage
           output.printf("\tptr->%sLen = 0UL;\n", field.name) if ((field.qty == :list) && (field.category == :simple))
         }
 
+        output.printf("\tptr->next = NULL;\n")         if entry.attribute == :listable
         output.printf("\tptr->_private = NULL;\n")
         output.printf("\treturn ptr;\n")
         output.printf("}\n\n")
