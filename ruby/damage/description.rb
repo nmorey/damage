@@ -114,6 +114,10 @@ module Damage
         end
         entry["fields"].each() { |field|
           _field =  Field.new(field)
+          
+          # Top cannot have attributes
+          _field.is_attribute = false if @attribute == :top && _field.is_attribute == true
+
           @children << _field if _field.is_attribute == false && _field.target != :mem
           @attributes << _field if _field.is_attribute == true && _field.target != :mem
           @sort << _field if _field.attribute == :sort
