@@ -4,6 +4,7 @@ module Damage
     require File.dirname(__FILE__) + '/ruby/global'
     require File.dirname(__FILE__) + '/ruby/wrapper'
     require File.dirname(__FILE__) + '/ruby/makefile'
+    require File.dirname(__FILE__) + '/ruby/tests'
 
 
     def generate(description)
@@ -13,6 +14,7 @@ module Damage
       Wrapper::generate(description)
       #      
       genExtConf(description)
+      Tests::write(description)
     end
     module_function :generate
 
