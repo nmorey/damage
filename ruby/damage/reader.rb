@@ -29,9 +29,44 @@ module Damage
         output.printf("__#{libName}_%s *__#{libName}_%s_xml_parse(", entry.name, entry.name);
         output.printf("xmlNodePtr node);\n");
       }
+      description.containers.each() {|name, type|
+        output.printf("__#{libName}_%s *__#{libName}_%sContainer_xml_parse(", type, type);
+        output.printf("xmlNodePtr node);\n");
+      }
       output.printf("\n\n");
 
+     description.containers.each() {|name, type|
+        output.printf("__#{libName}_%s *__#{libName}_%sContainer_xml_parse(", type, type);
+        output.printf("xmlNodePtr node){\n");
+        output.printf("\tconst char *name;\n");
+        output.printf("\t__#{libName}_%s *ptr = NULL;\n", type);
+        output.printf("\t__#{libName}_%s **last_%s = &(ptr);\n", 
+                      type, type)
+        output.printf("\tconst char *matches_children[] = { \"%s\", NULL };\n", type); 
+        output.printf("\txmlNodePtr child;\n");
+        output.printf("\n\tfor(child = node->children; child; child = child->next) {\n");
+        output.printf("\t\tif(child->type != XML_ELEMENT_NODE) continue;\n\n");
+        output.printf("\t\tname = (char*)child->name;\n\n");
+        output.printf("\t\tswitch (__#{libName}_compare(name, matches_children)) {\n");  
+        output.printf("\t\tcase 0:\n"  );
+        output.printf("\t\t\t/* %s */\n", type)
+        output.printf("\t\t\t*last_%s = __#{libName}_%s_xml_parse(child);\n",
+                      type, type) ;
+        output.printf("\t\t\tlast_%s = &((*last_%s)->next);\n",
+                      type, type);
+        output.printf("\t\t\tbreak;\n");
 
+        output.printf("\t\tdefault:\n");
+        output.printf("\t\t\t__#{libName}_error\n");
+        output.printf("\t\t\t\t(\"%s: Invalid node \\\"%%s\\\" at line %%d in XML file\",\n",
+                        type);
+        output.printf("\t\t\t\tEINVAL, name, child->line);\n");
+        output.printf("\t\t\tbreak;\n");
+        output.printf("\t\t}\n");
+        output.print("\t}\n\n");
+        output.printf("\treturn ptr;\n");
+        output.printf("}\n");
+      }
       description.entries.each() {|name, entry|
         struct = entry.name
 
@@ -62,7 +97,7 @@ module Damage
  
         #Get second level pointer to maneg "nexts" lists
         entry.children.each() {|field|
-          if (field.qty == :list || field.attribute == :container) && field.category == :intern
+          if field.qty == :list  && field.category == :intern
             output.printf("\t__#{libName}_%s **last_%s = &(ptr->%s);\n", 
                           field.data_type, field.name, field.name)
           end
@@ -163,7 +198,7 @@ module Damage
                               field.name, field.data_type) ;
               end
               output.printf("\t\t\tbreak;\n");
-            when :list, :container
+            when :list
               output.printf("\t\tcase %d:\n", caseCount);
               output.printf("\t\t\t/* %s */\n", field.name);
               case field.category
@@ -196,6 +231,12 @@ module Damage
                 output.printf("\t\t\tlast_%s = &((*last_%s)->next);\n",
                               field.name, field.name);
               end
+              output.printf("\t\t\tbreak;\n");
+              when :container
+              output.printf("\t\tcase %d:\n", caseCount);
+              output.printf("\t\t\t/* %s */\n", field.name);
+              output.printf("\t\t\tptr->%s = __#{libName}_%sContainer_xml_parse(child);\n",
+                            field.name, field.data_type) ;
               output.printf("\t\t\tbreak;\n");
             end
             caseCount+=1
