@@ -1,0 +1,8 @@
+Damage (DAtabase MetA GEnerator) is a ruby script to create simple and fast databases schemes to use as internal storage in any applications.
+From a short YAML description, damage generates DTD, parsers, dumpers, C structures to easily load, edit and generate databases and Ruby bindings.
+Although XML is supported as input/output format, binary formats (upcoming) are prefered for faster access on large databases.
+
+To create a DAMAGE library, create a YAML description (or use the example.yaml) and run
+$ ruby translate.rb description.yaml
+
+This will generate all the files and Makefiles to compile the C libraries.
