@@ -22,7 +22,7 @@ module Damage
         entry.fields.each() {|field|
           case field.attribute
           when :sort
-            output.printf("\tstruct ___#{libPrefix}_%s* s_%s;\n", field.data_type, field.name)
+            output.printf("\tstruct ___#{libPrefix}_%s** s_%s;\n", field.data_type, field.name)
             output.printf("\tunsigned long n_%s;\n", field.name)
           when :pass
             # Do NADA
