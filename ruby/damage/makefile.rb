@@ -16,13 +16,13 @@ module Damage
 LIBDIR32  := $(shell if [ -f /etc/debian_version -a -d /usr/lib32/ ]; then echo \"lib32\"; else echo \"lib\"; fi)
 LIBDIR64  := $(shell if [ -f /etc/debian_version -a -d /usr/lib32/ ]; then echo \"lib\"; else echo \"lib64\"; fi)
 
-rubydeps := $(shell find lib -name \"*.rb\")
+rubydeps := $(shell [ -d lib ] && find lib -name \"*.rb\")
 srcs     := $(wildcard src/*.c)
 headers  := $(wildcard include/*.h include/#{libName}/*.h)
 objs     := $(patsubst src/%.c,obj/i686/%.o,$(srcs))
 objs64   := $(patsubst src/%.c,obj/x86_64/%.o,$(srcs))
-lib      := obj/i686/#{libName}.a
-lib64    := obj/x86_64/#{libName}.a
+lib      := obj/i686/lib#{libName}.a
+lib64    := obj/x86_64/lib#{libName}.a
 main_header := include/#{libName}.h
 install_header := $(wildcard include/#{libName}/*.h)
 
