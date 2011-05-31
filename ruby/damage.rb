@@ -7,4 +7,5 @@ require 'damage/makefile'
 require 'damage/alloc'
 require 'damage/genheader'
 require 'damage/dot'
+require 'damage/reader'
 end

@@ -131,7 +131,7 @@ module Damage
 
       description.entries.each() {|name, entry|
         output.printf("__#{libName}_%s *__#{libName}_%s_alloc();\n", entry.name, entry.name)
-        output.printf("__#{libName}_%s *__#{libName}_%s_parse(xmlNodePtr node, const char* endElement);\n", entry.name, entry.name)
+        output.printf("__#{libName}_%s *__#{libName}_%s_xml_parse(xmlNodePtr node);\n", entry.name, entry.name)
         output.printf("xmlNodePtr __#{libName}_create_%sNode(xmlNodePtr node, __#{libName}_%s* ptr);\n", entry.name, entry.name)
         output.printf("void __#{libName}_%s_free(__#{libName}_%s *ptr);\n", entry.name, entry.name)
         output.printf("\n")
