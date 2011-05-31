@@ -40,8 +40,10 @@ endif
 
 all: $(libs) # wrapper/lib#{libName}_ruby.so test1
 
-test1: test/load_dump.c $(libs)
-	gcc -o $@ $< $(CFLAGS) -Lobj/x86_64 -Lobj/i686 -#{libName} -lxml2
+tests: obj/test1
+
+obj/test1: test/create_dump_and_reload.c $(libs)
+	gcc -o $@ $< $(CFLAGS) -Lobj/x86_64 -Lobj/i686 -l#{libName} -lxml2
 
 $(lib): $(objs)
 	rm -f $@

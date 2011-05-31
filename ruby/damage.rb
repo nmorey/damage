@@ -9,4 +9,5 @@ require 'damage/genheader'
 require 'damage/dot'
 require 'damage/reader'
 require 'damage/writer'
+require 'damage/gentest'
 end
