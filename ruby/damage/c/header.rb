@@ -1,36 +1,37 @@
 module Damage
-  module GenHeader
+  module C
+    module Header
 
-    def write(description)
-      output = Damage::Files.createAndOpen("gen/#{description.config.libname}/include/", "#{description.config.libname}.h")
-      self.genHeader(output, description)
-      output.close()
-      output = Damage::Files.createAndOpen("gen/#{description.config.libname}/include/#{description.config.libname}/", "common.h")
-      self.genCommonH(output, description)
-      output.close()
-      output = Damage::Files.createAndOpen("gen/#{description.config.libname}/src/", "common.c")
-      self.genCommonC(output, description)
-      output.close()
-    end
-    module_function :write
+      def write(description)
+        output = Damage::Files.createAndOpen("gen/#{description.config.libname}/include/", "#{description.config.libname}.h")
+        self.genHeader(output, description)
+        output.close()
+        output = Damage::Files.createAndOpen("gen/#{description.config.libname}/include/#{description.config.libname}/", "common.h")
+        self.genCommonH(output, description)
+        output.close()
+        output = Damage::Files.createAndOpen("gen/#{description.config.libname}/src/", "common.c")
+        self.genCommonC(output, description)
+        output.close()
+      end
+      module_function :write
 
 
-    private
-    def genHeader(output, description)  
-      libName = description.config.libname
+      private
+      def genHeader(output, description)  
+        libName = description.config.libname
 
-      output.puts("#ifndef __#{libName}_h__")
-      output.puts("#define __#{libName}_h__\n")
-      output.puts("#include <#{libName}/structs.h>")
-      output.puts("#include <#{libName}/alloc.h>")
-#      output.puts("#include <#{libName}/structs.h")
-      output.puts("#endif /* __#{libName}_h__ */\n")
-    end
-    module_function :genHeader
+        output.puts("#ifndef __#{libName}_h__")
+        output.puts("#define __#{libName}_h__\n")
+        output.puts("#include <#{libName}/structs.h>")
+        output.puts("#include <#{libName}/alloc.h>")
+        #      output.puts("#include <#{libName}/structs.h")
+        output.puts("#endif /* __#{libName}_h__ */\n")
+      end
+      module_function :genHeader
 
-    def genCommonH(output, description)
-      libName = description.config.libname
-output.puts "
+      def genCommonH(output, description)
+        libName = description.config.libname
+        output.puts "
 #ifndef __#{libName}_common_h__
 #define __#{libName}_common_h__
 
@@ -55,12 +56,12 @@ extern jmp_buf __#{libName}_error_happened;
 extern int __#{libName}_line;
 #endif /* __#{libName}_common_h__ */
 "
-    end
-    module_function :genCommonH
+      end
+      module_function :genCommonH
 
-    def genCommonC(output, description)
-      libName = description.config.libname
-output.puts "
+      def genCommonC(output, description)
+        libName = description.config.libname
+        output.puts "
 #include <assert.h>
 #include <errno.h>
 #include <setjmp.h>
@@ -249,7 +250,8 @@ int __#{libName}_release_flock(){
 }
 
 "
+      end
+      module_function :genCommonC
     end
-    module_function :genCommonC
   end
 end

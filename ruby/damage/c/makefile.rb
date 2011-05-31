@@ -1,18 +1,19 @@
 module Damage
-  module Makefile
+  module C
+    module Makefile
 
 
-    def write(description)
-      output = Damage::Files.createAndOpen("gen/#{description.config.libname}/", "Makefile")
-      genMakefile(output, description)
-      output.close()
-    end
-    module_function :write
+      def write(description)
+        output = Damage::Files.createAndOpen("gen/#{description.config.libname}/", "Makefile")
+        genMakefile(output, description)
+        output.close()
+      end
+      module_function :write
 
-    private
-    def genMakefile(output, description)
-      libName = description.config.libname
-      output.puts "
+      private
+      def genMakefile(output, description)
+        libName = description.config.libname
+        output.puts "
 LIBDIR32  := $(shell if [ -f /etc/debian_version -a -d /usr/lib32/ ]; then echo \"lib32\"; else echo \"lib\"; fi)
 LIBDIR64  := $(shell if [ -f /etc/debian_version -a -d /usr/lib32/ ]; then echo \"lib\"; else echo \"lib64\"; fi)
 
@@ -90,7 +91,8 @@ clean:
 	if [ -f wrapper/Makefile ]; then cd wrapper; make $(MFLAGS) clean; fi
 
 "
+      end
+      module_function :genMakefile
     end
-    module_function :genMakefile
   end
 end
