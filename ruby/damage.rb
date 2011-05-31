@@ -9,4 +9,6 @@ require 'damage/c'
 #Documentation (DTD/Doc)
 require 'damage/doc'
 
+#Ruby bindings (require C library)
+require 'damage/ruby'
 end
