@@ -1,5 +1,5 @@
 config:
-        libname: sigmac
+        libname: sample
 entries:
         - name: DB
           attribute: TOP
@@ -16,6 +16,7 @@ entries:
                   type: S(timestamp)
                   attribute: CONTAINER
         - name : timestamp
+          attribute: LISTABLE
           fields:
                 - name: tv_sec
                   type: T(unsigned long)
