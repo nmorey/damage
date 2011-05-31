@@ -17,7 +17,6 @@ module Damage
 LIBDIR32  := $(shell if [ -f /etc/debian_version -a -d /usr/lib32/ ]; then echo \"lib32\"; else echo \"lib\"; fi)
 LIBDIR64  := $(shell if [ -f /etc/debian_version -a -d /usr/lib32/ ]; then echo \"lib\"; else echo \"lib64\"; fi)
 
-rubydeps := $(shell [ -d lib ] && find lib -name \"*.rb\")
 srcs     := $(wildcard src/*.c)
 headers  := $(wildcard include/*.h include/#{libName}/*.h)
 objs     := $(patsubst src/%.c,obj/i686/%.o,$(srcs))
@@ -56,7 +55,7 @@ $(lib64): $(objs64)
 	ar rc $@ $(objs64)
 	ranlib $@
 
-#wrapper/lib#{libName}_ruby.so: wrapper/ruby_scp2dir.c $(rubydeps) $(libs) 
+#wrapper/lib#{libName}_ruby.so: wrapper/ruby_scp2dir.c $(libs) 
 #	+cd wrapper; ruby extconf.rb; make $(MFLAGS)
 
 obj/i686/%.o:src/%.c $(headers)
