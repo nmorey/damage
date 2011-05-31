@@ -44,6 +44,7 @@ module Damage
         when "CONTAINER"
           @attribute = :container
           @target = :both
+          @qty = :container
         when nil
         else
           raise("Unknown field attribute #{field["attribute"]}")

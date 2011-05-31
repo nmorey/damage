@@ -30,7 +30,7 @@ module Damage
           comma=""
           entry.fields.each() {|field|
             case field.qty
-            when :single
+            when :single,:container
               maxOccurs = "?"
               maxOccurs = "" if field.required == true
             when :list

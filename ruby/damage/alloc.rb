@@ -82,7 +82,7 @@ module Damage
                                 field.data_type, field.name)
                 end
               end
-            when :list
+            when :list, :container
               case field.category
                 when :simple
                 if(field.data_type == "char*") then
