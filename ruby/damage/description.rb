@@ -92,7 +92,7 @@ module Damage
     end
 
     class Entry
-      attr_accessor :name, :attribute, :fields, :children, :attributes, :sort
+      attr_accessor :name, :attribute, :fields, :children, :attributes, :sort, :containers
       def initialize(entry)
         @name = entry["name"]
         @attribute = :none
@@ -101,6 +101,7 @@ module Damage
         @children = []
         @attributes = []
         @sort = []
+        @containers = {}
 
         case entry["attribute"]
         when "TOP"
@@ -116,6 +117,7 @@ module Damage
           @children << _field if _field.is_attribute == false && _field.target != :mem
           @attributes << _field if _field.is_attribute == true && _field.target != :mem
           @sort << _field if _field.attribute == :sort
+          @containers[_field.name] = _field.data_type if _field.qty == :container
 
           @fields << _field
         } if entry["fields"] != nil
@@ -129,14 +131,21 @@ module Damage
     end
     class Description
       attr_accessor :config
-      attr_accessor :entries, :top_entry
+      attr_accessor :entries, :top_entry, :containers
 
       def initialize(tree)
         @config = Config.new(tree["config"])
         @entries = {}
+        @containers = {}
+
         tree["entries"].each() { |entry|
           _entry = Entry.new(entry)
           @top_entry = _entry if (_entry.attribute == :top)
+          _entry.containers.each() { |name, data_type|
+            raise("At least two containers with name '#{name}' are defined and used differents types (#{@containers[name]} and #{data_type}).") if (@containers[name] != nil && @containers[name] != data_type)
+            @containers[name] = data_type
+
+          }
           @entries[_entry.name] = _entry
         }
       end
