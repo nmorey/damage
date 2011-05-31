@@ -92,12 +92,16 @@ module Damage
     end
 
     class Entry
-      attr_accessor :name, :attribute, :fields
+      attr_accessor :name, :attribute, :fields, :children, :attributes, :sort
       def initialize(entry)
         @name = entry["name"]
         @attribute = :none
         @cleanup = nil
         @fields = []
+        @children = []
+        @attributes = []
+        @sort = []
+
         case entry["attribute"]
         when "TOP"
           @attribute = :top
@@ -108,7 +112,12 @@ module Damage
           raise("Unknown entry attribute #{entry["attribute"]}")
         end
         entry["fields"].each() { |field|
-          @fields << Field.new(field)
+          _field =  Field.new(field)
+          @children << _field if _field.is_attribute == false && _field.target != :mem
+          @attributes << _field if _field.is_attribute == true && _field.target != :mem
+          @sort << _field if _field.attribute == :sort
+
+          @fields << _field
         } if entry["fields"] != nil
       end
     end

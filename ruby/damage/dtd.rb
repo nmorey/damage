@@ -15,9 +15,7 @@ module Damage
       containers={}
 
       description.entries.each() {|name, entry|
-        has_children = false
         entry.fields.each() {|field|
-          has_children = true if  (field.target != :mem  && field.is_attribute != true)
           if (field.attribute == :container) then
             raise("At least two containers with name '#{field.name}' are defined and used differents types. Impossible to generate a DTD") if (containers[field.name] != nil && containers[field.name] != field.data_type)
             containers[field.name] = field.data_type
@@ -25,7 +23,7 @@ module Damage
         }
         strList=[]
         output.printf("<!ELEMENT #{entry.name} ");
-        if has_children == true then
+        if entry.children.length > 0 then
           output.printf("(");
           comma=""
           entry.fields.each() {|field|
