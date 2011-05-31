@@ -53,6 +53,7 @@ VALUE indentToString(VALUE string, int indent);
       # Generate the main loader file
       def genGlobC(output, description, module_name)
         libName = description.config.libname
+        moduleName= description.config.libname.slice(0,1).upcase + description.config.libname.slice(1..-1)
         output.puts("
 #include <ruby.h>
 #include <#{libName}.h>
@@ -72,7 +73,7 @@ VALUE indentToString(VALUE string, int indent){
     return rb_str_concat(string, rb_str_new2(strdup(str)));
 }
 void Init_lib#{libName}_ruby(){
-    #{libName} = rb_define_module(\"#{libName}\");
+    #{libName} = rb_define_module(\"#{moduleName}\");
 
 ");
         description.entries.each(){ |name, entry|
