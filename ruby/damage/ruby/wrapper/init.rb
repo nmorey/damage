@@ -26,8 +26,10 @@ void #{params[:funcPrefix]}_init(void){
 
     rb_define_alloc_func(#{params[:classValue]}, #{params[:funcPrefix]}_alloc);
     rb_define_method(#{params[:classValue]}, \"initialize\", #{params[:funcPrefix]}_initialize, -1);
-    rb_define_method(#{params[:classValue]}, \"to_file\", #{params[:funcPrefix]}_to_file, 1);
-    rb_define_singleton_method(#{params[:classValue]}, \"new_file\", #{params[:funcPrefix]}_new_file, -1);
+    rb_define_method(#{params[:classValue]}, \"to_binary\", #{params[:funcPrefix]}_to_binary, 1);
+    rb_define_method(#{params[:classValue]}, \"to_xml\", #{params[:funcPrefix]}_to_xml, 1);
+    rb_define_singleton_method(#{params[:classValue]}, \"load_xml\", #{params[:funcPrefix]}_load_xml, -1);
+    rb_define_singleton_method(#{params[:classValue]}, \"load_binary\", #{params[:funcPrefix]}_load_binary, -1);
     rb_define_method(#{params[:classValue]}, \"to_s\", #{params[:funcPrefix]}_to_s, 0);
 ");
 
