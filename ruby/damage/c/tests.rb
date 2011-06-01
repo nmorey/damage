@@ -67,22 +67,20 @@ module Damage
 "
         genDBCreator(output, description)
         output.puts "
-int main(int argc, char *argv[])
+int main()
 {
+   char* file=\"test1.xml\";
+
 	__#{libName}_#{description.top_entry.name} *ptr = create#{description.top_entry.name}(1);
-	if (argc < 2) {
-		fprintf(stderr, \"Usage: %s file\\n\", argv[0]);
-		exit(1);
-	}
-	if (__#{libName}_#{description.top_entry.name}_xml_dump_file(argv[1], ptr) < 0) {
-		fprintf(stderr, \"Failed writing to %s\\n\", argv[1]);
+	if (__#{libName}_#{description.top_entry.name}_xml_dump_file(file, ptr) < 0) {
+		fprintf(stderr, \"Failed writing to %s\\n\", file);
 		exit(2);
 	}
 	__#{libName}_#{description.top_entry.name}_free(ptr);
 
-	ptr = __#{libName}_#{description.top_entry.name}_xml_parse_file(argv[1]);
+	ptr = __#{libName}_#{description.top_entry.name}_xml_parse_file(file);
 	if (ptr == NULL) {
-		fprintf(stderr, \"Failed to parse %s\\n\", argv[1]);
+		fprintf(stderr, \"Failed to parse %s\\n\", file);
 		exit(3);
     }
 	__#{libName}_#{description.top_entry.name}_free(ptr);
@@ -108,25 +106,35 @@ int main(int argc, char *argv[])
 "
         genDBCreator(output, description)
         output.puts "
-int main(int argc, char *argv[])
+int main()
 {
+   char* file=\"test2.db\";
+   char* xml=\"test2.xml.org\";
+   char* xml2=\"test2.xml.db\";
+
 	__#{libName}_#{description.top_entry.name} *ptr = create#{description.top_entry.name}(1);
-	if (argc < 2) {
-		fprintf(stderr, \"Usage: %s file\\n\", argv[0]);
-		exit(1);
+
+	if (__#{libName}_#{description.top_entry.name}_binary_dump_file(file, ptr) == 0) {
+		fprintf(stderr, \"Failed writing to %s\\n\", file);
+		exit(2);
 	}
-	if (__#{libName}_#{description.top_entry.name}_binary_dump_file(argv[1], ptr) == 0) {
-		fprintf(stderr, \"Failed writing to %s\\n\", argv[1]);
+	if (__#{libName}_#{description.top_entry.name}_xml_dump_file(xml, ptr) < 0) {
+		fprintf(stderr, \"Failed writing to %s\\n\", xml);
 		exit(2);
 	}
 	__#{libName}_#{description.top_entry.name}_free(ptr);
 
-/*	ptr = __#{libName}_#{description.top_entry.name}_xml_parse_file(argv[1]);
+	ptr = __#{libName}_#{description.top_entry.name}_binary_load_file(file);
 	if (ptr == NULL) {
-		fprintf(stderr, \"Failed to parse %s\\n\", argv[1]);
+		fprintf(stderr, \"Failed to parse %s\\n\", file);
 		exit(3);
     }
-	__#{libName}_#{description.top_entry.name}_free(ptr); */
+	if (__#{libName}_#{description.top_entry.name}_xml_dump_file(xml2, ptr) < 0) {
+		fprintf(stderr, \"Failed writing to %s\\n\", xml);
+		exit(2);
+	}
+
+	__#{libName}_#{description.top_entry.name}_free(ptr); 
 	return 0;
 }
 
