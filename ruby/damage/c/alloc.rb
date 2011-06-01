@@ -158,6 +158,8 @@ module Damage
           output.printf("xmlNodePtr __#{libName}_create_%s_xml_node(xmlNodePtr node, __#{libName}_%s* ptr);\n", entry.name, entry.name)
 
           output.printf("unsigned long __#{libName}_%s_binary_dump_file(const char* file, __#{libName}_%s *ptr);\n", entry.name, entry.name)
+          output.printf("__#{libName}_%s *__#{libName}_%s_binary_load_file(const char* file);\n", entry.name, entry.name);
+
 
           output.printf("\n")
         }
