@@ -105,8 +105,8 @@ clean:
 	rm -Rf obj/
 	rm -f Doxyfile
 	rm -Rf doc
-	rm -Rf $(awksrcs) $(awkheaders) ruby/*
-	if [ -f wrapper/Makefile ]; then cd wrapper; make $(MFLAGS) clean; fi
+	rm -Rf $(awksrcs) $(awkheaders)
+	if [ -f Makefile.ruby ]; then make $(MFLAGS) -f Makefile.ruby clean; fi
 
 "
       end
