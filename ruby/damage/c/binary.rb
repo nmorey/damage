@@ -143,8 +143,6 @@ unsigned long __#{libName}_#{entry.name}_binary_dump(__#{libName}_#{entry.name}*
 
           output.printf("#{indent}fseek(file, offset, SEEK_SET);\n")
           output.printf("#{indent}fwrite(&val, sizeof(val), 1, file);\n")
-          output.printf("#{indent}printf(\"Write #{entry.name} @ %%p\\n\", (void*)offset);\n")
-
 
           if entry.attribute == :listable  then
             output.printf("#{indent}offset = child_offset;\n") 
@@ -212,7 +210,6 @@ __#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load(FILE* file, u
             indent="\t"
           end
           output.printf("#{indent}el = __#{libName}_#{entry.name}_alloc();\n\n")
-          output.printf("#{indent}printf(\"Parsing a #{entry.name}@ %%p\\n\", (void*)offset);\n")
           # Set next field if we have a predecessor
           output.printf("\t\tif(prev){\n\t\t\tprev->next = el;\n\t\t} else {\n\t\t\tfirst = el;\n\t\t}\n") if entry.attribute == :listable
 
@@ -282,7 +279,6 @@ __#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load(FILE* file, u
           if entry.attribute == :listable  then
             
             output.printf("#{indent}prev = el;\n") 
-            output.printf("#{indent}printf(\"#{entry.name}->next=%%p\\n\", el->next);\n")
             output.printf("#{indent}offset = (unsigned long)el->next;\n");
             output.printf("\t} while (el->next != NULL);\n") 
             output.puts "\treturn first;"
