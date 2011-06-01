@@ -156,6 +156,9 @@ module Damage
 
           output.printf("int __#{libName}_%s_xml_dump_file(const char* file, __#{libName}_%s *ptr);\n", entry.name, entry.name)
           output.printf("xmlNodePtr __#{libName}_create_%s_xml_node(xmlNodePtr node, __#{libName}_%s* ptr);\n", entry.name, entry.name)
+
+          output.printf("unsigned long __#{libName}_%s_binary_dump_file(const char* file, __#{libName}_%s *ptr);\n", entry.name, entry.name)
+
           output.printf("\n")
         }
         output.printf("#endif /* __#{libName}_alloc_h__ */\n")

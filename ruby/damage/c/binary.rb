@@ -153,8 +153,25 @@ unsigned long __#{libName}_#{entry.name}_binary_dump(__#{libName}_#{entry.name}*
           output.puts "}"
         }
 
+         description.entries.each() { | name, entry|
+          output.printf("unsigned long __#{libName}_%s_binary_dump_file(const char* file, __#{libName}_%s *ptr)\n{\n", entry.name, entry.name)
+          output.printf("\tunsigned long ret;\n")
+          output.printf("\tFILE* output;\n")
+          output.printf("\n")
+          output.printf("\tif(__#{libName}_acquire_flock(file))\n");
+          output.printf("\t\t__#{libName}_error(\"Failed to lock output file %%s\", ENOENT, file);\n");
+          output.printf("\tif((output = fopen(file, \"w+\")) == NULL)\n");
+          output.printf("\t\t__#{libName}_error(\"Failed to open output file %%s\", errno, file);\n");
+
+          output.printf("\tret = __#{libName}_%s_binary_dump(ptr, output, 0UL);\n", entry.name)
+          output.printf("\tfclose(output);\n")
+          output.printf("\t__#{libName}_release_flock(file);\n");
+          output.printf("\treturn ret;\n");
+          output.printf("}\n");
+        }
       end
       module_function :genBinaryWriter
+
       def genBinaryReader(output, description)
       end
       module_function :genBinaryReader
