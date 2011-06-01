@@ -21,8 +21,10 @@ module Damage
     require File.dirname(__FILE__) + '/c/header'
     require File.dirname(__FILE__) + '/c/reader'
     require File.dirname(__FILE__) + '/c/writer'
+    require File.dirname(__FILE__) + '/c/binary'
     require File.dirname(__FILE__) + '/c/makefile'
     require File.dirname(__FILE__) + '/c/tests'
+
 
     def generate(description)
       Structs::write(description)
@@ -30,6 +32,7 @@ module Damage
       Header::write(description)
       Reader::write(description)
       Writer::write(description)
+      Binary::write(description)
       Makefile::write(description)
       Tests::write(description)
     end
