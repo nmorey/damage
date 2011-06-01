@@ -37,6 +37,8 @@ srcs     := $(wildcard src/*.c)
 headers  := $(wildcard include/*.h include/#{libName}/*.h)
 objs     := $(patsubst src/%.c,obj/i686/%.o,$(srcs))
 objs64   := $(patsubst src/%.c,obj/x86_64/%.o,$(srcs))
+tests_src:= $(wildcard test/*.c)
+tests    := $(patsubst test/%.c,obj/tests/%,$(tests_src))
 lib      := obj/i686/lib#{libName}.a
 lib64    := obj/x86_64/lib#{libName}.a
 main_header := include/#{libName}.h
@@ -56,9 +58,10 @@ endif
 
 all: $(libs) # wrapper/lib#{libName}_ruby.so test1
 
-tests: obj/test1
+tests: $(tests)
 
-obj/test1: test/create_dump_and_reload.c $(libs)
+obj/tests/%: test/%.c $(libs)
+	@if [ ! -d obj/tests/ ]; then mkdir -p obj/tests/; fi
 	gcc -o $@ $< $(CFLAGS) -Lobj/x86_64 -Lobj/i686 -l#{libName} -lxml2
 
 $(lib): $(objs)
