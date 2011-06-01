@@ -19,6 +19,8 @@ module Damage
     module Tests
 
       def write(description)
+        libName = description.config.libname
+        output = Damage::Files.createAndOpen("gen/#{libName}/.db/", "dummy")
         self.genTest1(description)
         self.genTest2(description)
       end
@@ -69,7 +71,7 @@ module Damage
         output.puts "
 int main()
 {
-   char* file=\"test1.xml\";
+   char* file=\".db/test1.xml\";
 
 	__#{libName}_#{description.top_entry.name} *ptr = create#{description.top_entry.name}(1);
 	if (__#{libName}_#{description.top_entry.name}_xml_dump_file(file, ptr, 0) < 0) {
@@ -113,9 +115,9 @@ int main()
         output.puts "
 int main()
 {
-   char* file=\"test2.db\";
-   char* xml=\"test2.xml.org\";
-   char* xml2=\"test2.xml.db\";
+   char* file=\".db/test2.db\";
+   char* xml=\".db/test2.xml.org\";
+   char* xml2=\".db/test2.xml.db\";
 
 	__#{libName}_#{description.top_entry.name} *ptr = create#{description.top_entry.name}(1);
 
