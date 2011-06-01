@@ -35,7 +35,8 @@ module Damage
 
 $LOAD_PATH.push( File.dirname(__FILE__) + \"/../ruby/\")
 require 'lib#{libName}_ruby'
-
+outputDB=\".db/r_test1.db\"
+outputXML=\".db/r_test1.xml\"
 "
         description.entries.each() { |name, entry|
           params = Damage::Ruby::nameToParams(libName, name)
@@ -65,10 +66,12 @@ end
 
 	ptr = create#{description.top_entry.name}()
 
-    ptr.to_file(ARGV[0])
-#	__#{libName}_#{description.top_entry.name}_free(ptr);
+    ptr.to_xml(outputXML)
 
-	ptr = #{moduleName}::#{description.top_entry.name}.new_file(ARGV[0])
+	ptr = #{moduleName}::#{description.top_entry.name}.load_xml(outputXML)
+    ptr.to_binary(outputDB)
+    ptr = #{moduleName}::#{description.top_entry.name}.load_binary(outputDB)
+
 
 "
       end
