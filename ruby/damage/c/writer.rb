@@ -156,13 +156,14 @@ module Damage
         }
 
         description.entries.each() { | name, entry|
-          output.printf("int __#{libName}_%s_xml_dump_file(const char* file, __#{libName}_%s *ptr)\n{\n", entry.name, entry.name)
+          output.printf("int __#{libName}_%s_xml_dump_file(const char* file, __#{libName}_%s *ptr, int zipped)\n{\n", entry.name, entry.name)
           output.printf("\txmlDocPtr doc = NULL;\n")
           output.printf("\txmlNodePtr node = NULL;\n")
           output.printf("\tint ret;\n")
           output.printf("\n")
           output.printf("\tdoc = xmlNewDoc(BAD_CAST \"1.0\");\n")
-          output.printf("\txmlSetDocCompressMode(doc, 9);\n")
+          output.printf("\tif(zipped)\n")
+          output.printf("\t\txmlSetDocCompressMode(doc, 9);\n")
           output.printf("\tnode = __#{libName}_create_%s_xml_node(NULL, ptr);\n", entry.name)
           output.printf("\txmlDocSetRootElement(doc, node);\n")
           addXmlElt(output, "xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance", {:is_attr =>true, :quote =>true})

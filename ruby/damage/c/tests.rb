@@ -72,16 +72,21 @@ int main()
    char* file=\"test1.xml\";
 
 	__#{libName}_#{description.top_entry.name} *ptr = create#{description.top_entry.name}(1);
-	if (__#{libName}_#{description.top_entry.name}_xml_dump_file(file, ptr) < 0) {
+	if (__#{libName}_#{description.top_entry.name}_xml_dump_file(file, ptr, 0) < 0) {
 		fprintf(stderr, \"Failed writing to %s\\n\", file);
 		exit(2);
 	}
+	if (__#{libName}_#{description.top_entry.name}_xml_dump_file(file, ptr, 1) < 0) {
+		fprintf(stderr, \"Failed writing to %s in gzipped mode\\n\", file);
+		exit(3);
+	}
+
 	__#{libName}_#{description.top_entry.name}_free(ptr);
 
 	ptr = __#{libName}_#{description.top_entry.name}_xml_parse_file(file);
 	if (ptr == NULL) {
 		fprintf(stderr, \"Failed to parse %s\\n\", file);
-		exit(3);
+		exit(4);
     }
 	__#{libName}_#{description.top_entry.name}_free(ptr);
 	return 0;
@@ -118,7 +123,7 @@ int main()
 		fprintf(stderr, \"Failed writing to %s\\n\", file);
 		exit(2);
 	}
-	if (__#{libName}_#{description.top_entry.name}_xml_dump_file(xml, ptr) < 0) {
+	if (__#{libName}_#{description.top_entry.name}_xml_dump_file(xml, ptr, 0) < 0) {
 		fprintf(stderr, \"Failed writing to %s\\n\", xml);
 		exit(2);
 	}
@@ -129,7 +134,7 @@ int main()
 		fprintf(stderr, \"Failed to parse %s\\n\", file);
 		exit(3);
     }
-	if (__#{libName}_#{description.top_entry.name}_xml_dump_file(xml2, ptr) < 0) {
+	if (__#{libName}_#{description.top_entry.name}_xml_dump_file(xml2, ptr, 0) < 0) {
 		fprintf(stderr, \"Failed writing to %s\\n\", xml);
 		exit(2);
 	}

@@ -24,7 +24,7 @@ static VALUE #{params[:funcPrefix]}_to_file(VALUE self, VALUE filePath){
     int ret;
     Check_Type(filePath, T_STRING);
 
-    ret = __#{libName}_#{entry.name}_xml_dump_file(StringValuePtr(filePath), DATA_PTR(self));
+    ret = __#{libName}_#{entry.name}_xml_dump_file(StringValuePtr(filePath), DATA_PTR(self), 1);
 
     if(ret < 0)
         rb_raise(rb_eArgError, \"Could not write XML file\");
