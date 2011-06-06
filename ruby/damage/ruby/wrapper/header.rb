@@ -37,7 +37,7 @@ extern VALUE #{libName};
           if entry.attribute == :listable
 output.puts("
 /** Global class type List for the file */
-VALUE #{params[:classValue]}List;
+VALUE #{params[:classValueList]};
 
 ")
           end
