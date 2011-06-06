@@ -66,11 +66,6 @@ module Damage
           output.printf("} __#{libPrefix}_%s;\n\n", entry.name);
         }
         output.printf("\n\n");
-        topStruct = description.top_entry
-        output.printf("typedef __#{libPrefix}_%s __#{libPrefix}_tree;\n", topStruct.name);
-        output.printf("__#{libPrefix}_tree *__#{libPrefix}_parse(const char *file);\n\n", topStruct.name);
-        output.printf("int __#{libPrefix}_dumpXML(const char *file, __#{libPrefix}_tree* ptr);\n\n", topStruct, topStruct);
-        output.printf("void __#{libPrefix}_tree_free(__#{libPrefix}_tree *ptr);\n\n");
         output.printf("#endif /* __#{libPrefix}_structs_h__ */\n");
       end
       module_function :genH

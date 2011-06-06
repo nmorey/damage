@@ -134,10 +134,6 @@ module Damage
           output.printf("\treturn;\n")
           output.printf("}\n\n")
         }
-        output.printf("void __#{libName}_tree_free(__#{libName}_tree *ptr){\n");
-        output.printf("\t__#{libName}_%s_free(ptr);\n", description.top_entry.name);
-        output.printf("\treturn;\n");
-        output.printf("}\n\n");
       end
 
       def genH(output, description)
