@@ -49,6 +49,24 @@ VALUE #{params[:funcPrefix]}_wrapFirst(#{params[:cType]}* ptr) {
     ptr->_private = (void*)node;
     return node;
 }
+/**  Class Wrapper */
+VALUE #{params[:funcPrefix]}_wrapRowip(#{params[:cType]}* ptr) {
+    VALUE node;
+    if(ptr->_private != NULL)
+        return (VALUE)ptr->_private;
+
+    node = Data_Wrap_Struct(#{params[:classValueRowip]}, #{params[:funcPrefix]}_markRowip, #{params[:funcPrefix]}_freeRowip, ptr);
+    ptr->_private = (void*)node;
+    return node;
+}
+/**  Class Wrapper */
+VALUE #{params[:funcPrefix]}_wrapFirstRowip(#{params[:cType]}* ptr) {
+    VALUE node;
+
+    node = Data_Wrap_Struct(#{params[:classValueRowip]}, #{params[:funcPrefix]}_markRowip, #{params[:funcPrefix]}_freeRowip, ptr);
+    ptr->_private = (void*)node;
+    return node;
+}
 
 ")
           if entry.attribute == :listable
@@ -60,6 +78,17 @@ VALUE #{params[:funcPrefixList]}_wrap(#{params[:cTypeList]}* ptr) {
         return (VALUE)ptr->_private;
 
     node = Data_Wrap_Struct(#{params[:classValueList]}, #{params[:funcPrefixList]}_mark, #{params[:funcPrefixList]}_free, ptr);
+    ptr->_private = node;
+    return node;
+}
+
+/**  Class Wrapper */
+VALUE #{params[:funcPrefixList]}_wrapRowip(#{params[:cTypeList]}* ptr) {
+    VALUE node;
+    if(ptr->_private != Qnil)
+        return (VALUE)ptr->_private;
+
+    node = Data_Wrap_Struct(#{params[:classValueList]}, #{params[:funcPrefixList]}_markRowip, #{params[:funcPrefixList]}_free, ptr);
     ptr->_private = node;
     return node;
 }
@@ -76,6 +105,12 @@ VALUE #{params[:funcPrefixList]}_wrap(#{params[:cTypeList]}* ptr) {
 void #{params[:funcPrefix]}_free(#{params[:cType]} *ptr) {
     if(ptr == NULL) return;
     ptr->_private = NULL;
+    return;
+}
+")          
+             output.puts("
+/** Free function */
+void #{params[:funcPrefix]}_freeRowip(#{params[:cType]} *ptr) {
     return;
 }
 ")          

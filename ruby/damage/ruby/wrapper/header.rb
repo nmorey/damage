@@ -31,6 +31,8 @@ module Damage
 /** Global class type for the file */
 VALUE #{params[:classValue]};
 
+VALUE #{params[:classValueRowip]};
+
 extern VALUE #{libName};
 
 ");
@@ -38,6 +40,8 @@ extern VALUE #{libName};
 output.puts("
 /** Global class type List for the file */
 VALUE #{params[:classValueList]};
+
+VALUE #{params[:classValueListRowip]};
 
 ")
           end

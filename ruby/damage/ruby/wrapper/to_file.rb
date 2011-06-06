@@ -43,6 +43,18 @@ static VALUE #{params[:funcPrefix]}_to_binary(VALUE self, VALUE filePath){
     return self;
 }
 ")
+
+         output.puts("
+static VALUE #{params[:funcPrefix]}_to_binary_rowip(VALUE self){
+    int ret;
+
+    ret = __#{libName}_#{entry.name}_binary_dump_file_rowip( DATA_PTR(self));
+
+    if(ret < 0)
+        rb_raise(rb_eArgError, \"Could not write binary file\");
+    return self;
+}
+")
         end
         module_function :write
         

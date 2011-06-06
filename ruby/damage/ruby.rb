@@ -39,11 +39,15 @@ module Damage
     def nameToParams(libName, name)
       params={}
       params[:className] = name.slice(0,1).upcase + name.slice(1..-1)
+      params[:classNameRowip] = name.slice(0,1).upcase + name.slice(1..-1) + "Rowip"
       params[:classNameList] = name.slice(0,1).upcase + name.slice(1..-1) + "List"
+      params[:classNameListRowip] = name.slice(0,1).upcase + name.slice(1..-1) + "ListRowip"
       params[:funcPrefix] = "rub#{params[:className]}"
       params[:funcPrefixList] = "rub#{params[:className]}List"
       params[:classValue] = "cDAMAGE#{params[:className]}"
+      params[:classValueRowip] = "cDAMAGE#{params[:classNameRowip]}Rowip"
       params[:classValueList] = "cDAMAGE#{params[:className]}List"
+      params[:classValueListRowip] = "cDAMAGE#{params[:className]}ListRowip"
       params[:cType] = "__#{libName}_#{name}"
       params[:cTypeList] = "__#{libName}_#{name}List"
       return params

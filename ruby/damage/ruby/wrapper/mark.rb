@@ -64,13 +64,64 @@ void #{params[:funcPrefixList]}_mark(#{params[:cTypeList]} *ptr) {
     return;
 }
 ");
+
           end
 
+            #
+            # rowip
+            #
+            output.puts("
+/** Mark function */
+void #{params[:funcPrefix]}_markRowip(#{params[:cType]} *ptr) {
+    if(ptr == NULL) return;
+");
+            # Look for children and mark them
+            
+            entry.fields.each() { |field|
+              next if field.target != :both
+              if field.category == :intern 
+                if field.qty == :list || field.qty == :container
+                  output.puts("
+    { __#{libName}_#{field.data_type}* elt;
+        for(elt = __#{libName.upcase}_ROWIP_PTR(ptr, #{field.name}); elt; elt =  __#{libName.upcase}_ROWIP_PTR(elt, next))
+            if(elt->_private != NULL) {
+                rb_gc_mark((VALUE) elt->_private);
+            }
+    }
+")
+                elsif field.qty == :single
+                  output.puts("
+    { if(ptr->#{field.name})
+            if(__#{libName.upcase}_ROWIP_PTR(ptr,#{field.name})->_private != NULL) {
+                rb_gc_mark((VALUE) __#{libName.upcase}_ROWIP_PTR(ptr, #{field.name})->_private);
+            }
+    }
+");
+                end
+              end
+            }
+            output.puts("
+}
+");
+            if entry.attribute == :listable
+              output.puts("
+/** Mark function */
+void #{params[:funcPrefixList]}_markRowip(#{params[:cTypeList]} *ptr) {
+    #{params[:cType]} *elnt;
+    if(ptr == NULL) return;
+    for(elnt = ptr->first; elnt; elnt = __#{libName.upcase}_ROWIP_PTR(elnt, next)){
+        if(elnt->_private != NULL) rb_gc_mark((VALUE)elnt->_private);
+    }
+    return;
+}
+");
+            end
+
+          end
+          module_function :write
+          
+          private
         end
-        module_function :write
-        
-        private
       end
     end
   end
-end

@@ -50,6 +50,41 @@ VALUE #{params[:funcPrefix]}_decorate(VALUE self){
     return self;
 }
 ")
+
+# ROWIP 
+
+
+         output.puts("
+/** Link C subtree to Ruby classes */
+VALUE #{params[:funcPrefix]}_decorateRowip(VALUE self){
+    #{params[:cType]}* ptr;
+    Data_Get_Struct(self, #{params[:cType]}, ptr);
+    ptr->_private = (void*)self;
+");
+        entry.fields.each() { |field|
+            next if field.target != :both
+          if field.category == :intern 
+            tParams = Damage::Ruby::nameToParams(libName, field.data_type)
+            if field.qty == :list || field.qty == :container
+              output.puts("
+    { __#{libName}_#{field.data_type}* elt;
+        for(elt = __#{libName.upcase}_ROWIP_PTR(ptr, #{field.name}); elt; elt =  __#{libName.upcase}_ROWIP_PTR(elt, next)){
+            #{tParams[:funcPrefix]}_decorateRowip(#{tParams[:funcPrefix]}_wrapFirstRowip(elt));
+        }
+    }
+
+");
+            elsif field.qty == :single
+              output.puts("
+        if(ptr->#{field.name}) #{tParams[:funcPrefix]}_decorateRowip(#{tParams[:funcPrefix]}_wrapFirstRowip(__#{libName.upcase}_ROWIP_PTR(ptr,#{field.name})));
+");
+            end
+          end
+        }
+        output.puts("
+    return self;
+}
+")
         end
         module_function :write
         

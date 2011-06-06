@@ -22,6 +22,9 @@ module Damage
           entry.fields.each() {|field|
             next if field.target != :both
             setStr="static VALUE #{params[:funcPrefix]}_#{field.name}_set(VALUE self, VALUE val)"
+            setStrRowip="static VALUE #{params[:funcPrefix]}_#{field.name}_setRowip(VALUE self, VALUE val)"
+            aliasFunc="#define #{params[:funcPrefix]}_#{field.name}_setRowip #{params[:funcPrefix]}_#{field.name}_set"
+            
             case field.qty
             when :single
               case field.category
@@ -40,6 +43,7 @@ module Damage
 ");
                 when "unsigned long"
                   output.puts("
+#{aliasFunc}
 #{setStr}{
     #{params[:cType]}* ptr;
     Data_Get_Struct(self, #{params[:cType]}, ptr);
@@ -49,6 +53,7 @@ module Damage
 }
 ");              when "double"
                   output.puts("
+#{aliasFunc}
 #{setStr}{
     #{params[:cType]}* ptr;
     Data_Get_Struct(self, #{params[:cType]}, ptr);
@@ -118,6 +123,21 @@ module Damage
     }
     return self;
 }
+#{setStrRowip}{
+    #{params[:cType]}* ptr;
+    Data_Get_Struct(self, #{params[:cType]}, ptr);
+    unsigned long i;
+    assert(ptr);
+    Check_Type(val, T_ARRAY); 
+    if(ptr->#{field.name}Len != RARRAY_LEN(val)){
+        rb_raise(rb_eArgError, \"Can not set an array of different size\");
+    }
+    for(i = 0; i < ptr->#{field.name}Len; i++){
+        VALUE elnt = rb_ary_shift(val);
+        __#{libName.upcase}_ROWIP_PTR(ptr, #{field.name})[i] = NUM2ULONG(elnt);
+    }
+    return self;
+}
 ");              when "double"
                   output.puts("
 #{setStr}{
@@ -133,6 +153,21 @@ module Damage
     for(i = 0; i < ptr->#{field.name}Len; i++){
         VALUE elnt = rb_ary_shift(val);
         ptr->#{field.name}[i] = NUM2DBL(elnt);
+    }
+    return self;
+}
+#{setStrRowip}{
+    #{params[:cType]}* ptr;
+    Data_Get_Struct(self, #{params[:cType]}, ptr);
+    unsigned long i;
+    assert(ptr);
+    Check_Type(val, T_ARRAY); 
+    if(ptr->#{field.name}Len != RARRAY_LEN(val)){
+        rb_raise(rb_eArgError, \"Can not set an array of different size\");
+    }
+    for(i = 0; i < ptr->#{field.name}Len; i++){
+        VALUE elnt = rb_ary_shift(val);
+        __#{libName.upcase}_ROWIP_PTR(ptr, #{field.name})[i] = NUM2BDL(elnt);
     }
     return self;
 }

@@ -43,8 +43,12 @@ module Damage
           output.puts("void #{params[:funcPrefix]}_init();");
           output.puts("VALUE #{params[:funcPrefix]}_wrap(#{params[:cType]}* ptr);");
           output.puts("VALUE #{params[:funcPrefix]}_wrapFirst(#{params[:cType]}* ptr);");
+          output.puts("VALUE #{params[:funcPrefix]}_wrapRowip(#{params[:cType]}* ptr);");
+          output.puts("VALUE #{params[:funcPrefix]}_wrapFirstRowip(#{params[:cType]}* ptr);");
           output.puts("VALUE #{params[:funcPrefix]}_decorate(VALUE self);\n\n");
+          output.puts("VALUE #{params[:funcPrefix]}_decorateRowip(VALUE self);\n\n");
           output.puts("VALUE #{params[:funcPrefix]}_xml_to_string(VALUE self, int indent);\n");
+          output.puts("VALUE #{params[:funcPrefix]}_xml_to_stringRowip(VALUE self, int indent);\n");
           if entry.attribute == :listable
             output.puts("
 typedef struct {

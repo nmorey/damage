@@ -22,6 +22,8 @@ module Damage
         def write(output, entry, libName, params)
           entry.fields.each() {|field|
             getStr="static VALUE #{params[:funcPrefix]}_#{field.name}_get(VALUE self)"
+            getStrRowip="static VALUE #{params[:funcPrefix]}_#{field.name}_getRowip(VALUE self)"
+            aliasFunc="#define #{params[:funcPrefix]}_#{field.name}_getRowip #{params[:funcPrefix]}_#{field.name}_get"
             next if field.target != :both
 
             case field.qty
@@ -39,9 +41,18 @@ module Damage
         return Qnil;
     return rb_str_new2(ptr->#{field.name});
 }
+#{getStrRowip}{
+    #{params[:cType]}* ptr;
+    Data_Get_Struct(self, #{params[:cType]}, ptr);
+    assert(ptr);
+    if(ptr->#{field.name} == NULL)
+        return Qnil;
+    return rb_str_new2(__#{libName.upcase}_ROWIP_PTR(ptr, #{field.name}));
+}
 ")
                 when "unsigned long"
                   output.puts("
+#{aliasFunc}
 #{getStr}{
     #{params[:cType]}* ptr;
     Data_Get_Struct(self, #{params[:cType]}, ptr);
@@ -50,6 +61,7 @@ module Damage
 }
 ")            when "double"
                   output.puts("
+#{aliasFunc}
 #{getStr}{
     #{params[:cType]}* ptr;
     Data_Get_Struct(self, #{params[:cType]}, ptr);
@@ -69,6 +81,14 @@ module Damage
     if(ptr->#{field.name} == NULL)
         return Qnil;
     return (VALUE)ptr->#{field.name}->_private;
+}
+#{getStrRowip}{
+    #{params[:cType]}* ptr;
+    Data_Get_Struct(self, #{params[:cType]}, ptr);
+    assert(ptr);
+    if(ptr->#{field.name} == NULL)
+        return Qnil;
+    return (VALUE)__#{libName.upcase}_ROWIP_PTR(ptr,#{field.name})->_private;
 }
 ")
               end
@@ -90,6 +110,18 @@ module Damage
     }
     return array;
 }
+#{getStrRowip}{
+    #{params[:cType]}* ptr;
+    VALUE array;
+    Data_Get_Struct(self, #{params[:cType]}, ptr);
+    unsigned long i;
+    assert(ptr);
+    array = rb_ary_new2(ptr->#{field.name}Len);
+    for(i = 0; i < ptr->#{field.name}Len; i++){
+         rb_ary_store(array, i, rb_str_new2(__#{libName.upcase}_ROWIP_PTR_ARRAY(ptr,#{field.name}, i)));
+    }
+    return array;
+}
 ");
 
                 when "unsigned long"
@@ -106,6 +138,18 @@ module Damage
     }
     return array;
 }
+#{getStrRowip}{
+    #{params[:cType]}* ptr;
+    VALUE array;
+    Data_Get_Struct(self, #{params[:cType]}, ptr);
+    unsigned long i;
+    assert(ptr);
+    array = rb_ary_new2(ptr->#{field.name}Len);
+    for(i = 0; i < ptr->#{field.name}Len; i++){
+         rb_ary_store(array, i, ULONG2NUM(__#{libName.upcase}_ROWIP_PTR(ptr, #{field.name})[i]));
+    }
+    return array;
+}
 ");            when "double"
                   output.puts("
 #{getStr}{
@@ -117,6 +161,18 @@ module Damage
     array = rb_ary_new2(ptr->#{field.name}Len);
     for(i = 0; i < ptr->#{field.name}Len; i++){
          rb_ary_store(array, i, rb_float_new(ptr->#{field.name}[i]));
+    }
+    return array;
+}
+#{getStrRowip}{
+    #{params[:cType]}* ptr;
+    VALUE array;
+    Data_Get_Struct(self, #{params[:cType]}, ptr);
+    unsigned long i;
+    assert(ptr);
+    array = rb_ary_new2(ptr->#{field.name}Len);
+    for(i = 0; i < ptr->#{field.name}Len; i++){
+         rb_ary_store(array, i, rb_float_new(__#{libName.upcase}_ROWIP_PTR(ptr, #{field.name})[i]));
     }
     return array;
 }
@@ -148,11 +204,31 @@ module Damage
     return #{tParams[:funcPrefixList]}_wrap(list);
 }
 
+#{getStrRowip}{
+    #{params[:cType]} *ptr;
+    #{tParams[:cTypeList]}* list;
+    #{tParams[:cType]} *elt;
+    Data_Get_Struct(self, #{params[:cType]}, ptr);
+    assert(ptr);
+
+    list = malloc(sizeof(*list));
+    list->parent = &(ptr->#{field.name});
+    list->_private = Qnil;
+    if(ptr->#{field.name} != NULL){
+        list->first = __#{libName.upcase}_ROWIP_PTR(ptr, #{field.name});
+        for(elt = list->first; elt->next != NULL; elt = __#{libName.upcase}_ROWIP_PTR(elt, next)){}
+        list->last = elt;
+    } else {
+       list->first = list->last = NULL;
+    }
+    return #{tParams[:funcPrefixList]}_wrap(list);
+}
 ");
               end
             end
 
           }
+
         end
         module_function :write
       end
