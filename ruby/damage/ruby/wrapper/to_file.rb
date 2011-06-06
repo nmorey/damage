@@ -39,7 +39,7 @@ static VALUE #{params[:funcPrefix]}_to_binary(VALUE self, VALUE filePath){
     ret = __#{libName}_#{entry.name}_binary_dump_file(StringValuePtr(filePath), DATA_PTR(self));
 
     if(ret < 0)
-        rb_raise(rb_eArgError, \"Could not write XML file\");
+        rb_raise(rb_eArgError, \"Could not write binary file\");
     return self;
 }
 ")
