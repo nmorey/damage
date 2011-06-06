@@ -41,6 +41,14 @@ VALUE #{params[:funcPrefix]}_wrap(#{params[:cType]}* ptr) {
     ptr->_private = (void*)node;
     return node;
 }
+/**  Class Wrapper */
+VALUE #{params[:funcPrefix]}_wrapFirst(#{params[:cType]}* ptr) {
+    VALUE node;
+
+    node = Data_Wrap_Struct(#{params[:classValue]}, #{params[:funcPrefix]}_mark, #{params[:funcPrefix]}_free, ptr);
+    ptr->_private = (void*)node;
+    return node;
+}
 
 ")
           if entry.attribute == :listable

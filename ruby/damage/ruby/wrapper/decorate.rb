@@ -34,14 +34,14 @@ VALUE #{params[:funcPrefix]}_decorate(VALUE self){
               output.puts("
     { __#{libName}_#{field.data_type}* elt;
         for(elt = ptr->#{field.name}; elt; elt = elt->next){
-            #{tParams[:funcPrefix]}_decorate(#{tParams[:funcPrefix]}_wrap(elt));
+            #{tParams[:funcPrefix]}_decorate(#{tParams[:funcPrefix]}_wrapFirst(elt));
         }
     }
 
 ");
             elsif field.qty == :single
               output.puts("
-        if(ptr->#{field.name}) #{tParams[:funcPrefix]}_decorate(#{tParams[:funcPrefix]}_wrap(ptr->#{field.name}));
+        if(ptr->#{field.name}) #{tParams[:funcPrefix]}_decorate(#{tParams[:funcPrefix]}_wrapFirst(ptr->#{field.name}));
 ");
             end
           end

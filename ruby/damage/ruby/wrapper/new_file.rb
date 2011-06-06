@@ -46,7 +46,7 @@ static VALUE #{params[:funcPrefix]}_load_binary(int argc, VALUE *argv, VALUE kla
 
     if(ptr == NULL)
         rb_raise(rb_eArgError, \"Failed to load XML file\");
-    return #{params[:funcPrefix]}_decorate(#{params[:funcPrefix]}_wrap(ptr));
+    return #{params[:funcPrefix]}_decorate(#{params[:funcPrefix]}_wrapFirst(ptr));
 }
 ")
         end
