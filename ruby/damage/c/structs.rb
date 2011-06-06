@@ -63,9 +63,18 @@ module Damage
           }        
           output.printf("\tstruct ___#{libPrefix}_%s* next;\n", entry.name) if entry.attribute == :listable
           output.printf("\tvoid* _private;\n");
+          output.printf("\tunsigned long _rowip_pos;\n");
+          output.printf("\tvoid* _rowip;\n");
           output.printf("} __#{libPrefix}_%s;\n\n", entry.name);
         }
         output.printf("\n\n");
+        output.printf("typedef struct ___#{libPrefix}_rowip_header {\n");
+        output.printf("\tchar* filename;\n");
+        output.printf("\tunsigned long len;\n");
+        output.printf("\tFILE* file;\n");
+        output.printf("\tvoid* base_adr;\n");
+        output.printf("} __#{libPrefix}_rowip_header;\n\n");
+        output.print("#define __#{libPrefix.upcase}_ROWIP_PTR(ptr, field) ((ptr->field == NULL) ? NULL : (((void*)(ptr) - ptr->_rowip_pos) + ((unsigned long)(ptr->field))))\n\n")
         output.printf("#endif /* __#{libPrefix}_structs_h__ */\n");
       end
       module_function :genH

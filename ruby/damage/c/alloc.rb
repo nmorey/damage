@@ -68,6 +68,7 @@ module Damage
 
           output.printf("\tptr->next = NULL;\n")         if entry.attribute == :listable
           output.printf("\tptr->_private = NULL;\n")
+          output.printf("\tptr->_rowip = NULL;\n")
           output.printf("\treturn ptr;\n")
           output.printf("}\n\n")
           output.printf("void __#{libName}_%s_free(__#{libName}_%s *ptr){\n", 
@@ -155,6 +156,9 @@ module Damage
 
           output.printf("unsigned long __#{libName}_%s_binary_dump_file(const char* file, __#{libName}_%s *ptr);\n", entry.name, entry.name)
           output.printf("__#{libName}_%s *__#{libName}_%s_binary_load_file(const char* file);\n", entry.name, entry.name);
+
+          output.printf("unsigned long __#{libName}_%s_binary_dump_file_rowip(__#{libName}_%s *ptr);\n", entry.name, entry.name)
+          output.printf("__#{libName}_%s *__#{libName}_%s_binary_load_file_rowip(const char* file);\n", entry.name, entry.name);
 
 
           output.printf("\n")

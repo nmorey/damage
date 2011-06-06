@@ -22,6 +22,7 @@ module Damage
     require File.dirname(__FILE__) + '/c/reader'
     require File.dirname(__FILE__) + '/c/writer'
     require File.dirname(__FILE__) + '/c/binary'
+    require File.dirname(__FILE__) + '/c/binary_rowip'
     require File.dirname(__FILE__) + '/c/makefile'
     require File.dirname(__FILE__) + '/c/tests'
 
@@ -33,6 +34,7 @@ module Damage
       Reader::write(description)
       Writer::write(description)
       Binary::write(description)
+      BinaryRowip::write(description)
       Makefile::write(description)
       Tests::write(description)
     end

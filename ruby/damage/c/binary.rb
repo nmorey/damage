@@ -140,6 +140,7 @@ unsigned long __#{libName}_#{entry.name}_binary_dump(__#{libName}_#{entry.name}*
 
           
           output.printf("#{indent}if(el->next != NULL) {val.next = (void*)child_offset;}\n") if entry.attribute == :listable 
+          output.printf("#{indent}val._rowip_pos = offset;\n")
 
           output.printf("#{indent}fseek(file, offset, SEEK_SET);\n")
           output.printf("#{indent}fwrite(&val, sizeof(val), 1, file);\n")
