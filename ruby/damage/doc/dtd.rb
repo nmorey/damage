@@ -71,6 +71,8 @@ module Damage
             required= "#REQUIRED" if field.required == true
             xmlType = "CDATA"
             xmlType = field.enum if field.enum != nil
+            xmlType = "ID" if (field.category == :id)
+            xmlType = "IDREF" if (field.category == :idref)
             if ( field.target != :mem && field.is_attribute == true) then
               output.printf("<!ATTLIST #{entry.name} #{field.name} #{xmlType} #{required}>\n")
             end
