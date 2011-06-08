@@ -47,7 +47,7 @@ module Damage
     assert(ptr);
     if(ptr->#{field.name} == NULL)
         return Qnil;
-    return rb_str_new2(__#{libName.upcase}_ROWIP_PTR(ptr, #{field.name}));
+    return rb_str_new2(__#{libName.upcase}_ROWIP_STR(ptr, #{field.name}));
 }
 ")
                 when "unsigned long"
@@ -91,7 +91,7 @@ module Damage
     assert(ptr);
     if(ptr->#{field.name}_str == NULL)
         return Qnil;
-    return rb_str_new2(__#{libName.upcase}_ROWIP_PTR(ptr, #{field.name}_str));
+    return rb_str_new2(__#{libName.upcase}_ROWIP_STR(ptr, #{field.name}_str));
 }
 ")
                   output.puts("
@@ -148,7 +148,7 @@ module Damage
     assert(ptr);
     array = rb_ary_new2(ptr->#{field.name}Len);
     for(i = 0; i < ptr->#{field.name}Len; i++){
-         rb_ary_store(array, i, rb_str_new2(__#{libName.upcase}_ROWIP_PTR_ARRAY(ptr,#{field.name}, i)));
+         rb_ary_store(array, i, rb_str_new2(__#{libName.upcase}_ROWIP_STR_ARRAY(ptr,#{field.name}, i)));
     }
     return array;
 }
