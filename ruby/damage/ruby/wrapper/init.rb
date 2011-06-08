@@ -48,7 +48,16 @@ void #{params[:funcPrefix]}_init(void){
             output.puts("    rb_define_method(#{params[:classValue]}, \"#{field.name}=\", #{setStr}, 1);");
             output.puts("    rb_define_method(#{params[:classValueRowip]}, \"#{field.name}\", #{getStr}Rowip, 0);");
             output.puts("    rb_define_method(#{params[:classValueRowip]}, \"#{field.name}=\", #{setStr}Rowip, 1);") if (field.category == :simple and field.data_type != "char*")
+            if ((field.category == :id) || (field.category == :idref))
+                getStr_str="#{params[:funcPrefix]}_#{field.name}_str_get"
+                setStr_str="#{params[:funcPrefix]}_#{field.name}_str_set"
+                output.puts("    rb_define_method(#{params[:classValueRowip]}, \"#{field.name}_str\", #{getStr_str}Rowip, 0);");
+                output.puts("    rb_define_method(#{params[:classValue]}, \"#{field.name}_str\", #{getStr_str}, 0);");
+                output.puts("    rb_define_method(#{params[:classValue]}, \"#{field.name}_str=\", #{setStr_str}, 1);");
+            end
           }
+
+            
 
           if entry.attribute == :listable
             output.puts("

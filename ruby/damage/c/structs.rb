@@ -53,11 +53,12 @@ module Damage
                   output.printf("\t%s* %s;\n", field.data_type, field.name)
                   output.printf("\tunsigned long %sLen;\n", field.name)
                 end
-
               when :intern
                 output.printf("\tstruct ___#{libPrefix}_%s* %s;\n", field.data_type, field.name)
+              when :id, :idref
+                  output.printf("\tchar* %s_str;\n", field.name)
+                  output.printf("\tunsigned long %s;\n", field.name)
               end
-
             end
 
           }        

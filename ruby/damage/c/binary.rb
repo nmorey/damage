@@ -92,6 +92,18 @@ unsigned long __#{libName}_#{entry.name}_binary_dump(__#{libName}_#{entry.name}*
                 output.printf("#{indent}\tchild_offset = __#{libName}_%s_binary_dump(#{source}->%s, file, child_offset);\n", 
                               field.data_type, field.name)
                 output.printf("#{indent}}\n")
+              when :id, :idref
+                output.printf("#{indent}if(#{source}->%s_str){\n", field.name)
+                output.printf("#{indent}\tunsigned long len = strlen(#{source}->%s_str);\n", field.name)
+                output.printf("#{indent}\tval.%s_str = (char*) child_offset;\n", field.name)
+                output.printf("#{indent}\tfseek(file, child_offset, SEEK_SET);\n")
+                output.printf("#{indent}\tfwrite(&len, sizeof(len), 1, file);\n", field.name)
+                output.printf("#{indent}\tfwrite(#{source}->%s_str, sizeof(char), len, file);\n", field.name)
+                output.printf("#{indent}\tchild_offset += len + sizeof(len);\n", field.name)
+                output.printf("#{indent}}\n")
+                output.printf("#{indent}\tfseek(file, child_offset, SEEK_SET);\n")
+                output.printf("#{indent}\tfwrite(&#{source}->%s, sizeof(unsigned long), 1, file);\n", field.name)
+                output.printf("#{indent}\tchild_offset += sizeof(unsigned long);\n", field.name)
               end
             when :list, :container
               case field.category
@@ -237,6 +249,14 @@ __#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load(FILE* file, u
                 output.printf("#{indent}\t#{source}->%s = __#{libName}_%s_binary_load(file, (unsigned long)(#{source}->%s));\n", 
                               field.name, field.data_type, field.name)
                 output.printf("#{indent}}\n")
+              when :id, :idref
+                  output.printf("#{indent}if(#{source}->%s_str){\n", field.name)
+                  output.printf("#{indent}\tunsigned long len;\n")
+                  output.printf("#{indent}\tfseek(file, (unsigned long)#{source}->%s_str, SEEK_SET);\n", field.name)
+                  output.printf("#{indent}\tfread(&len, sizeof(len), 1, file);\n")
+                  output.printf("#{indent}\t#{source}->%s_str = malloc(len * sizeof(char));\n", field.name)
+                  output.printf("#{indent}\tfread(#{source}->%s_str, sizeof(char), len, file);\n", field.name)
+                  output.printf("#{indent}}\n")
               end
             when :list, :container
               case field.category

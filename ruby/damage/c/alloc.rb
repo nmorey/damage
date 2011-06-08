@@ -64,6 +64,7 @@ module Damage
               output.printf("\tptr->%s = %s;\n", field.name, field.default_val)
             end
             output.printf("\tptr->%sLen = 0UL;\n", field.name) if ((field.qty == :list) && (field.category == :simple))
+            output.printf("\tptr->%s_str = NULL;\n", field.name) if ((field.category == :id) || (field.category == :idref))
           }
 
           output.printf("\tptr->next = NULL;\n")         if entry.attribute == :listable
@@ -100,6 +101,9 @@ module Damage
                     output.printf("#{indent}\t__#{libName}_%s_free(#{source}->%s);\n", 
                                   field.data_type, field.name)
                   end
+                when :id, :idref
+                    output.printf("#{indent}if(#{source}->%s_str)\n", field.name)
+                    output.printf("#{indent}\t__#{libName}_free(#{source}->%s_str);\n", field.name)
                 end
               when :list, :container
                 case field.category

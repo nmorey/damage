@@ -98,6 +98,9 @@ module Damage
                 output.printf("\t\t\t__#{libName}_create_%s_xml_node(child, ptr->%s);\n",
                               field.data_type, field.name);
                 output.printf("\t}\n\n");
+              when :id, :idref
+                  output.printf("\tif(ptr->%s_str)\n", field.name);
+                  addXmlElt(output, field.name, "ptr->#{field.name}_str", {:is_attr => field.is_attribute})
               end
             when :list
               case field.category

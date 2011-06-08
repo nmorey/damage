@@ -72,6 +72,36 @@ module Damage
                 else
                   raise("Unsupported data type #{field.data_type}" )
                 end
+              when :id, :idref
+                getStr_str="static VALUE #{params[:funcPrefix]}_#{field.name}_str_get(VALUE self)"
+                getStrRowip_str="static VALUE #{params[:funcPrefix]}_#{field.name}_str_getRowip(VALUE self)"
+
+                   output.puts("
+#{getStr_str}{
+    #{params[:cType]}* ptr;
+    Data_Get_Struct(self, #{params[:cType]}, ptr);
+    assert(ptr);
+    if(ptr->#{field.name}_str == NULL)
+        return Qnil;
+    return rb_str_new2(ptr->#{field.name}_str);
+}
+#{getStrRowip_str}{
+    #{params[:cType]}* ptr;
+    Data_Get_Struct(self, #{params[:cType]}, ptr);
+    assert(ptr);
+    if(ptr->#{field.name}_str == NULL)
+        return Qnil;
+    return rb_str_new2(__#{libName.upcase}_ROWIP_PTR(ptr, #{field.name}_str));
+}
+")
+                  output.puts("
+#{aliasFunc}
+#{getStr}{
+    #{params[:cType]}* ptr;
+    Data_Get_Struct(self, #{params[:cType]}, ptr);
+    assert(ptr);
+    return ULONG2NUM((long)ptr->#{field.name});
+}")               
               when :intern
                 output.puts("
 #{getStr}{

@@ -65,6 +65,30 @@ module Damage
                 else
                   raise("Unsupported data type #{field.data_type}" )
                 end
+              when :id, :idref
+                setStr_str="static VALUE #{params[:funcPrefix]}_#{field.name}_str_set(VALUE self, VALUE val)"
+                setStrRowip_str="static VALUE #{params[:funcPrefix]}_#{field.name}_str_setRowip(VALUE self, VALUE val)"
+
+                  output.puts("
+#{setStr_str}{
+    #{params[:cType]}* ptr;
+    Data_Get_Struct(self, #{params[:cType]}, ptr);
+    assert(ptr);
+    if(ptr->#{field.name}_str) free(ptr->#{field.name}_str);
+    ptr->#{field.name}_str = strdup(StringValuePtr(val));
+    return self;
+}
+");
+                  output.puts("
+#{setStr}{
+    #{params[:cType]}* ptr;
+    Data_Get_Struct(self, #{params[:cType]}, ptr);
+    assert(ptr);
+    ptr->#{field.name} = NUM2ULONG(val);
+    return self;
+}
+"); 
+
               when :intern
                 output.puts("
 #{setStr}{

@@ -131,18 +131,52 @@ module Damage
               when :single
                 output.printf("\t\tcase %d:\n", caseCount);
                 output.printf("\t\t\t/* %s */\n", field.name);
-                case field.data_type
-                when "char*"
-                  output.printf("\t\t\tptr->%s = __#{libName}_read_value_str_attr(attribute);\n",
-                                field.name) ;
-                when "unsigned long"
-                  output.printf("\t\t\tptr->%s = __#{libName}_read_value_ulong_attr(attribute);\n",
-                                field.name) ;
-                when "double"
-                  output.printf("\t\t\tptr->%s = __#{libName}_read_value_double_attr(attribute);\n",
-                                field.name) ;
-                else
-                  raise("Unsupported type #{field.data_type}\n")
+                case field.category
+                when :simple
+                    case field.data_type
+                    when "char*"
+                        output.printf("\t\t\tptr->%s = __#{libName}_read_value_str_attr(attribute);\n",
+                                        field.name) ;
+                    when "unsigned long"
+                        output.printf("\t\t\tptr->%s = __#{libName}_read_value_ulong_attr(attribute);\n",
+                                        field.name) ;
+                    when "double"
+                        output.printf("\t\t\tptr->%s = __#{libName}_read_value_double_attr(attribute);\n",
+                                        field.name) ;
+                    else
+                        raise("Unsupported type #{field.data_type}\n")
+                    end
+                when :id, :idref
+                    # Every id or idref must be of the form:
+                    # type-integer. We store the whole string within
+                    # field.name_str variable and only the integer in
+                    # field.name.
+                    output.printf("\t\t\tptr->%s_str = __#{libName}_read_value_str_attr(attribute);\n",
+                                    field.name) ;
+                    output.printf("\t\t\tchar *tmp_result = strchr(ptr->%s_str, '-');\n", field.name);
+                    # We check that id or idref have a '-' in their
+                    # name.
+                    output.printf("\t\t\tif (tmp_result == NULL) {\n");
+                    output.printf("\t\t\t\t__#{libName}_error\n");
+                    output.printf("\t\t\t\t\t(\"%s: Invalid id or idref \\\"%%s\\\" at line %%d in XML file\",\n",
+                                struct);
+                    output.printf("\t\t\t\t\tEINVAL, name, node->line);\n");
+                    output.printf("\t\t\t\tbreak;\n");
+                    output.printf("\t\t\t}\n");
+
+                    output.print("\t\t\tchar *end_ptr = NULL;\n");
+                    output.printf("\t\t\tptr->%s = strtoul(tmp_result + 1, &end_ptr, 10);\n", field.name);
+                    # If end_ptr equals starting address it means that
+                    # there were no digit at all, which is an error.
+                    # If end_ptr is not '\0', it means an invalid
+                    # character was found.
+                    output.printf("\t\t\tif ((end_ptr == (tmp_result+1)) || (*end_ptr != '\\0')) {\n");
+                    output.printf("\t\t\t\t__#{libName}_error\n");
+                    output.printf("\t\t\t\t\t(\"%s: Invalid id or idref integer \\\"%%s\\\" at line %%d in XML file\",\n",
+                                struct);
+                    output.printf("\t\t\t\t\tEINVAL, name, node->line);\n");
+                    output.printf("\t\t\t\tbreak;\n");
+                    output.printf("\t\t\t}\n");
                 end
                 output.printf("\t\t\tbreak;\n");
               when :list
