@@ -41,17 +41,22 @@ tests_src:= $(wildcard test/*.c)
 tests    := $(patsubst test/%.c,obj/tests/%,$(tests_src))
 lib      := obj/i686/lib#{libName}.a
 lib64    := obj/x86_64/lib#{libName}.a
+dlib      := obj/i686/lib#{libName}.so
+dlib64    := obj/x86_64/lib#{libName}.so
+
 main_header := include/#{libName}.h
-install_header := $(wildcard include/#{libName}/*.h)
+install_headers := $(wildcard include/#{libName}/*.h)
 
 ARCH	:= $(shell uname -m)
 
-CFLAGS= -Iinclude/ $(cflags) -Wall -Wextra -Werror -g -I/usr/include/libxml2 -Werror -O3 -fPIC
+CC=gcc
+CFLAGS  := -Iinclude/ $(cflags) -Wall -Wextra -Werror -g -I/usr/include/libxml2 -Werror -O3 -fPIC
+
 ifeq ($(ARCH), x86_64)
-	libs := $(lib) $(lib64) 
+	libs := $(lib) $(lib64) $(dlib) $(dlib64)
 	install-libs := install-lib install-lib64
 else
-	libs := $(lib) 
+	libs := $(lib) $(dlib)
 	install-libs := install-lib
 endif
 
@@ -62,7 +67,7 @@ tests: $(tests)
 
 obj/tests/%: test/%.c $(libs)
 	@if [ ! -d obj/tests/ ]; then mkdir -p obj/tests/; fi
-	gcc -o $@ $< $(CFLAGS) -Lobj/x86_64 -Lobj/i686 -l#{libName} -lxml2
+	$(CC) -o $@ $< $(CFLAGS) -Lobj/x86_64 -Lobj/i686 -l#{libName} -lxml2
 
 $(lib): $(objs)
 	rm -f $@
@@ -74,16 +79,22 @@ $(lib64): $(objs64)
 	ar rc $@ $(objs64)
 	ranlib $@
 
+$(dlib): $(objs)
+	$(CC) -m32 -shared -o $@ $(objs) -lxml2 -lz -lm
+
+$(dlib64): $(objs64)
+	$(CC) -shared -o $@ $(objs64) -lxml2 -lz -lm 
+
 #wrapper/lib#{libName}_ruby.so: wrapper/ruby_scp2dir.c $(libs) 
 #	+cd wrapper; ruby extconf.rb; make $(MFLAGS)
 
 obj/i686/%.o:src/%.c $(headers)
 	@if [ ! -d obj/i686/ ]; then mkdir -p obj/i686/; fi
-	gcc $(CFLAGS) -m32 -o $@ -c $<
+	$(CC) $(CFLAGS) -m32 -o $@ -c $<
 
 obj/x86_64/%.o:src/%.c $(headers)
 	@if [ ! -d obj/x86_64/ ]; then mkdir -p obj/x86_64/; fi
-	gcc $(CFLAGS) -o $@ -c $<
+	$(CC) $(CFLAGS) -o $@ -c $<
 
 install: $(install-libs) # ruby/sigmaC.xsd ruby/scp2dir.rb wrapper/libscp2dir_ruby.so
 	mkdir -p $(SIGMAC_TOOLCHAIN_DIR)/include/sigmaC/IRS/#{libName}/
@@ -92,13 +103,13 @@ install: $(install-libs) # ruby/sigmaC.xsd ruby/scp2dir.rb wrapper/libscp2dir_ru
 	mkdir -p $(SIGMAC_TOOLCHAIN_DIR)/share/sigmaC/IRS/
 #	install wrapper/libscp2dir_ruby.so ruby/sigmaC.xsd ruby/scp2dir.rb $(SIGMAC_TOOLCHAIN_DIR)/share/sigmaC/IRS/
 
-install-lib: $(lib)
+install-lib: $(lib) $(dlib)
 	mkdir -p $(SIGMAC_TOOLCHAIN_DIR)/$(LIBDIR32)/sigmaC/IRS/
-	install $(lib) $(SIGMAC_TOOLCHAIN_DIR)/$(LIBDIR32)/sigmaC/IRS/
+	install $(lib) $(dlib) $(SIGMAC_TOOLCHAIN_DIR)/$(LIBDIR32)/sigmaC/IRS/
 
-install-lib64: $(lib64)
+install-lib64: $(lib64) $(dlib64)
 	mkdir -p $(SIGMAC_TOOLCHAIN_DIR)/$(LIBDIR64)/sigmaC/IRS/
-	install $(lib64) $(SIGMAC_TOOLCHAIN_DIR)/$(LIBDIR64)/sigmaC/IRS/
+	install $(lib64) $(dlib64) $(SIGMAC_TOOLCHAIN_DIR)/$(LIBDIR64)/sigmaC/IRS/
 
 clean:
 	rm -Rf .commit/
