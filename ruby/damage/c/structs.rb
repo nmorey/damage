@@ -76,11 +76,11 @@ module Damage
         output.printf("\tvoid* base_adr;\n");
         output.printf("} __#{libPrefix}_rowip_header;\n\n");
         output.printf("#define __#{libPrefix.upcase}_ROWIP_PTR(ptr, field) ({typeof(ptr->field) _ptr = NULL; if(ptr->field != NULL) { _ptr = (void*)ptr - ptr->_rowip_pos + ((unsigned long)ptr->field);} _ptr;})\n");
-        output.printf("#define __#{libPrefix.upcase}_ROWIP_STR(ptr, field) ({(char*) _ptr = NULL; if(ptr->field != NULL) { _ptr = (void*)ptr - ptr->_rowip_pos + ((unsigned long)ptr->field + sizeof(unsigned long));} _ptr;})\n");
+        output.printf("#define __#{libPrefix.upcase}_ROWIP_STR(ptr, field) ({char* _ptr = NULL; if(ptr->field != NULL) { _ptr = (void*)ptr - ptr->_rowip_pos + ((unsigned long)ptr->field + sizeof(unsigned long));} _ptr;})\n");
 
         output.printf("#define __#{libPrefix.upcase}_ROWIP_PTR_ARRAY(ptr, field, idx) ({typeof(*ptr->field)_ptr = NULL; typeof(ptr->field) _array; if(ptr->field != NULL) { _array =  __#{libPrefix.upcase}_ROWIP_PTR(ptr, field); _ptr = ((void*)ptr - ptr->_rowip_pos) + (unsigned long)(_array[idx]);} _ptr;})\n")
 
-        output.printf("#define __#{libPrefix.upcase}_ROWIP_STR_ARRAY(ptr, field, idx) ({(char*)_ptr = NULL; (char**) _array; if(ptr->field != NULL) { _array =  __#{libPrefix.upcase}_ROWIP_PTR(ptr, field); _ptr = ((void*)ptr - ptr->_rowip_pos) + (unsigned long)(_array[idx] + sizeof(unsigned long));} _ptr;})\n")
+        output.printf("#define __#{libPrefix.upcase}_ROWIP_STR_ARRAY(ptr, field, idx) ({char*_ptr = NULL; char** _array; if(ptr->field != NULL) { _array =  __#{libPrefix.upcase}_ROWIP_PTR(ptr, field); _ptr = ((void*)ptr - ptr->_rowip_pos) + (unsigned long)(_array[idx] + sizeof(unsigned long));} _ptr;})\n")
         output.printf("#endif /* __#{libPrefix}_structs_h__ */\n");
       end
       module_function :genH
