@@ -22,7 +22,7 @@ module Damage
         output = Damage::Files.createAndOpen("gen/#{description.config.libname}/include/", "#{description.config.libname}.h")
         self.genHeader(output, description)
         output.close()
-        output = Damage::Files.createAndOpen("gen/#{description.config.libname}/include/#{description.config.libname}/", "common.h")
+        output = Damage::Files.createAndOpen("gen/#{description.config.libname}/include/_#{description.config.libname}/", "common.h")
         self.genCommonH(output, description)
         output.close()
         output = Damage::Files.createAndOpen("gen/#{description.config.libname}/src/", "common.c")
@@ -101,7 +101,7 @@ extern int __#{libName}_line;
 #include <fcntl.h>
 #include <libxml/xmlreader.h>
 #include \"#{libName}.h\"
-#include \"#{libName}/common.h\"
+#include \"_#{libName}/common.h\"
 
 void *__#{libName}_malloc(unsigned long size)
 {

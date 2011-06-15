@@ -35,7 +35,7 @@ module Damage
         libName = description.config.libname
 
         output.printf("#include \"#{libName}.h\"\n")
-        output.printf("#include \"#{libName}/common.h\"\n")
+        output.printf("#include \"_#{libName}/common.h\"\n")
         output.printf("\n\n") 
 
         description.entries.each() { |name, entry|
@@ -185,7 +185,7 @@ unsigned long __#{libName}_#{entry.name}_binary_dump(__#{libName}_#{entry.name}*
         libName = description.config.libname
 
         output.printf("#include \"#{libName}.h\"\n")
-        output.printf("#include \"#{libName}/common.h\"\n")
+        output.printf("#include \"_#{libName}/common.h\"\n")
         output.printf("\n\n") 
 
         description.entries.each() { |name, entry|

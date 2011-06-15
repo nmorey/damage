@@ -32,7 +32,7 @@ module Damage
 
        
         output.printf("#include \"#{libName}.h\"\n");
-        output.printf("#include \"#{libName}/common.h\"\n");
+        output.printf("#include \"_#{libName}/common.h\"\n");
         output.printf("\n");
         output.printf("jmp_buf __#{libName}_error_happened;\n");
         output.printf("\n\n");
