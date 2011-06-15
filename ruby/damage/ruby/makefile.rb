@@ -65,9 +65,9 @@ $(lib64):  $(srcs) $(headers)
 ruby/lib#{libName}_ruby.so: ruby/ruby_#{libName}.c $(libs) 
 	+cd ruby; ruby extconf.rb; make $(MFLAGS)
 
-install: ruby/libscp2dir_ruby.so
+install: ruby/lib#{libName}_ruby.so
 	mkdir -p $(SIGMAC_TOOLCHAIN_DIR)/include/sigmaC/IRS/
-	install ruby/libscp2dir_ruby.so $(SIGMAC_TOOLCHAIN_DIR)/share/sigmaC/IRS/
+	install ruby/lib#{libName}_ruby.so $(SIGMAC_TOOLCHAIN_DIR)/share/sigmaC/IRS/
 
 clean:
 	if [ -f ruby/Makefile ]; then cd ruby; make $(MFLAGS) clean; fi
