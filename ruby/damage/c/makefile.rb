@@ -114,8 +114,6 @@ install-lib64: $(lib64) $(dlib64)
 clean:
 	rm -Rf .commit/
 	rm -Rf obj/
-	rm -f Doxyfile
-	rm -Rf doc
 	rm -Rf $(awksrcs) $(awkheaders)
 	if [ -f Makefile.ruby ]; then make $(MFLAGS) -f Makefile.ruby clean; fi
 
