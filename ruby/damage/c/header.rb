@@ -42,6 +42,9 @@ module Damage
         output.puts("#include <libxml/tree.h>")
         output.puts("#include <#{libName}/structs.h>")
         output.puts("#include <#{libName}/alloc.h>")
+        description.config.hfiles.each() {|hfile|
+          output.puts("#include <#{libName}/#{hfile}>");
+        }
         #      output.puts("#include <#{libName}/structs.h")
         output.puts("#endif /* __#{libName}_h__ */\n")
       end

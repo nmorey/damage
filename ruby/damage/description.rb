@@ -169,9 +169,14 @@ module Damage
             end
         end
         class Config
-            attr_accessor :libname
+            attr_accessor :libname, :hfiles
             def initialize(config)
                 @libname = config["libname"]
+              if config["hfiles"] != nil
+                @hfiles = config["hfiles"].split 
+              else
+                @hfiles=[]
+              end
             end
         end
         class Description
