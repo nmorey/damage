@@ -83,7 +83,7 @@ module Damage
             indent="\t\t"
           end
           entry.fields.each() { |field|
-            if field.target != :parser then
+            if field.target == :both then
               case field.qty
               when :single
                 case field.category
