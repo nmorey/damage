@@ -62,7 +62,8 @@ module Damage
       output.printf('
     require \'mkmf\'
     $CFLAGS = $CFLAGS + " -I../include/ " + `xml2-config --cflags`
-    $LIBS = $LIBS + " ../obj/' + arch +'/lib%s.a " + `xml2-config --libs`
+    arch=`uname -m`.chomp
+    $LIBS = $LIBS + " ../obj/#{arch}/lib%s.a " + `xml2-config --libs`
     create_makefile("lib%s_ruby")
     ', libName, libName);
       output.close()
