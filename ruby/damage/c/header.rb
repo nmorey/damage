@@ -38,6 +38,8 @@ module Damage
 
         output.puts("#ifndef __#{libName}_h__")
         output.puts("#define __#{libName}_h__\n")
+        output.puts("#include <stdio.h>")
+        output.puts("#include <libxml/tree.h>")
         output.puts("#include <#{libName}/structs.h>")
         output.puts("#include <#{libName}/alloc.h>")
         #      output.puts("#include <#{libName}/structs.h")
