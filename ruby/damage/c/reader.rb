@@ -47,13 +47,13 @@ module Damage
           output.printf("xmlNodePtr node);\n");
         }
         description.containers.each() {|name, type|
-          output.printf("__#{libName}_%s *__#{libName}_%sContainer_xml_parse(", type, type);
+          output.printf("__#{libName}_%s *__#{libName}_%s%sContainer_xml_parse(", type, name, type);
           output.printf("xmlNodePtr node);\n");
         }
         output.printf("\n\n");
 
         description.containers.each() {|name, type|
-          output.printf("__#{libName}_%s *__#{libName}_%sContainer_xml_parse(", type, type);
+          output.printf("__#{libName}_%s *__#{libName}_%s%sContainer_xml_parse(", type, name, type);
           output.printf("xmlNodePtr node){\n");
           output.printf("\tconst char *name;\n");
           output.printf("\t__#{libName}_%s *ptr = NULL;\n", type);
@@ -286,8 +286,8 @@ module Damage
               when :container
                 output.printf("\t\tcase %d:\n", caseCount);
                 output.printf("\t\t\t/* %s */\n", field.name);
-                output.printf("\t\t\tptr->%s = __#{libName}_%sContainer_xml_parse(child);\n",
-                              field.name, field.data_type) ;
+                output.printf("\t\t\tptr->%s = __#{libName}_%s%sContainer_xml_parse(child);\n",
+                              field.name, field.name, field.data_type) ;
                 output.printf("\t\t\tbreak;\n");
               end
               caseCount+=1
