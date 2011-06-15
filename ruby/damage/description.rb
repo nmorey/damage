@@ -95,6 +95,10 @@ module Damage
                     @category = :intern
                     @default_val = "NULL"
                     puts "This format is not DTD compatible (Field #{@name} has type #{@data_type})" if ((@data_type != @name) && (@target != :mem) && (@attribute != :container))
+                when /(A|ARRAY)\(([\w+ ]*)\)/
+                    @data_type = "#{$2}*"
+                    @category = :intern
+                    @default_val = "NULL"
                 when "ID"
                     @category = :id
                     @default_val = "0UL"
