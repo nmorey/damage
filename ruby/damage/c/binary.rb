@@ -34,13 +34,6 @@ module Damage
       def genBinaryWriter(output, description)
         libName = description.config.libname
 
-        output.printf("#include <assert.h>\n")
-        output.printf("#include <errno.h>\n")
-        output.printf("#include <stdlib.h>\n")
-        output.printf("#include <stdio.h>\n")
-        output.printf("#include <string.h>\n")
-        output.printf("#include <setjmp.h>\n")
-        output.printf("#include <libxml/xmlreader.h>\n")
         output.printf("#include \"#{libName}.h\"\n")
         output.printf("#include \"#{libName}/common.h\"\n")
         output.printf("\n\n") 
@@ -191,13 +184,6 @@ unsigned long __#{libName}_#{entry.name}_binary_dump(__#{libName}_#{entry.name}*
       def genBinaryReader(output, description)
         libName = description.config.libname
 
-        output.printf("#include <assert.h>\n")
-        output.printf("#include <errno.h>\n")
-        output.printf("#include <stdlib.h>\n")
-        output.printf("#include <stdio.h>\n")
-        output.printf("#include <string.h>\n")
-        output.printf("#include <setjmp.h>\n")
-        output.printf("#include <libxml/xmlreader.h>\n")
         output.printf("#include \"#{libName}.h\"\n")
         output.printf("#include \"#{libName}/common.h\"\n")
         output.printf("\n\n") 

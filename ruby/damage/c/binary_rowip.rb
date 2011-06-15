@@ -63,14 +63,8 @@ static inline void __#{libName}_rowip_header_free(__#{libName}_rowip_header* ptr
       def genBinaryWriter(output, description)
         libName = description.config.libname
 
-        output.printf("#include <assert.h>\n")
-        output.printf("#include <errno.h>\n")
-        output.printf("#include <stdlib.h>\n")
-        output.printf("#include <stdio.h>\n")
-        output.printf("#include <string.h>\n")
-        output.printf("#include <setjmp.h>\n")
         output.printf("#include <sys/mman.h>\n")
-        output.printf("#include <libxml/xmlreader.h>\n")
+
         output.printf("#include \"#{libName}.h\"\n")
         output.printf("#include \"#{libName}/common.h\"\n")
         output.printf("#include \"#{libName}/common.h\"\n")
@@ -110,17 +104,11 @@ static inline void __#{libName}_rowip_header_free(__#{libName}_rowip_header* ptr
       def genBinaryReader(output, description)
         libName = description.config.libname
 
-        output.printf("#include <assert.h>\n")
-        output.printf("#include <errno.h>\n")
-        output.printf("#include <stdlib.h>\n")
-        output.printf("#include <stdio.h>\n")
-        output.printf("#include <string.h>\n")
-        output.printf("#include <setjmp.h>\n")
         output.printf("#include <sys/mman.h>\n")
         output.printf("#include <sys/types.h>\n")
         output.printf("#include <sys/stat.h>\n")
         output.printf("#include <unistd.h>\n")
-        output.printf("#include <libxml/xmlreader.h>\n")
+
         output.printf("#include \"#{libName}.h\"\n")
         output.printf("#include \"#{libName}/common.h\"\n")
         output.printf("#include \"binary_rowip.h\"\n")

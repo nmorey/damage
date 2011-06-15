@@ -53,6 +53,14 @@ module Damage
 #ifndef __#{libName}_common_h__
 #define __#{libName}_common_h__
 
+#include <assert.h>
+#include <errno.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <setjmp.h>
+#include <libxml/xmlreader.h>
+
 void *__#{libName}_malloc(unsigned long size);
 void *__#{libName}_realloc(void *ptr, unsigned long size);
 void __#{libName}_free(void *ptr);
