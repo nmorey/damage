@@ -288,8 +288,11 @@ __#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load(FILE* file, u
             output.printf("#{indent}prev = el;\n") 
             output.printf("#{indent}offset = (unsigned long)el->next;\n");
             output.printf("\t} while (el->next != NULL);\n") 
+            output.printf("\t#{entry.cleanup}(first);\n") if entry.cleanup != nil 
+
             output.puts "\treturn first;"
           else
+            output.printf("\t#{entry.cleanup}(el);\n") if entry.cleanup != nil 
             output.puts "\treturn el;"
           end
 

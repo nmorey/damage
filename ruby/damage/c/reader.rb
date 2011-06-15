@@ -316,7 +316,10 @@ module Damage
             output.printf("\t\t}\n");
             output.printf("\t}\n");
           }
-          #        output.printf("\t__#{libName}_cleanup_%s(ptr);\n", struct) if(entry.has_clean)
+
+
+          output.printf("\t#{entry.cleanup}(ptr);\n") if entry.cleanup != nil 
+
           output.printf("\treturn ptr;\n");
           output.printf("}\n\n");
         }

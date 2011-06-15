@@ -118,11 +118,11 @@ module Damage
         end
 
         class Entry
-            attr_accessor :name, :attribute, :fields, :children, :attributes, :sort, :containers
+            attr_accessor :name, :attribute, :fields, :children, :attributes, :sort, :containers, :cleanup
             def initialize(entry)
                 @name = entry["name"]
                 @attribute = :none
-                @cleanup = nil
+                @cleanup = entry["cleanup"]
                 @fields = []
                 @children = []
                 @attributes = []
