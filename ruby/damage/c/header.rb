@@ -105,7 +105,7 @@ extern int __#{libName}_line;
 
 void *__#{libName}_malloc(unsigned long size)
 {
-	void *ptr = malloc(size);
+	void *ptr = calloc(1, size);
 	if (ptr == NULL) {
 		__#{libName}_error(\"Failed to allocate memory: %s\\n\", errno,
 				strerror(errno));

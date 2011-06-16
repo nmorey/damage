@@ -55,9 +55,11 @@ CFLAGS  := -Iinclude/ $(cflags) -Wall -Wextra -Werror -g -I/usr/include/libxml2 
 ifeq ($(ARCH), x86_64)
 	libs := $(lib) $(lib64) $(dlib) $(dlib64)
 	install-libs := install-lib install-lib64
+	libdir := obj/x86_64/
 else
 	libs := $(lib) $(dlib)
 	install-libs := install-lib
+	libdir := obj/i686/
 endif
 
 
@@ -67,7 +69,7 @@ tests: $(tests)
 
 obj/tests/%: test/%.c $(libs)
 	@if [ ! -d obj/tests/ ]; then mkdir -p obj/tests/; fi
-	$(CC) -o $@ $< $(CFLAGS) -Lobj/x86_64 -Lobj/i686 -l#{libName} -lxml2
+	$(CC) -o $@ $< $(CFLAGS) $(libdir)/lib#{libName}.a -lxml2
 
 $(lib): $(objs)
 	rm -f $@

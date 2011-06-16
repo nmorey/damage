@@ -221,23 +221,30 @@ int main()
 		fprintf(stderr, \"Failed writing to %s\\n\", file);
 		exit(2);
 	}
+    printf(\"Wrote Binary DB\\n\");
+
 	if (__#{libName}_#{description.top_entry.name}_xml_dump_file(xml, ptr, 0) < 0) {
 		fprintf(stderr, \"Failed writing to %s\\n\", xml);
 		exit(2);
 	}
+    printf(\"Wrote XML DB\\n\");
 	__#{libName}_#{description.top_entry.name}_free(ptr);
+    printf(\"Freed DB\\n\");
 
 	ptr = __#{libName}_#{description.top_entry.name}_binary_load_file(file);
 	if (ptr == NULL) {
 		fprintf(stderr, \"Failed to parse %s\\n\", file);
 		exit(3);
     }
+    printf(\"Loaded binary DB\\n\");
 	if (__#{libName}_#{description.top_entry.name}_xml_dump_file(xml2, ptr, 0) < 0) {
 		fprintf(stderr, \"Failed writing to %s\\n\", xml);
 		exit(2);
 	}
+     printf(\"Dumped XML DB DB\\n\");
 
 	__#{libName}_#{description.top_entry.name}_free(ptr); 
+    printf(\"Freed DB\\n\");
 	return 0;
 }
 
