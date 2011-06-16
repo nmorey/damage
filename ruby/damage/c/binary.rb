@@ -296,7 +296,27 @@ __#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load(FILE* file, u
                             end
                         end
                     }
-
+                    # Autosort generation
+                    entry.sort.each() {|field|
+                        output.printf("#{indent}if (#{source} != NULL) {\n");
+                        output.printf("#{indent}\tunsigned long count = 0UL;\n");
+                        output.printf("#{indent}\t__#{libName}_%s * %s;\n", field.data_type, field.name);
+                        output.printf("#{indent}\tfor(%s = #{source}->%s; %s != NULL;%s = %s->next){\n",
+                                      field.name, field.sort_field, field.name, field.name, field.name);
+                        output.printf("#{indent}\t\tcount = (%s->%s >= count) ? (%s->%s+1) : count;\n\t\t\t\t\t}\n\n",
+                                      field.name, field.sort_key, field.name, field.sort_key);
+                        output.printf("#{indent}\t#{source}->s_%s = __#{libName}_malloc(count * sizeof(*(#{source}->s_%s)));\n",
+                                      field.name, field.name);
+                        output.printf("#{indent}\tmemset(#{source}->s_%s, 0, (count * sizeof(*(#{source}->s_%s))));\n",
+                                      field.name, field.name);
+                        output.printf("#{indent}\t#{source}->n_%s = count;\n", field.name);
+                        output.printf("#{indent}\tfor(%s = #{source}->%s; %s != NULL;%s = %s->next){\n",
+                                      field.name, field.sort_field, field.name, field.name, field.name);
+                        output.printf("#{indent}\t\tassert(%s->%s < count);\n", field.name, field.sort_key);
+                        output.printf("#{indent}\t\t#{source}->s_%s[%s->%s] = %s;\n", field.name, field.name, field.sort_key, field.name);
+                        output.printf("#{indent}\t}\n");
+                        output.printf("#{indent}}\n");
+                    }
                     
                     if entry.attribute == :listable  then
                         
