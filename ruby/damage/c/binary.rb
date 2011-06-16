@@ -229,7 +229,7 @@ __#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load(FILE* file, u
                   output.printf("#{indent}\tfseek(file, (unsigned long)#{source}->%s, SEEK_SET);\n", field.name)
                   output.printf("#{indent}\tfread(&len, sizeof(len), 1, file);\n")
                   output.printf("#{indent}\tif(len > 0){\n")
-                  output.printf("#{indent}\t\t#{source}->%s = malloc((len + 1) * sizeof(char));\n", field.name)
+                  output.printf("#{indent}\t\t#{source}->%s = __#{libName}_malloc((len + 1) * sizeof(char));\n", field.name)
                   output.printf("#{indent}\t\t#{source}->%s[len] = 0;\n", field.name)
                   output.printf("#{indent}\t\tfread(#{source}->%s, sizeof(char), len, file);\n", field.name)
                   output.printf("#{indent}\t} else {\n");
@@ -247,7 +247,7 @@ __#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load(FILE* file, u
                   output.printf("#{indent}\tunsigned long len;\n")
                   output.printf("#{indent}\tfseek(file, (unsigned long)#{source}->%s_str, SEEK_SET);\n", field.name)
                   output.printf("#{indent}\tfread(&len, sizeof(len), 1, file);\n")
-                  output.printf("#{indent}\t#{source}->%s_str = malloc(len * sizeof(char));\n", field.name)
+                  output.printf("#{indent}\t#{source}->%s_str = __#{libName}_malloc(len * sizeof(char));\n", field.name)
                   output.printf("#{indent}\tfread(#{source}->%s_str, sizeof(char), len, file);\n", field.name)
                   output.printf("#{indent}}\n")
               end
