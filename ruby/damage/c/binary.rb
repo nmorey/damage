@@ -182,6 +182,7 @@ uint32_t __#{libName}_#{entry.name}_binary_dump(__#{libName}_#{entry.name}* ptr,
                     output.printf("\n")
                     output.printf("\tif(__#{libName}_acquire_flock(file))\n");
                     output.printf("\t\t__#{libName}_error(\"Failed to lock output file %%s\", ENOENT, file);\n");
+
                     output.printf("\tif((output = fopen(file, \"w+\")) == NULL)\n");
                     output.printf("\t\t__#{libName}_error(\"Failed to open output file %%s\", errno, file);\n");
 
@@ -370,7 +371,6 @@ __#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load(FILE* file, u
 
                     output.printf("\tptr = __#{libName}_%s_binary_load(output, sizeof(uint32_t));\n", entry.name)
                     output.printf("\tfclose(output);\n")
-                    output.printf("\t__#{libName}_release_flock(file);\n");
                     output.printf("\treturn ptr;\n");
                     output.printf("}\n");
                 }
