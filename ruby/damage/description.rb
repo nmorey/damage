@@ -78,6 +78,11 @@ module Damage
                     @category = :simple
                     @is_attribute = true if @qty == :single
                     @default_val = "0UL"
+                when "SL"
+                    @data_type="signed long"
+                    @category = :simple
+                    @is_attribute = true if @qty == :single
+                    @default_val = "0L"
                 when "DL"
                     @data_type="double"
                     @category = :simple

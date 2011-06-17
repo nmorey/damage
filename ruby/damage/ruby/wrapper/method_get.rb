@@ -59,7 +59,18 @@ module Damage
     assert(ptr);
     return ULONG2NUM((long)ptr->#{field.name});
 }
-")            when "double"
+")           
+                when "signed long"
+                  output.puts("
+#{aliasFunc}
+#{getStr}{
+    #{params[:cType]}* ptr;
+    Data_Get_Struct(self, #{params[:cType]}, ptr);
+    assert(ptr);
+    return LONG2NUM((long)ptr->#{field.name});
+}
+")           
+                when "double"
                   output.puts("
 #{aliasFunc}
 #{getStr}{
@@ -177,6 +188,32 @@ module Damage
     array = rb_ary_new2(ptr->#{field.name}Len);
     for(i = 0; i < ptr->#{field.name}Len; i++){
          rb_ary_store(array, i, ULONG2NUM(__#{libName.upcase}_ROWIP_PTR(ptr, #{field.name})[i]));
+    }
+    return array;
+}
+");                when "signed long"
+                  output.puts("
+#{getStr}{
+    #{params[:cType]}* ptr;
+    VALUE array;
+    Data_Get_Struct(self, #{params[:cType]}, ptr);
+    unsigned long i;
+    assert(ptr);
+    array = rb_ary_new2(ptr->#{field.name}Len);
+    for(i = 0; i < ptr->#{field.name}Len; i++){
+         rb_ary_store(array, i, LONG2NUM(ptr->#{field.name}[i]));
+    }
+    return array;
+}
+#{getStrRowip}{
+    #{params[:cType]}* ptr;
+    VALUE array;
+    Data_Get_Struct(self, #{params[:cType]}, ptr);
+    unsigned long i;
+    assert(ptr);
+    array = rb_ary_new2(ptr->#{field.name}Len);
+    for(i = 0; i < ptr->#{field.name}Len; i++){
+         rb_ary_store(array, i, LONG2NUM(__#{libName.upcase}_ROWIP_PTR(ptr, #{field.name})[i]));
     }
     return array;
 }

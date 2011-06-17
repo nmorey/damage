@@ -134,6 +134,9 @@ module Damage
                     when "unsigned long"
                         output.printf("\t\t\tptr->%s = __#{libName}_read_value_ulong_attr(attribute);\n",
                                         field.name) ;
+                    when "signed long"
+                        output.printf("\t\t\tptr->%s = __#{libName}_read_value_slong_attr(attribute);\n",
+                                        field.name) ;
                     when "double"
                         output.printf("\t\t\tptr->%s = __#{libName}_read_value_double_attr(attribute);\n",
                                         field.name) ;
@@ -188,6 +191,12 @@ module Damage
                                 " * (ptr->%sLen + 1));\n",
                                 field.name, field.name, field.name, field.name) ;
                   output.printf("\t\t\tptr->%s[ptr->%sLen++] = __#{libName}_read_value_ulong_attr(attribute);\n",
+                                field.name, field.name) ;
+                when "signed long"
+                  output.printf("\t\t\tptr->%s = __#{libName}_realloc(ptr->%s, sizeof(*(ptr->%s))" +
+                                " * (ptr->%sLen + 1));\n",
+                                field.name, field.name, field.name, field.name) ;
+                  output.printf("\t\t\tptr->%s[ptr->%sLen++] = __#{libName}_read_value_slong_attr(attribute);\n",
                                 field.name, field.name) ;
                 when "double"
                   output.printf("\t\t\tptr->%s = __#{libName}_realloc(ptr->%s, sizeof(*(ptr->%s))" +

@@ -51,6 +51,16 @@ module Damage
     ptr->#{field.name} = NUM2ULONG(val);
     return self;
 }
+")                when "signed long"
+                  output.puts("
+#{aliasFunc}
+#{setStr}{
+    #{params[:cType]}* ptr;
+    Data_Get_Struct(self, #{params[:cType]}, ptr);
+    assert(ptr);
+    ptr->#{field.name} = NUM2LONG(val);
+    return self;
+}
 ");              when "double"
                   output.puts("
 #{aliasFunc}
@@ -159,6 +169,39 @@ module Damage
     for(i = 0; i < ptr->#{field.name}Len; i++){
         VALUE elnt = rb_ary_shift(val);
         __#{libName.upcase}_ROWIP_PTR(ptr, #{field.name})[i] = NUM2ULONG(elnt);
+    }
+    return self;
+}
+");                   when "signed long"
+                  output.puts("
+#{setStr}{
+    #{params[:cType]}* ptr;
+    Data_Get_Struct(self, #{params[:cType]}, ptr);
+    unsigned long i;
+    assert(ptr);
+    Check_Type(val, T_ARRAY); 
+    if(ptr->#{field.name}){
+        free(ptr->#{field.name});
+    }
+    ptr->#{field.name}Len = RARRAY_LEN(val);
+    for(i = 0; i < ptr->#{field.name}Len; i++){
+        VALUE elnt = rb_ary_shift(val);
+        ptr->#{field.name}[i] = NUM2LONG(elnt);
+    }
+    return self;
+}
+#{setStrRowip}{
+    #{params[:cType]}* ptr;
+    Data_Get_Struct(self, #{params[:cType]}, ptr);
+    unsigned long i;
+    assert(ptr);
+    Check_Type(val, T_ARRAY); 
+    if(ptr->#{field.name}Len != RARRAY_LEN(val)){
+        rb_raise(rb_eArgError, \"Can not set an array of different size\");
+    }
+    for(i = 0; i < ptr->#{field.name}Len; i++){
+        VALUE elnt = rb_ary_shift(val);
+        __#{libName.upcase}_ROWIP_PTR(ptr, #{field.name})[i] = NUM2LONG(elnt);
     }
     return self;
 }

@@ -50,6 +50,14 @@ VALUE #{params[:funcPrefix]}_xml_to_string(VALUE self, int indent){
     sprintf(numstr, \"#{field.name}: %lu\\n\", ptr->#{field.name});
     string = rb_str_concat(string, rb_str_new2(strdup(numstr)));
     }
+")                when "signed long"
+                  output.puts("
+    {
+    char numstr[256];
+    indentToString(string, indent);
+    sprintf(numstr, \"#{field.name}: %ld\\n\", ptr->#{field.name});
+    string = rb_str_concat(string, rb_str_new2(strdup(numstr)));
+    }
 ")
                 when "double"
                   output.puts("
@@ -103,6 +111,22 @@ VALUE #{params[:funcPrefix]}_xml_to_string(VALUE self, int indent){
         for(i = 0; i < ptr->#{field.name}Len; i++){
             char numstr[256];
             sprintf(numstr, \"#{field.name}: %lu\\n\", ptr->#{field.name}[i]);
+            indentToString(string, indent + 1);
+            string = rb_str_concat(string, rb_str_new2(strdup(numstr)));
+            string = rb_str_concat(string, rb_str_new2(strdup(\"\\n\")));
+        }
+
+    }
+");                when "signed long"
+                  output.puts("
+   indentToString(string, indent);
+    string = rb_str_concat(string, rb_str_new2(strdup(\"#{field.name}: \")));
+    string = rb_str_concat(string, rb_str_new2(strdup(\"\\n\")));
+    if(ptr->#{field.name} != NULL){
+        unsigned long i;
+        for(i = 0; i < ptr->#{field.name}Len; i++){
+            char numstr[256];
+            sprintf(numstr, \"#{field.name}: %ld\\n\", ptr->#{field.name}[i]);
             indentToString(string, indent + 1);
             string = rb_str_concat(string, rb_str_new2(strdup(numstr)));
             string = rb_str_concat(string, rb_str_new2(strdup(\"\\n\")));
@@ -196,6 +220,14 @@ VALUE #{params[:funcPrefix]}_xml_to_stringRowip(VALUE self, int indent){
     sprintf(numstr, \"#{field.name}: %lu\\n\", ptr->#{field.name});
     string = rb_str_concat(string, rb_str_new2(strdup(numstr)));
     }
+")                when "signed long"
+                  output.puts("
+    {
+    char numstr[256];
+    indentToString(string, indent);
+    sprintf(numstr, \"#{field.name}: %ld\\n\", ptr->#{field.name});
+    string = rb_str_concat(string, rb_str_new2(strdup(numstr)));
+    }
 ")
                 when "double"
                   output.puts("
@@ -249,6 +281,22 @@ VALUE #{params[:funcPrefix]}_xml_to_stringRowip(VALUE self, int indent){
         for(i = 0; i < ptr->#{field.name}Len; i++){
             char numstr[256];
             sprintf(numstr, \"#{field.name}: %lu\\n\", __#{libName.upcase}_ROWIP_PTR(ptr, #{field.name})[i]);
+            indentToString(string, indent + 1);
+            string = rb_str_concat(string, rb_str_new2(strdup(numstr)));
+            string = rb_str_concat(string, rb_str_new2(strdup(\"\\n\")));
+        }
+
+    }
+");                when "signed long"
+                  output.puts("
+   indentToString(string, indent);
+    string = rb_str_concat(string, rb_str_new2(strdup(\"#{field.name}: \")));
+    string = rb_str_concat(string, rb_str_new2(strdup(\"\\n\")));
+    if(ptr->#{field.name} != NULL){
+        unsigned long i;
+        for(i = 0; i < ptr->#{field.name}Len; i++){
+            char numstr[256];
+            sprintf(numstr, \"#{field.name}: %ld\\n\", __#{libName.upcase}_ROWIP_PTR(ptr, #{field.name})[i]);
             indentToString(string, indent + 1);
             string = rb_str_concat(string, rb_str_new2(strdup(numstr)));
             string = rb_str_concat(string, rb_str_new2(strdup(\"\\n\")));

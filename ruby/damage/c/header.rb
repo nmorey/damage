@@ -71,9 +71,11 @@ void __#{libName}_free(void *ptr);
 int __#{libName}_compare(const char *name, const char *matches[]);
 char *__#{libName}_read_value_str(xmlNodePtr reader);
 unsigned long __#{libName}_read_value_ulong(xmlNodePtr reader);
+signed long __#{libName}_read_value_slong(xmlNodePtr reader);
 double __#{libName}_read_value_double(xmlNodePtr reader);
 char *__#{libName}_read_value_str_attr(xmlAttrPtr reader);
 unsigned long __#{libName}_read_value_ulong_attr(xmlAttrPtr reader);
+signed long __#{libName}_read_value_slong_attr(xmlAttrPtr reader);
 double __#{libName}_read_value_double_attr(xmlAttrPtr reader);
 int __#{libName}_acquire_flock(const char* filename);
 int __#{libName}_release_flock();
@@ -189,6 +191,18 @@ unsigned long __#{libName}_read_value_ulong(xmlNodePtr node)
 }
 
 /**
+ * Get the value of the current XML node as an signed long
+ * @param[in] reader XML Reader
+ * @return Value of the current node
+ */
+signed long __#{libName}_read_value_slong(xmlNodePtr node)
+{
+	signed long val;
+	val = strtol((char *)node->children->content, NULL, 10);
+	return val;
+}
+
+/**
  * Get the value of the current XML node as a double
  * @param[in] reader XML Reader
  * @return Value of the current node
@@ -224,6 +238,18 @@ unsigned long __#{libName}_read_value_ulong_attr(xmlAttrPtr node)
 {
 	unsigned long val;
 	val = strtoul((char *)node->children->content, NULL, 10);
+	return val;
+}
+
+/**
+ * Get the value of the current XML node as an unsigned long
+ * @param[in] reader XML Reader
+ * @return Value of the current node
+ */
+signed long __#{libName}_read_value_slong_attr(xmlAttrPtr node)
+{
+	signed long val;
+	val = strtol((char *)node->children->content, NULL, 10);
 	return val;
 }
 

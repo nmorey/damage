@@ -76,6 +76,12 @@ module Damage
                   output.printf("\t\tsnprintf(numStr, 64, \"%%lu\", ptr->%s);\n", field.name);
                   addXmlElt(output, field.name, "numStr", {:is_attr => field.is_attribute})
                   output.printf("\t}\n");
+                when "signed long"
+                  output.printf("\t{\n");
+                  output.printf("\t\tchar numStr[64];\n");
+                  output.printf("\t\tsnprintf(numStr, 64, \"%%ld\", ptr->%s);\n", field.name);
+                  addXmlElt(output, field.name, "numStr", {:is_attr => field.is_attribute})
+                  output.printf("\t}\n");
                 when "double"
                   output.printf("\t{\n");
                   output.printf("\t\tchar numStr[64];\n");
@@ -112,6 +118,15 @@ module Damage
                   output.printf("\t\tunsigned int lCount;\n");
                   output.printf("\t\tfor(lCount=0; lCount < ptr->%sLen; lCount++){\n", field.name);
                   output.printf("\t\t\tsnprintf(numStr, 64, \"%%lu\", ptr->%s[lCount]);\n", field.name);
+                  addXmlElt(output, field.name, "numStr")
+                  output.printf("\t\t}\n");
+                  output.printf("\t}\n\n");
+                when "signed long"
+                  output.printf("\tif(ptr->%s){\n", field.name);
+                  output.printf("\t\tchar numStr[64];\n");
+                  output.printf("\t\tunsigned int lCount;\n");
+                  output.printf("\t\tfor(lCount=0; lCount < ptr->%sLen; lCount++){\n", field.name);
+                  output.printf("\t\t\tsnprintf(numStr, 64, \"%%ld\", ptr->%s[lCount]);\n", field.name);
                   addXmlElt(output, field.name, "numStr")
                   output.printf("\t\t}\n");
                   output.printf("\t}\n\n");
