@@ -85,6 +85,72 @@ VALUE #{params[:funcPrefix]}_decorateRowip(VALUE self){
     return self;
 }
 ")
+
+         output.puts("
+
+/** Link C subtree to Ruby classes */
+void #{params[:funcPrefix]}_cleanup(#{params[:cType]}* ptr){
+    ptr->_private = NULL;
+");
+        entry.fields.each() { |field|
+            next if field.target != :both
+          if field.category == :intern 
+            tParams = Damage::Ruby::nameToParams(libName, field.data_type)
+            if field.qty == :list || field.qty == :container
+              output.puts("
+    { __#{libName}_#{field.data_type}* elt;
+        for(elt = ptr->#{field.name}; elt; elt = elt->next){
+            #{tParams[:funcPrefix]}_cleanup(elt);
+        }
+    }
+
+");
+            elsif field.qty == :single
+              output.puts("
+        if(ptr->#{field.name}) #{tParams[:funcPrefix]}_cleanup(ptr->#{field.name});
+
+");
+            end
+          end
+        }
+        output.puts("
+    
+    return;
+}
+")
+
+# ROWIP 
+
+
+         output.puts("
+/** Link C subtree to Ruby classes */
+void #{params[:funcPrefix]}_cleanupRowip(#{params[:cType]}* ptr){
+    ptr->_private = NULL;
+");
+        entry.fields.each() { |field|
+            next if field.target != :both
+          if field.category == :intern 
+            tParams = Damage::Ruby::nameToParams(libName, field.data_type)
+            if field.qty == :list || field.qty == :container
+              output.puts("
+    { __#{libName}_#{field.data_type}* elt;
+        for(elt = __#{libName.upcase}_ROWIP_PTR(ptr, #{field.name}); elt; elt =  __#{libName.upcase}_ROWIP_PTR(elt, next)){
+            #{tParams[:funcPrefix]}_cleanupRowip(elt);
+        }
+    }
+
+");
+            elsif field.qty == :single
+              output.puts("
+        if(ptr->#{field.name}) #{tParams[:funcPrefix]}_cleanupRowip(__#{libName.upcase}_ROWIP_PTR(ptr,#{field.name}));
+");
+            end
+          end
+        }
+        output.puts("
+    return;
+}
+")
         end
         module_function :write
         

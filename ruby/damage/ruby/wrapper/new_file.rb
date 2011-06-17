@@ -46,6 +46,8 @@ static VALUE #{params[:funcPrefix]}_load_binary(int argc, VALUE *argv, VALUE kla
 
     if(ptr == NULL)
         rb_raise(rb_eArgError, \"Failed to load XML file\");
+    if(ptr->_private)
+        #{params[:funcPrefix]}_cleanup(ptr);
     return #{params[:funcPrefix]}_decorate(#{params[:funcPrefix]}_wrapFirst(ptr));
 }
 ")
@@ -61,6 +63,8 @@ static VALUE #{params[:funcPrefix]}_load_binary_rowip(int argc, VALUE *argv, VAL
 
     if(ptr == NULL)
         rb_raise(rb_eArgError, \"Failed to load XML file\");
+    if(ptr->_private)
+        #{params[:funcPrefix]}_cleanupRowip(ptr);
     return #{params[:funcPrefix]}_decorateRowip(#{params[:funcPrefix]}_wrapFirstRowip(ptr));
 }
 ")

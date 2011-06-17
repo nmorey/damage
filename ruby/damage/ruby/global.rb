@@ -47,6 +47,8 @@ module Damage
           output.puts("VALUE #{params[:funcPrefix]}_wrapFirstRowip(#{params[:cType]}* ptr);");
           output.puts("VALUE #{params[:funcPrefix]}_decorate(VALUE self);\n\n");
           output.puts("VALUE #{params[:funcPrefix]}_decorateRowip(VALUE self);\n\n");
+          output.puts("void #{params[:funcPrefix]}_cleanup(#{params[:cType]}* ptr);\n\n");
+          output.puts("void #{params[:funcPrefix]}_cleanupRowip(#{params[:cType]}* ptr);\n\n");
           output.puts("VALUE #{params[:funcPrefix]}_xml_to_string(VALUE self, int indent);\n");
           output.puts("VALUE #{params[:funcPrefix]}_xml_to_stringRowip(VALUE self, int indent);\n");
           if entry.attribute == :listable
