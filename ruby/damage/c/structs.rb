@@ -92,7 +92,7 @@ module Damage
 
                 output.printf("#define __#{libPrefix.upcase}_ROWIP_PTR_ARRAY(ptr, field, idx) ({typeof(*ptr->field)_ptr = NULL; typeof(ptr->field) _array; if(ptr->field != NULL) { _array =  __#{libPrefix.upcase}_ROWIP_PTR(ptr, field); _ptr = ((void*)ptr - ptr->_rowip_pos) + (unsigned long)(_array[idx]);} _ptr;})\n")
 
-                output.printf("#define __#{libPrefix.upcase}_ROWIP_STR_ARRAY(ptr, field, idx) ({char*_ptr = NULL; char** _array; if(ptr->field != NULL) { _array =  __#{libPrefix.upcase}_ROWIP_PTR(ptr, field); _ptr = ((void*)ptr - ptr->_rowip_pos) + (unsigned long)(_array[idx] + sizeof(uint32_t));} _ptr;})\n")
+                output.printf("#define __#{libPrefix.upcase}_ROWIP_STR_ARRAY(ptr, field, idx) ({char*_ptr = NULL; uint32_t* _array; if(ptr->field != NULL) { _array =  (uint32_t*)__#{libPrefix.upcase}_ROWIP_PTR(ptr, field); _ptr = ((void*)ptr - ptr->_rowip_pos) + (unsigned long)(_array[idx] + sizeof(uint32_t));} _ptr;})\n")
                 output.printf("#endif /* __#{libPrefix}_structs_h__ */\n");
             end
             module_function :genH
