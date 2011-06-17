@@ -60,6 +60,7 @@ typedef struct {
 
 
 VALUE #{params[:funcPrefixList]}_wrap(#{params[:cTypeList]}* ptr);
+VALUE #{params[:funcPrefixList]}_wrapRowip(#{params[:cTypeList]}* ptr);
 VALUE #{params[:funcPrefixList]}_decorate(VALUE self);
 
 ")

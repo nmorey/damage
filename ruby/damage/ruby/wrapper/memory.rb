@@ -88,7 +88,7 @@ VALUE #{params[:funcPrefixList]}_wrapRowip(#{params[:cTypeList]}* ptr) {
     if(ptr->_private != Qnil)
         return (VALUE)ptr->_private;
 
-    node = Data_Wrap_Struct(#{params[:classValueList]}, #{params[:funcPrefixList]}_markRowip, #{params[:funcPrefixList]}_free, ptr);
+    node = Data_Wrap_Struct(#{params[:classValueListRowip]}, #{params[:funcPrefixList]}_markRowip, #{params[:funcPrefixList]}_free, ptr);
     ptr->_private = node;
     return node;
 }

@@ -74,9 +74,9 @@ void #{params[:funcPrefix]}_init(void){
     rb_define_method(#{params[:classValueList]}, \"<<\", #{params[:funcPrefixList]}_arrayAdd, 1);
 
     rb_include_module(#{params[:classValueListRowip]}, rb_mEnumerable);
-    rb_define_method(#{params[:classValueListRowip]}, \"[]\", #{params[:funcPrefixList]}_arrayGet, 1);
-    rb_define_method(#{params[:classValueListRowip]}, \"each\", #{params[:funcPrefixList]}_arrayEach, 0);
-    rb_define_method(#{params[:classValueListRowip]}, \"length\", #{params[:funcPrefixList]}_arrayLength, 0);
+    rb_define_method(#{params[:classValueListRowip]}, \"[]\", #{params[:funcPrefixList]}_arrayGetRowip, 1);
+    rb_define_method(#{params[:classValueListRowip]}, \"each\", #{params[:funcPrefixList]}_arrayEachRowip, 0);
+    rb_define_method(#{params[:classValueListRowip]}, \"length\", #{params[:funcPrefixList]}_arrayLengthRowip, 0);
 
 
 ")

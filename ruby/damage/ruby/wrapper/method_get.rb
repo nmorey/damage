@@ -251,7 +251,7 @@ module Damage
     } else {
        list->first = list->last = NULL;
     }
-    return #{tParams[:funcPrefixList]}_wrap(list);
+    return #{tParams[:funcPrefixList]}_wrapRowip(list);
 }
 ");
               end
