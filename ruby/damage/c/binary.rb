@@ -76,8 +76,7 @@ uint32_t __#{libName}_#{entry.name}_binary_dump(__#{libName}_#{entry.name}* ptr,
                                     output.printf("#{indent}\tval.%s = (char*)(unsigned long) child_offset;\n", field.name)
                                     output.printf("#{indent}\tfseek(file, child_offset, SEEK_SET);\n")
                                     output.printf("#{indent}\tfwrite(&len, sizeof(len), 1, file);\n", field.name)
-                                    output.printf("#{indent}\tif(len > 0)\n");
-                                    output.printf("#{indent}\t\tfwrite(#{source}->%s, sizeof(char), len, file);\n", field.name)
+                                    output.printf("#{indent}\tfwrite(#{source}->%s, sizeof(char), ++len, file);\n", field.name)
                                     output.printf("#{indent}\tchild_offset += len + sizeof(len);\n", field.name)
                                     output.printf("#{indent}}\n")
                                 end
@@ -114,8 +113,7 @@ uint32_t __#{libName}_#{entry.name}_binary_dump(__#{libName}_#{entry.name}* ptr,
                                     output.printf("#{indent}\t\t\tuint32_t len = strlen(#{source}->%s[i]);\n", field.name)
                                     output.printf("#{indent}\t\t\ttmp_array[i] = (void*)(unsigned long)child_offset;\n")
                                     output.printf("#{indent}\t\t\tfwrite(&len, sizeof(len), 1, file);\n", field.name)
-                                    output.printf("#{indent}\t\t\tif(len > 0)\n")
-                                    output.printf("#{indent}\t\t\t\tfwrite(#{source}->%s[i], sizeof(char), len, file);\n", field.name)
+                                    output.printf("#{indent}\t\t\tfwrite(#{source}->%s[i], sizeof(char), ++len, file);\n", field.name)
                                     output.printf("#{indent}\t\t\tchild_offset += len + sizeof(len);\n", field.name)
                                     output.printf("#{indent}\t\t}\n")
                                     output.printf("#{indent}\t}\n\n");
@@ -231,14 +229,9 @@ __#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load(FILE* file, u
                                     output.printf("#{indent}\tuint32_t len;\n")
                                     output.printf("#{indent}\tfseek(file, (unsigned long)#{source}->%s, SEEK_SET);\n", field.name)
                                     output.printf("#{indent}\tfread(&len, sizeof(len), 1, file);\n")
-                                    output.printf("#{indent}\tif(len > 0){\n")
-                                    output.printf("#{indent}\t\t#{source}->%s = __#{libName}_malloc((len + 1) * sizeof(char));\n", field.name)
-                                    output.printf("#{indent}\t\t#{source}->%s[len] = 0;\n", field.name)
-                                    output.printf("#{indent}\t\tfread(#{source}->%s, sizeof(char), len, file);\n", field.name)
-                                    output.printf("#{indent}\t} else {\n");
-                                    output.printf("#{indent}\t\t#{source}->%s = strdup(\"\");\n", field.name)
-                                    output.printf("#{indent}\t};\n");
-                                    output.printf("#{indent}}\n")
+                                    output.printf("#{indent}\t#{source}->%s = __#{libName}_malloc(len * sizeof(char));\n", field.name)
+                                    output.printf("#{indent}\tfread(#{source}->%s, sizeof(char), len, file);\n", field.name)
+                                   output.printf("#{indent}}\n")
                                 end
                             when :intern
                                 output.printf("#{indent}if(#{source}->%s){\n", field.name)
@@ -277,13 +270,8 @@ __#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load(FILE* file, u
                                     # get the string size
                                     output.printf("#{indent}\t\t\tfread(&len, sizeof(len), 1, file);\n")
                                     # Alloc it and read it
-                                    output.printf("#{indent}\t\t\tif(len > 0){\n")
-                                    output.printf("#{indent}\t\t\t\ttmp_array[i] = __#{libName}_malloc(sizeof(char) * (len + 1));\n")
-                                    output.printf("#{indent}\t\t\t\ttmp_array[i][len] = 0;\n")
-                                    output.printf("#{indent}\t\t\t\tfread(tmp_array[i], sizeof(char), len, file);\n", field.name)
-                                    output.printf("#{indent}\t\t\t} else {\n");
-                                    output.printf("#{indent}\t\t\t\ttmp_array[i] = strdup(\"\");\n")
-                                    output.printf("#{indent}\t\t\t};\n");
+                                    output.printf("#{indent}\t\t\ttmp_array[i] = __#{libName}_malloc(sizeof(char) * len);\n")
+                                    output.printf("#{indent}\t\t\tfread(tmp_array[i], sizeof(char), len, file);\n", field.name)
                                     output.printf("#{indent}\t\t}\n")
                                     output.printf("#{indent}\t}\n\n");                  
                                 end
