@@ -151,7 +151,7 @@ static inline void __#{libName}_rowip_header_free(__#{libName}_rowip_header* ptr
           output.printf("\tfclose(header->file);\n")
           output.printf("\theader->file = NULL;\n");
 
-          output.printf("\tptr = (__#{libName}_%s*)(mapped + sizeof(unsigned long));\n", entry.name)
+          output.printf("\tptr = (__#{libName}_%s*)(mapped + sizeof(uint32_t));\n", entry.name)
           output.printf("\tptr->_rowip = header;\n")
           output.printf("\treturn ptr;\n");
           output.printf("}\n");
