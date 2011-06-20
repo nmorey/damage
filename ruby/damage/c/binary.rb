@@ -180,6 +180,13 @@ uint32_t __#{libName}_#{entry.name}_binary_dump(__#{libName}_#{entry.name}* ptr,
                     output.printf("\tuint32_t ret;\n")
                     output.printf("\tFILE* output;\n")
                     output.printf("\n")
+
+                    output.printf("\tret = setjmp(__#{libName}_error_happened);\n");
+                    output.printf("\tif (ret != 0) {\n");
+                    output.printf("\t\terrno = ret;\n");
+                    output.printf("\t\treturn 0UL;\n");
+                    output.printf("\t}\n\n");
+
                     output.printf("\tif(__#{libName}_acquire_flock(file))\n");
                     output.printf("\t\t__#{libName}_error(\"Failed to lock output file %%s\", ENOENT, file);\n");
 
