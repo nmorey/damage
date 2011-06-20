@@ -156,8 +156,8 @@ module Damage
                     output.printf("__#{libName}_%s *__#{libName}_%s_alloc();\n", entry.name, entry.name)
                     output.printf("void __#{libName}_%s_free(__#{libName}_%s *ptr);\n", entry.name, entry.name)
 
-                    output.printf("__#{libName}_%s *__#{libName}_%s_xml_parse_file(const char* file);\n", entry.name, entry.name);
-                    output.printf("__#{libName}_%s *__#{libName}_%s_xml_parse(xmlNodePtr node);\n", entry.name, entry.name)
+                    output.printf("__#{libName}_%s *__#{libName}_%s_xml_load_file(const char* file);\n", entry.name, entry.name);
+                    output.printf("__#{libName}_%s *__#{libName}_%s_xml_load(xmlNodePtr node);\n", entry.name, entry.name)
 
                     output.printf("int __#{libName}_%s_xml_dump_file(const char* file, __#{libName}_%s *ptr, int zipped);\n", entry.name, entry.name)
                     output.printf("xmlNodePtr __#{libName}_create_%s_xml_node(xmlNodePtr node, __#{libName}_%s* ptr);\n", entry.name, entry.name)

@@ -27,7 +27,7 @@ static VALUE #{params[:funcPrefix]}_load_xml(int argc, VALUE *argv, VALUE klass)
     #{params[:cType]}* ptr;
     rb_scan_args(argc, argv, \"1\", &filePath);
     Check_Type(filePath, T_STRING);
-    ptr = __#{libName}_#{entry.name}_xml_parse_file(StringValuePtr(filePath));
+    ptr = __#{libName}_#{entry.name}_xml_load_file(StringValuePtr(filePath));
 
     if(ptr == NULL)
         rb_raise(rb_eArgError, \"Failed to load XML file\");

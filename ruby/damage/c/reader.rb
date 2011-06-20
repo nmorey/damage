@@ -81,7 +81,7 @@ module Damage
         description.entries.each() {|name, entry|
           struct = entry.name
 
-          output.printf("__#{libName}_%s *__#{libName}_%s_xml_parse(", struct, struct);
+          output.printf("__#{libName}_%s *__#{libName}_%s_xml_load(", struct, struct);
           output.printf("xmlNodePtr node)\n{\n");
           output.printf("\t__#{libName}_%s *ptr = __#{libName}_%s_alloc();\n", struct, struct);
           output.printf("\tconst char *name;\n");
@@ -336,7 +336,7 @@ module Damage
         
         # Generate file parser
         description.entries.each() { | name, entry|
-          output.printf("__#{libName}_%s *__#{libName}_%s_xml_parse_file(const char* file){\n", entry.name, entry.name);
+          output.printf("__#{libName}_%s *__#{libName}_%s_xml_load_file(const char* file){\n", entry.name, entry.name);
           output.printf("\t__#{libName}_%s *ptr = NULL;\n", entry.name);
           
           output.printf("\tint ret;\n");
