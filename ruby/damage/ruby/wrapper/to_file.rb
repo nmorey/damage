@@ -15,11 +15,11 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 module Damage
-  module Ruby
-    module Wrapper
-      module ToFile
-        def write(output, entry, libName, params)
-         output.puts("
+    module Ruby
+        module Wrapper
+            module ToFile
+                def write(output, entry, libName, params)
+                    output.puts("
 static VALUE #{params[:funcPrefix]}_to_xml(VALUE self, VALUE filePath){
     int ret;
     Check_Type(filePath, T_STRING);
@@ -30,8 +30,20 @@ static VALUE #{params[:funcPrefix]}_to_xml(VALUE self, VALUE filePath){
         rb_raise(rb_eArgError, \"Could not write XML file\");
     return self;
 }
+")        
+                    output.puts("
+static VALUE #{params[:funcPrefix]}_to_xmluz(VALUE self, VALUE filePath){
+    int ret;
+    Check_Type(filePath, T_STRING);
+
+    ret = __#{libName}_#{entry.name}_xml_dump_file(StringValuePtr(filePath), DATA_PTR(self), 0);
+
+    if(ret < 0)
+        rb_raise(rb_eArgError, \"Could not write XML file\");
+    return self;
+}
 ")
-         output.puts("
+                    output.puts("
 static VALUE #{params[:funcPrefix]}_to_binary(VALUE self, VALUE filePath){
     int ret;
     Check_Type(filePath, T_STRING);
@@ -44,7 +56,7 @@ static VALUE #{params[:funcPrefix]}_to_binary(VALUE self, VALUE filePath){
 }
 ")
 
-         output.puts("
+                    output.puts("
 static VALUE #{params[:funcPrefix]}_to_binary_rowip(VALUE self){
     int ret;
 
@@ -55,11 +67,11 @@ static VALUE #{params[:funcPrefix]}_to_binary_rowip(VALUE self){
     return self;
 }
 ")
+                end
+                module_function :write
+                
+                private
+            end
         end
-        module_function :write
-        
-        private
-      end
     end
-  end
 end
