@@ -37,17 +37,17 @@ module Damage
         output.printf("jmp_buf __#{libName}_error_happened;\n");
         output.printf("\n\n");
         description.entries.each() {|name, entry|
-          output.printf("__#{libName}_%s *__#{libName}_%s_xml_parse(", entry.name, entry.name);
+          output.printf("__#{libName}_%s *__#{libName}_%s_xml_load(", entry.name, entry.name);
           output.printf("xmlNodePtr node);\n");
         }
         description.containers.each() {|name, type|
-          output.printf("__#{libName}_%s *__#{libName}_%s%sContainer_xml_parse(", type, name, type);
+          output.printf("__#{libName}_%s *__#{libName}_%s%sContainer_xml_load(", type, name, type);
           output.printf("xmlNodePtr node);\n");
         }
         output.printf("\n\n");
 
         description.containers.each() {|name, type|
-          output.printf("__#{libName}_%s *__#{libName}_%s%sContainer_xml_parse(", type, name, type);
+          output.printf("__#{libName}_%s *__#{libName}_%s%sContainer_xml_load(", type, name, type);
           output.printf("xmlNodePtr node){\n");
           output.printf("\tconst char *name;\n");
           output.printf("\t__#{libName}_%s *ptr = NULL;\n", type);
@@ -61,7 +61,7 @@ module Damage
           output.printf("\t\tswitch (__#{libName}_compare(name, matches_children)) {\n");  
           output.printf("\t\tcase 0:\n"  );
           output.printf("\t\t\t/* %s */\n", type)
-          output.printf("\t\t\t*last_%s = __#{libName}_%s_xml_parse(child);\n",
+          output.printf("\t\t\t*last_%s = __#{libName}_%s_xml_load(child);\n",
                         type, type) ;
           output.printf("\t\t\tlast_%s = &((*last_%s)->next);\n",
                         type, type);
@@ -248,7 +248,7 @@ module Damage
                     raise("Unsupported type #{field.data_type}\n")
                   end
                 when :intern
-                  output.printf("\t\t\tptr->%s = __#{libName}_%s_xml_parse(child);\n",
+                  output.printf("\t\t\tptr->%s = __#{libName}_%s_xml_load(child);\n",
                                 field.name, field.data_type) ;
                 end
                 output.printf("\t\t\tbreak;\n");
@@ -280,7 +280,7 @@ module Damage
                     raise("Unsupported type #{field.data_type}\n")
                   end
                 when :intern
-                  output.printf("\t\t\t*last_%s = __#{libName}_%s_xml_parse(child);\n",
+                  output.printf("\t\t\t*last_%s = __#{libName}_%s_xml_load(child);\n",
                                 field.name, field.data_type) ;
                   output.printf("\t\t\tlast_%s = &((*last_%s)->next);\n",
                                 field.name, field.name);
@@ -289,7 +289,7 @@ module Damage
               when :container
                 output.printf("\t\tcase %d:\n", caseCount);
                 output.printf("\t\t\t/* %s */\n", field.name);
-                output.printf("\t\t\tptr->%s = __#{libName}_%s%sContainer_xml_parse(child);\n",
+                output.printf("\t\t\tptr->%s = __#{libName}_%s%sContainer_xml_load(child);\n",
                               field.name, field.name, field.data_type) ;
                 output.printf("\t\t\tbreak;\n");
               end
@@ -370,7 +370,7 @@ module Damage
           output.printf("\t\t__#{libName}_error(\"No root element in XML file %%s\", ENOENT, file);\n\n");
           
           output.printf("\tif(!strcmp((char*)root->name, \"%s\")){\n", entry.name);
-          output.printf("\t\tptr = __#{libName}_%s_xml_parse(root);\n", entry.name, entry.name) ;
+          output.printf("\t\tptr = __#{libName}_%s_xml_load(root);\n", entry.name, entry.name) ;
           output.printf("\t} else {\n");
           output.printf("\t\t__#{libName}_error\n");
           output.printf("\t\t\t(\"%s: Invalid node \\\"%%s\\\" at line %%d in XML file\",\n", entry.name);
