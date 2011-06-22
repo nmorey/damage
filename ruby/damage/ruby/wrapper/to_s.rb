@@ -42,11 +42,11 @@ VALUE #{params[:funcPrefix]}_xml_to_string(VALUE self, int indent){
                   output.puts("
     indentToString(string, indent, listable, first);
     first = 0;    
-    string = rb_str_concat(string, rb_str_new2(strdup(\"#{field.name}: \")));
+    string = rb_str_concat(string, rb_str_new2(strdup(\"#{field.name}: \\\"\")));
     if(ptr->#{field.name} != NULL){
         string = rb_str_concat(string, rb_str_new2(strdup(ptr->#{field.name})));
     }
-    string = rb_str_concat(string, rb_str_new2(strdup(\"\\n\")));
+    string = rb_str_concat(string, rb_str_new2(strdup(\"\\\"\\n\")));
 ")
                 when "unsigned long"
                   output.puts("
@@ -227,11 +227,11 @@ VALUE #{params[:funcPrefix]}_xml_to_stringRowip(VALUE self, int indent){
                 when "char*"
                   output.puts("
     indentToString(string, indent, listable, first);
-    string = rb_str_concat(string, rb_str_new2(strdup(\"#{field.name}: \")));
+    string = rb_str_concat(string, rb_str_new2(strdup(\"#{field.name}: \\\"\")));
     if(ptr->#{field.name} != NULL){
         string = rb_str_concat(string, rb_str_new2(strdup(__#{libName.upcase}_ROWIP_STR(ptr, #{field.name}))));
     }
-    string = rb_str_concat(string, rb_str_new2(strdup(\"\\n\")));
+    string = rb_str_concat(string, rb_str_new2(strdup(\"\\\"\\n\")));
 ")
                 when "unsigned long"
                   output.puts("

@@ -93,7 +93,7 @@ VALUE indentToString(VALUE string, int indent, int listable, int first){
     if(indent == 0)
         return string;
     for(i = 0; i< indent; i++){
-        ptr += sprintf(ptr, \"\\t\");
+        ptr += sprintf(ptr, \"    \");
     }
     _str = rb_str_concat(string, rb_str_new2(strdup(str)));
     if(listable){
