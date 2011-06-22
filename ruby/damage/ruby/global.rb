@@ -69,7 +69,7 @@ VALUE #{params[:funcPrefixList]}_decorate(VALUE self);
             end
         }
         output.puts("
-VALUE indentToString(VALUE string, int indent);
+VALUE indentToString(VALUE string, int indent, int listable, int first);
 ");
       end
 
@@ -85,8 +85,9 @@ VALUE indentToString(VALUE string, int indent);
 
 VALUE #{libName};
 
-VALUE indentToString(VALUE string, int indent){
+VALUE indentToString(VALUE string, int indent, int listable, int first){
     char str[256], *ptr;
+    VALUE _str;
     int i;
     ptr=str;
     if(indent == 0)
@@ -94,7 +95,15 @@ VALUE indentToString(VALUE string, int indent){
     for(i = 0; i< indent; i++){
         ptr += sprintf(ptr, \"\\t\");
     }
-    return rb_str_concat(string, rb_str_new2(strdup(str)));
+    _str = rb_str_concat(string, rb_str_new2(strdup(str)));
+    if(listable){
+        if(first){
+            _str = rb_str_concat(_str, rb_str_new2(strdup(\"- \")));
+        } else {
+            _str = rb_str_concat(_str, rb_str_new2(strdup(\"  \")));
+        }
+    }
+    return _str;
 }
 void Init_lib#{libName}_ruby(){
     #{libName} = rb_define_module(\"#{moduleName}\");

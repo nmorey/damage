@@ -24,8 +24,13 @@ VALUE #{params[:funcPrefix]}_xml_to_string(VALUE self, int indent){
     #{params[:cType]}* ptr;
     Data_Get_Struct(self, #{params[:cType]}, ptr);
     VALUE string = rb_str_new2(strdup(\"\"));
-
+    int first __attribute__((unused)) = 1;
 ");
+            if entry.attribute == :listable then
+                output.puts("    int listable = 1;")
+            else
+                output.puts("    int listable = 0;")
+            end
           entry.fields.each() {|field|
             next if field.target != :both
             case field.qty
@@ -35,7 +40,8 @@ VALUE #{params[:funcPrefix]}_xml_to_string(VALUE self, int indent){
                 case field.data_type
                 when "char*"
                   output.puts("
-    indentToString(string, indent);
+    indentToString(string, indent, listable, first);
+    first = 0;    
     string = rb_str_concat(string, rb_str_new2(strdup(\"#{field.name}: \")));
     if(ptr->#{field.name} != NULL){
         string = rb_str_concat(string, rb_str_new2(strdup(ptr->#{field.name})));
@@ -46,7 +52,8 @@ VALUE #{params[:funcPrefix]}_xml_to_string(VALUE self, int indent){
                   output.puts("
     {
     char numstr[256];
-    indentToString(string, indent);
+    indentToString(string, indent, listable, first);
+    first = 0;    
     sprintf(numstr, \"#{field.name}: %lu\\n\", ptr->#{field.name});
     string = rb_str_concat(string, rb_str_new2(strdup(numstr)));
     }
@@ -54,7 +61,8 @@ VALUE #{params[:funcPrefix]}_xml_to_string(VALUE self, int indent){
                   output.puts("
     {
     char numstr[256];
-    indentToString(string, indent);
+    indentToString(string, indent, listable, first);
+    first = 0;    
     sprintf(numstr, \"#{field.name}: %ld\\n\", ptr->#{field.name});
     string = rb_str_concat(string, rb_str_new2(strdup(numstr)));
     }
@@ -63,7 +71,8 @@ VALUE #{params[:funcPrefix]}_xml_to_string(VALUE self, int indent){
                   output.puts("
     {
     char numstr[256];
-    indentToString(string, indent);
+    indentToString(string, indent, listable, first);
+    first = 0;    
     sprintf(numstr, \"#{field.name}: %lf\\n\", ptr->#{field.name});
     string = rb_str_concat(string, rb_str_new2(strdup(numstr)));
     }
@@ -75,7 +84,8 @@ VALUE #{params[:funcPrefix]}_xml_to_string(VALUE self, int indent){
                 tParams = Damage::Ruby::nameToParams(libName, field.data_type)
                 output.puts("
     if(ptr->#{field.name} != NULL){
-        indentToString(string, indent);
+        indentToString(string, indent, listable, first);
+        first = 0;
         string = rb_str_concat(string, rb_str_new2(strdup(\"#{field.name}:\\n\")));
         string = rb_str_concat(string, #{tParams[:funcPrefix]}_xml_to_string((VALUE)ptr->#{field.name}->_private, indent+1));
     }
@@ -87,13 +97,14 @@ VALUE #{params[:funcPrefix]}_xml_to_string(VALUE self, int indent){
                 case field.data_type
                 when "char*"
                   output.puts("
-    indentToString(string, indent);
+    indentToString(string, indent, listable, first);
+    first = 0;
     string = rb_str_concat(string, rb_str_new2(strdup(\"#{field.name}: \")));
     string = rb_str_concat(string, rb_str_new2(strdup(\"\\n\")));
     if(ptr->#{field.name} != NULL){
         unsigned long i;
         for(i = 0; i < ptr->#{field.name}Len; i++){
-            indentToString(string, indent + 1);
+            indentToString(string, indent + 1, 1, 1);
             string = rb_str_concat(string, rb_str_new2(strdup(ptr->#{field.name}[i])));
             string = rb_str_concat(string, rb_str_new2(strdup(\"\\n\")));
         }
@@ -103,7 +114,8 @@ VALUE #{params[:funcPrefix]}_xml_to_string(VALUE self, int indent){
 
                 when "unsigned long"
                   output.puts("
-   indentToString(string, indent);
+   indentToString(string, indent, listable, first);
+    first = 0;
     string = rb_str_concat(string, rb_str_new2(strdup(\"#{field.name}: \")));
     string = rb_str_concat(string, rb_str_new2(strdup(\"\\n\")));
     if(ptr->#{field.name} != NULL){
@@ -111,7 +123,7 @@ VALUE #{params[:funcPrefix]}_xml_to_string(VALUE self, int indent){
         for(i = 0; i < ptr->#{field.name}Len; i++){
             char numstr[256];
             sprintf(numstr, \"#{field.name}: %lu\\n\", ptr->#{field.name}[i]);
-            indentToString(string, indent + 1);
+            indentToString(string, indent + 1, 1, 1);
             string = rb_str_concat(string, rb_str_new2(strdup(numstr)));
             string = rb_str_concat(string, rb_str_new2(strdup(\"\\n\")));
         }
@@ -119,7 +131,8 @@ VALUE #{params[:funcPrefix]}_xml_to_string(VALUE self, int indent){
     }
 ");                when "signed long"
                   output.puts("
-   indentToString(string, indent);
+   indentToString(string, indent, listable, first);
+    first = 0;
     string = rb_str_concat(string, rb_str_new2(strdup(\"#{field.name}: \")));
     string = rb_str_concat(string, rb_str_new2(strdup(\"\\n\")));
     if(ptr->#{field.name} != NULL){
@@ -127,7 +140,7 @@ VALUE #{params[:funcPrefix]}_xml_to_string(VALUE self, int indent){
         for(i = 0; i < ptr->#{field.name}Len; i++){
             char numstr[256];
             sprintf(numstr, \"#{field.name}: %ld\\n\", ptr->#{field.name}[i]);
-            indentToString(string, indent + 1);
+            indentToString(string, indent + 1, 1, 1);
             string = rb_str_concat(string, rb_str_new2(strdup(numstr)));
             string = rb_str_concat(string, rb_str_new2(strdup(\"\\n\")));
         }
@@ -136,7 +149,8 @@ VALUE #{params[:funcPrefix]}_xml_to_string(VALUE self, int indent){
 ");
                 when "double"
                   output.puts("
-   indentToString(string, indent);
+   indentToString(string, indent, listable, first);
+    first = 0;
     string = rb_str_concat(string, rb_str_new2(strdup(\"#{field.name}: \")));
     string = rb_str_concat(string, rb_str_new2(strdup(\"\\n\")));
     if(ptr->#{field.name} != NULL){
@@ -144,7 +158,7 @@ VALUE #{params[:funcPrefix]}_xml_to_string(VALUE self, int indent){
         for(i = 0; i < ptr->#{field.name}Len; i++){
             char numstr[256];
             sprintf(numstr, \"#{field.name}: %lf\\n\", ptr->#{field.name}[i]);
-            indentToString(string, indent + 1);
+            indentToString(string, indent + 1, 1, 1);
             string = rb_str_concat(string, rb_str_new2(strdup(numstr)));
             string = rb_str_concat(string, rb_str_new2(strdup(\"\\n\")));
         }
@@ -157,7 +171,8 @@ VALUE #{params[:funcPrefix]}_xml_to_string(VALUE self, int indent){
               when :intern
                 tParams=Damage::Ruby::nameToParams(libName, field.data_type)
                 output.puts("
-   indentToString(string, indent);
+   indentToString(string, indent, listable, first);
+    first = 0;
     string = rb_str_concat(string, rb_str_new2(strdup(\"#{field.name}: \")));
     string = rb_str_concat(string, rb_str_new2(strdup(\"\\n\")));
     if(ptr->#{field.name} != NULL){
@@ -194,8 +209,14 @@ VALUE #{params[:funcPrefix]}_xml_to_stringRowip(VALUE self, int indent){
     #{params[:cType]}* ptr;
     Data_Get_Struct(self, #{params[:cType]}, ptr);
     VALUE string = rb_str_new2(strdup(\"\"));
-
+   int first __attribute__((unused)) = 1;
 ");
+            if entry.attribute == :listable then
+                output.puts("    int listable = 1;")
+            else
+                output.puts("    int listable = 0;")
+            end
+
           entry.fields.each() {|field|
             next if field.target != :both
             case field.qty
@@ -205,7 +226,7 @@ VALUE #{params[:funcPrefix]}_xml_to_stringRowip(VALUE self, int indent){
                 case field.data_type
                 when "char*"
                   output.puts("
-    indentToString(string, indent);
+    indentToString(string, indent, listable, first);
     string = rb_str_concat(string, rb_str_new2(strdup(\"#{field.name}: \")));
     if(ptr->#{field.name} != NULL){
         string = rb_str_concat(string, rb_str_new2(strdup(__#{libName.upcase}_ROWIP_STR(ptr, #{field.name}))));
@@ -216,7 +237,7 @@ VALUE #{params[:funcPrefix]}_xml_to_stringRowip(VALUE self, int indent){
                   output.puts("
     {
     char numstr[256];
-    indentToString(string, indent);
+    indentToString(string, indent, listable, first);
     sprintf(numstr, \"#{field.name}: %lu\\n\", ptr->#{field.name});
     string = rb_str_concat(string, rb_str_new2(strdup(numstr)));
     }
@@ -224,7 +245,7 @@ VALUE #{params[:funcPrefix]}_xml_to_stringRowip(VALUE self, int indent){
                   output.puts("
     {
     char numstr[256];
-    indentToString(string, indent);
+    indentToString(string, indent, listable, first);
     sprintf(numstr, \"#{field.name}: %ld\\n\", ptr->#{field.name});
     string = rb_str_concat(string, rb_str_new2(strdup(numstr)));
     }
@@ -233,7 +254,7 @@ VALUE #{params[:funcPrefix]}_xml_to_stringRowip(VALUE self, int indent){
                   output.puts("
     {
     char numstr[256];
-    indentToString(string, indent);
+    indentToString(string, indent, listable, first);
     sprintf(numstr, \"#{field.name}: %lf\\n\", ptr->#{field.name});
     string = rb_str_concat(string, rb_str_new2(strdup(numstr)));
     }
@@ -245,7 +266,7 @@ VALUE #{params[:funcPrefix]}_xml_to_stringRowip(VALUE self, int indent){
                 tParams = Damage::Ruby::nameToParams(libName, field.data_type)
                 output.puts("
     if(ptr->#{field.name} != NULL){
-        indentToString(string, indent);
+        indentToString(string, indent, listable, first);
         string = rb_str_concat(string, rb_str_new2(strdup(\"#{field.name}:\\n\")));
         string = rb_str_concat(string, #{tParams[:funcPrefix]}_xml_to_stringRowip((VALUE)__#{libName.upcase}_ROWIP_PTR(ptr, #{field.name})->_private, indent+1));
     }
@@ -257,13 +278,13 @@ VALUE #{params[:funcPrefix]}_xml_to_stringRowip(VALUE self, int indent){
                 case field.data_type
                 when "char*"
                   output.puts("
-    indentToString(string, indent);
+    indentToString(string, indent, listable, first);
     string = rb_str_concat(string, rb_str_new2(strdup(\"#{field.name}: \")));
     string = rb_str_concat(string, rb_str_new2(strdup(\"\\n\")));
     if(ptr->#{field.name} != NULL){
         unsigned long i;
         for(i = 0; i < ptr->#{field.name}Len; i++){
-            indentToString(string, indent + 1);
+            indentToString(string, indent + 1, 1, 1);
             string = rb_str_concat(string, rb_str_new2(strdup(__#{libName.upcase}_ROWIP_STR_ARRAY(ptr, #{field.name}, i))));
             string = rb_str_concat(string, rb_str_new2(strdup(\"\\n\")));
         }
@@ -273,7 +294,7 @@ VALUE #{params[:funcPrefix]}_xml_to_stringRowip(VALUE self, int indent){
 
                 when "unsigned long"
                   output.puts("
-   indentToString(string, indent);
+   indentToString(string, indent, listable, first);
     string = rb_str_concat(string, rb_str_new2(strdup(\"#{field.name}: \")));
     string = rb_str_concat(string, rb_str_new2(strdup(\"\\n\")));
     if(ptr->#{field.name} != NULL){
@@ -281,7 +302,7 @@ VALUE #{params[:funcPrefix]}_xml_to_stringRowip(VALUE self, int indent){
         for(i = 0; i < ptr->#{field.name}Len; i++){
             char numstr[256];
             sprintf(numstr, \"#{field.name}: %lu\\n\", __#{libName.upcase}_ROWIP_PTR(ptr, #{field.name})[i]);
-            indentToString(string, indent + 1);
+            indentToString(string, indent + 1, 1, 1);
             string = rb_str_concat(string, rb_str_new2(strdup(numstr)));
             string = rb_str_concat(string, rb_str_new2(strdup(\"\\n\")));
         }
@@ -289,7 +310,7 @@ VALUE #{params[:funcPrefix]}_xml_to_stringRowip(VALUE self, int indent){
     }
 ");                when "signed long"
                   output.puts("
-   indentToString(string, indent);
+   indentToString(string, indent, listable, first);
     string = rb_str_concat(string, rb_str_new2(strdup(\"#{field.name}: \")));
     string = rb_str_concat(string, rb_str_new2(strdup(\"\\n\")));
     if(ptr->#{field.name} != NULL){
@@ -297,7 +318,7 @@ VALUE #{params[:funcPrefix]}_xml_to_stringRowip(VALUE self, int indent){
         for(i = 0; i < ptr->#{field.name}Len; i++){
             char numstr[256];
             sprintf(numstr, \"#{field.name}: %ld\\n\", __#{libName.upcase}_ROWIP_PTR(ptr, #{field.name})[i]);
-            indentToString(string, indent + 1);
+            indentToString(string, indent + 1, 1, 1);
             string = rb_str_concat(string, rb_str_new2(strdup(numstr)));
             string = rb_str_concat(string, rb_str_new2(strdup(\"\\n\")));
         }
@@ -306,7 +327,7 @@ VALUE #{params[:funcPrefix]}_xml_to_stringRowip(VALUE self, int indent){
 ");
                 when "double"
                   output.puts("
-   indentToString(string, indent);
+   indentToString(string, indent, listable, first);
     string = rb_str_concat(string, rb_str_new2(strdup(\"#{field.name}: \")));
     string = rb_str_concat(string, rb_str_new2(strdup(\"\\n\")));
     if(ptr->#{field.name} != NULL){
@@ -314,7 +335,7 @@ VALUE #{params[:funcPrefix]}_xml_to_stringRowip(VALUE self, int indent){
         for(i = 0; i < ptr->#{field.name}Len; i++){
             char numstr[256];
             sprintf(numstr, \"#{field.name}: %lf\\n\", __#{libName.upcase}_ROWIP_PTR(ptr, #{field.name})[i]);
-            indentToString(string, indent + 1);
+            indentToString(string, indent + 1, 1, 1);
             string = rb_str_concat(string, rb_str_new2(strdup(numstr)));
             string = rb_str_concat(string, rb_str_new2(strdup(\"\\n\")));
         }
@@ -327,7 +348,7 @@ VALUE #{params[:funcPrefix]}_xml_to_stringRowip(VALUE self, int indent){
               when :intern
                 tParams=Damage::Ruby::nameToParams(libName, field.data_type)
                 output.puts("
-   indentToString(string, indent);
+   indentToString(string, indent, listable, first);
     string = rb_str_concat(string, rb_str_new2(strdup(\"#{field.name}: \")));
     string = rb_str_concat(string, rb_str_new2(strdup(\"\\n\")));
     if(ptr->#{field.name} != NULL){
