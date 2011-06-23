@@ -82,6 +82,14 @@ module Damage
                     @val2ruby = "ULONG2NUM"
                     @ruby2val = "NUM2ULONG"
                     @is_attribute = true if @qty == :single
+                    
+                    if @qty == :list
+                        @data_type="uint32_t" 
+                        @printf="u"
+                        @val2ruby = "UINT2NUM"
+                        @ruby2val = "NUM2UINT"
+                        @default_val = "0";
+                    end
                     @default_val = "0UL"
                 when "SL"
                     @data_type="signed long"
@@ -90,6 +98,13 @@ module Damage
                     @val2ruby = "LONG2NUM"
                     @ruby2val = "NUM2LONG"
                     @is_attribute = true if @qty == :singl
+                    if @qty == :liste
+                        @data_type="int32_t" 
+                        @printf="d"
+                        @val2ruby = "INT2NUM"
+                        @ruby2val = "NUM2INT"
+                        @default_val = "0";
+                    end
                     @default_val = "0L"
                 when "DL"
                     @data_type="double"
