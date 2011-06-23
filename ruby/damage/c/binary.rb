@@ -302,7 +302,7 @@ __#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load(FILE* file, u
                                     output.printf("#{indent}\t}\n\n");    
                                 else
                                     # Alloc and read the array of data
-                                    output.printf("#{indent}\t%s* array = __#{libName}_malloc(#{source}->%sLen * sizeof(%*array));\n", 
+                                    output.printf("#{indent}\t%s* array = __#{libName}_malloc(#{source}->%sLen * sizeof(*array));\n", 
                                                   field.data_type, field.name, field.data_type)
                                     output.printf("#{indent}\tfseek(file, (unsigned long)#{source}->%s, SEEK_SET);\n", field.name)
                                     output.printf("#{indent}\tfread(array, sizeof(*array), #{source}->%sLen, file);\n",
