@@ -131,10 +131,10 @@ module Damage
                     when "char*"
                         output.printf("\t\t\tptr->%s = __#{libName}_read_value_str_attr(attribute);\n",
                                         field.name) ;
-                    when "unsigned long"
+                    when "unsigned long", "uint32_t"
                         output.printf("\t\t\tptr->%s = __#{libName}_read_value_ulong_attr(attribute);\n",
                                         field.name) ;
-                    when "signed long"
+                    when "signed long", "int32_t"
                         output.printf("\t\t\tptr->%s = __#{libName}_read_value_slong_attr(attribute);\n",
                                         field.name) ;
                     when "double"
@@ -186,13 +186,13 @@ module Damage
                                 field.name, field.name, field.name, field.name) ;
                   output.printf("\t\t\tptr->%s[ptr->%sLen++] = __#{libName}_read_value_str_attr(attribute);\n",
                                 field.name, field.name) ;
-                when "unsigned long"
+                when "unsigned long", "uint32_t"
                   output.printf("\t\t\tptr->%s = __#{libName}_realloc(ptr->%s, sizeof(*(ptr->%s))" +
                                 " * (ptr->%sLen + 1));\n",
                                 field.name, field.name, field.name, field.name) ;
                   output.printf("\t\t\tptr->%s[ptr->%sLen++] = __#{libName}_read_value_ulong_attr(attribute);\n",
                                 field.name, field.name) ;
-                when "signed long"
+                when "signed long", "int32_t"
                   output.printf("\t\t\tptr->%s = __#{libName}_realloc(ptr->%s, sizeof(*(ptr->%s))" +
                                 " * (ptr->%sLen + 1));\n",
                                 field.name, field.name, field.name, field.name) ;
@@ -238,8 +238,11 @@ module Damage
                   when "char*"
                     output.printf("\t\t\tptr->%s = __#{libName}_read_value_str(child);\n",
                                   field.name) ;
-                  when "unsigned long"
+                  when "unsigned long", "uint32_t"
                     output.printf("\t\t\tptr->%s = __#{libName}_read_value_ulong(child);\n",
+                                  field.name) ;
+                  when "signed long", "int32_t"
+                    output.printf("\t\t\tptr->%s = __#{libName}_read_value_slong(child);\n",
                                   field.name) ;
                   when "double"
                     output.printf("\t\t\tptr->%s = __#{libName}_read_value_double(child);\n",
@@ -264,11 +267,17 @@ module Damage
                                   field.name, field.name, field.name, field.name) ;
                     output.printf("\t\t\tptr->%s[ptr->%sLen++] = __#{libName}_read_value_str(child);\n",
                                   field.name, field.name) ;
-                  when "unsigned long"
+                  when "unsigned long", "uint32_t"
                     output.printf("\t\t\tptr->%s = __#{libName}_realloc(ptr->%s, sizeof(*(ptr->%s))" +
                                   " * (ptr->%sLen + 1));\n",
                                   field.name, field.name, field.name, field.name) ;
                     output.printf("\t\t\tptr->%s[ptr->%sLen++] = __#{libName}_read_value_ulong(child);\n",
+                                  field.name, field.name) ;
+                  when "signed long", "int32_t"
+                    output.printf("\t\t\tptr->%s = __#{libName}_realloc(ptr->%s, sizeof(*(ptr->%s))" +
+                                  " * (ptr->%sLen + 1));\n",
+                                  field.name, field.name, field.name, field.name) ;
+                    output.printf("\t\t\tptr->%s[ptr->%sLen++] = __#{libName}_read_value_long(child);\n",
                                   field.name, field.name) ;
                   when "double"
                     output.printf("\t\t\tptr->%s = __#{libName}_realloc(ptr->%s, sizeof(*(ptr->%s))" +

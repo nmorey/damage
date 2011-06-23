@@ -41,34 +41,14 @@ module Damage
     return self;
 }
 ");
-                when "unsigned long"
+                when "unsigned long", "signed long", "uint32_t", "int32_t", "double"
                   output.puts("
 #{aliasFunc}
 #{setStr}{
     #{params[:cType]}* ptr;
     Data_Get_Struct(self, #{params[:cType]}, ptr);
     assert(ptr);
-    ptr->#{field.name} = NUM2ULONG(val);
-    return self;
-}
-")                when "signed long"
-                  output.puts("
-#{aliasFunc}
-#{setStr}{
-    #{params[:cType]}* ptr;
-    Data_Get_Struct(self, #{params[:cType]}, ptr);
-    assert(ptr);
-    ptr->#{field.name} = NUM2LONG(val);
-    return self;
-}
-");              when "double"
-                  output.puts("
-#{aliasFunc}
-#{setStr}{
-    #{params[:cType]}* ptr;
-    Data_Get_Struct(self, #{params[:cType]}, ptr);
-    assert(ptr);
-    ptr->#{field.name} = NUM2DBL(val);
+    ptr->#{field.name} = #{field.ruby2val}(val);
     return self;
 }
 ");
@@ -139,7 +119,8 @@ module Damage
 }
 ");
 
-                when "unsigned long"
+                when "unsigned long", "signed long", "uint32_t", "int32_t", "double"
+
                   output.puts("
 #{setStr}{
     #{params[:cType]}* ptr;
@@ -153,7 +134,7 @@ module Damage
     ptr->#{field.name}Len = RARRAY_LEN(val);
     for(i = 0; i < ptr->#{field.name}Len; i++){
         VALUE elnt = rb_ary_shift(val);
-        ptr->#{field.name}[i] = NUM2ULONG(elnt);
+        ptr->#{field.name}[i] = #{field.ruby2val}(elnt);
     }
     return self;
 }
@@ -168,77 +149,11 @@ module Damage
     }
     for(i = 0; i < ptr->#{field.name}Len; i++){
         VALUE elnt = rb_ary_shift(val);
-        __#{libName.upcase}_ROWIP_PTR(ptr, #{field.name})[i] = NUM2ULONG(elnt);
+        __#{libName.upcase}_ROWIP_PTR(ptr, #{field.name})[i] = #{field.ruby2val}(elnt);
     }
     return self;
 }
-");                   when "signed long"
-                  output.puts("
-#{setStr}{
-    #{params[:cType]}* ptr;
-    Data_Get_Struct(self, #{params[:cType]}, ptr);
-    unsigned long i;
-    assert(ptr);
-    Check_Type(val, T_ARRAY); 
-    if(ptr->#{field.name}){
-        free(ptr->#{field.name});
-    }
-    ptr->#{field.name}Len = RARRAY_LEN(val);
-    for(i = 0; i < ptr->#{field.name}Len; i++){
-        VALUE elnt = rb_ary_shift(val);
-        ptr->#{field.name}[i] = NUM2LONG(elnt);
-    }
-    return self;
-}
-#{setStrRowip}{
-    #{params[:cType]}* ptr;
-    Data_Get_Struct(self, #{params[:cType]}, ptr);
-    unsigned long i;
-    assert(ptr);
-    Check_Type(val, T_ARRAY); 
-    if(ptr->#{field.name}Len != RARRAY_LEN(val)){
-        rb_raise(rb_eArgError, \"Can not set an array of different size\");
-    }
-    for(i = 0; i < ptr->#{field.name}Len; i++){
-        VALUE elnt = rb_ary_shift(val);
-        __#{libName.upcase}_ROWIP_PTR(ptr, #{field.name})[i] = NUM2LONG(elnt);
-    }
-    return self;
-}
-");              when "double"
-                  output.puts("
-#{setStr}{
-    #{params[:cType]}* ptr;
-    Data_Get_Struct(self, #{params[:cType]}, ptr);
-    unsigned long i;
-    assert(ptr);
-    Check_Type(val, T_ARRAY); 
-    if(ptr->#{field.name}){
-        free(ptr->#{field.name});
-    }
-    ptr->#{field.name}Len = RARRAY_LEN(val);
-    for(i = 0; i < ptr->#{field.name}Len; i++){
-        VALUE elnt = rb_ary_shift(val);
-        ptr->#{field.name}[i] = NUM2DBL(elnt);
-    }
-    return self;
-}
-#{setStrRowip}{
-    #{params[:cType]}* ptr;
-    Data_Get_Struct(self, #{params[:cType]}, ptr);
-    unsigned long i;
-    assert(ptr);
-    Check_Type(val, T_ARRAY); 
-    if(ptr->#{field.name}Len != RARRAY_LEN(val)){
-        rb_raise(rb_eArgError, \"Can not set an array of different size\");
-    }
-    for(i = 0; i < ptr->#{field.name}Len; i++){
-        VALUE elnt = rb_ary_shift(val);
-        __#{libName.upcase}_ROWIP_PTR(ptr, #{field.name})[i] = NUM2BDL(elnt);
-    }
-    return self;
-}
-");
+");                   
                 else
                   raise("Unsupported data type #{field.data_type}" )
                 end

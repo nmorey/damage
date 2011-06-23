@@ -50,36 +50,16 @@ module Damage
     return rb_str_new2(__#{libName.upcase}_ROWIP_STR(ptr, #{field.name}));
 }
 ")
-                when "unsigned long"
+                when "unsigned long", "signed long", "uint32_t", "int32_t", "double"
                   output.puts("
 #{aliasFunc}
 #{getStr}{
     #{params[:cType]}* ptr;
     Data_Get_Struct(self, #{params[:cType]}, ptr);
     assert(ptr);
-    return ULONG2NUM((long)ptr->#{field.name});
+    return #{field.val2ruby}((long)ptr->#{field.name});
 }
 ")           
-                when "signed long"
-                  output.puts("
-#{aliasFunc}
-#{getStr}{
-    #{params[:cType]}* ptr;
-    Data_Get_Struct(self, #{params[:cType]}, ptr);
-    assert(ptr);
-    return LONG2NUM((long)ptr->#{field.name});
-}
-")           
-                when "double"
-                  output.puts("
-#{aliasFunc}
-#{getStr}{
-    #{params[:cType]}* ptr;
-    Data_Get_Struct(self, #{params[:cType]}, ptr);
-    assert(ptr);
-    return rb_float_new((long)ptr->#{field.name});
-}
-")
                 else
                   raise("Unsupported data type #{field.data_type}" )
                 end
@@ -165,7 +145,7 @@ module Damage
 }
 ");
 
-                when "unsigned long"
+                when "unsigned long", "signed long", "uint32_t", "int32_t", "double"
                   output.puts("
 #{getStr}{
     #{params[:cType]}* ptr;
@@ -175,7 +155,7 @@ module Damage
     assert(ptr);
     array = rb_ary_new2(ptr->#{field.name}Len);
     for(i = 0; i < ptr->#{field.name}Len; i++){
-         rb_ary_store(array, i, ULONG2NUM(ptr->#{field.name}[i]));
+         rb_ary_store(array, i, #{field.val2ruby}(ptr->#{field.name}[i]));
     }
     return array;
 }
@@ -187,65 +167,11 @@ module Damage
     assert(ptr);
     array = rb_ary_new2(ptr->#{field.name}Len);
     for(i = 0; i < ptr->#{field.name}Len; i++){
-         rb_ary_store(array, i, ULONG2NUM(__#{libName.upcase}_ROWIP_PTR(ptr, #{field.name})[i]));
+         rb_ary_store(array, i, #{field.val2ruby}(__#{libName.upcase}_ROWIP_PTR(ptr, #{field.name})[i]));
     }
     return array;
 }
-");                when "signed long"
-                  output.puts("
-#{getStr}{
-    #{params[:cType]}* ptr;
-    VALUE array;
-    Data_Get_Struct(self, #{params[:cType]}, ptr);
-    unsigned long i;
-    assert(ptr);
-    array = rb_ary_new2(ptr->#{field.name}Len);
-    for(i = 0; i < ptr->#{field.name}Len; i++){
-         rb_ary_store(array, i, LONG2NUM(ptr->#{field.name}[i]));
-    }
-    return array;
-}
-#{getStrRowip}{
-    #{params[:cType]}* ptr;
-    VALUE array;
-    Data_Get_Struct(self, #{params[:cType]}, ptr);
-    unsigned long i;
-    assert(ptr);
-    array = rb_ary_new2(ptr->#{field.name}Len);
-    for(i = 0; i < ptr->#{field.name}Len; i++){
-         rb_ary_store(array, i, LONG2NUM(__#{libName.upcase}_ROWIP_PTR(ptr, #{field.name})[i]));
-    }
-    return array;
-}
-");            when "double"
-                  output.puts("
-#{getStr}{
-    #{params[:cType]}* ptr;
-    VALUE array;
-    Data_Get_Struct(self, #{params[:cType]}, ptr);
-    unsigned long i;
-    assert(ptr);
-    array = rb_ary_new2(ptr->#{field.name}Len);
-    for(i = 0; i < ptr->#{field.name}Len; i++){
-         rb_ary_store(array, i, rb_float_new(ptr->#{field.name}[i]));
-    }
-    return array;
-}
-#{getStrRowip}{
-    #{params[:cType]}* ptr;
-    VALUE array;
-    Data_Get_Struct(self, #{params[:cType]}, ptr);
-    unsigned long i;
-    assert(ptr);
-    array = rb_ary_new2(ptr->#{field.name}Len);
-    for(i = 0; i < ptr->#{field.name}Len; i++){
-         rb_ary_store(array, i, rb_float_new(__#{libName.upcase}_ROWIP_PTR(ptr, #{field.name})[i]));
-    }
-    return array;
-}
-");
-
-                else
+");                else
                   raise("Unsupported data type #{field.data_type}" )
                 end
               when :intern

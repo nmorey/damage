@@ -17,7 +17,9 @@
 module Damage
     module Description
         class Field
-            attr_accessor :name, :data_type, :default_val, :category, :attribute, :qty, :target, :is_attribute, :required, :enum
+            attr_accessor :name, :data_type, :default_val, :category, :attribute, :qty, :target
+            attr_accessor :is_attribute, :required, :enum
+            attr_accessor :printf, :ruby2val, :val2ruby
 
             # Data used only for SORT fields
             attr_accessor :sort_field, :sort_key
@@ -76,18 +78,43 @@ module Damage
                 when "UL"
                     @data_type="unsigned long"
                     @category = :simple
+                    @printf = "lu"
+                    @val2ruby = "ULONG2NUM"
+                    @ruby2val = "NUM2ULONG"
                     @is_attribute = true if @qty == :single
                     @default_val = "0UL"
                 when "SL"
                     @data_type="signed long"
                     @category = :simple
-                    @is_attribute = true if @qty == :single
+                    @printf="ld"
+                    @val2ruby = "LONG2NUM"
+                    @ruby2val = "NUM2LONG"
+                    @is_attribute = true if @qty == :singl
                     @default_val = "0L"
                 when "DL"
                     @data_type="double"
                     @category = :simple
                     @is_attribute = true if @qty == :single
                     @default_val = "0.0"
+                    @printf="lf"
+                    @val2ruby = "rb_float_new"
+                    @ruby2val = "NUM2DBL"
+                when "UI"
+                    @data_type = "uint32_t"
+                    @category = :simple
+                    @is_attribute = true if @qty == :single
+                    @printf="u"
+                    @val2ruby = "UINT2NUM"
+                    @ruby2val = "NUM2UINT"
+                    @default_val = "0";
+                when "SI"
+                    @data_type = "int32_t"
+                    @category = :simple
+                    @is_attribute = true if @qty == :single
+                    @printf="d"
+                    @val2ruby = "INT2NUM"
+                    @ruby2val = "NUM2INT"
+                    @default_val = "0";
                 when /T\(([\w+ ]*)\)/
                     @data_type = $1
                     @category = :simple

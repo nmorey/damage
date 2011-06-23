@@ -48,32 +48,14 @@ VALUE #{params[:funcPrefix]}_xml_to_string(VALUE self, int indent){
     }
     string = rb_str_concat(string, rb_str_new2(strdup(\"\\\"\\n\")));
 ")
-                when "unsigned long"
+
+                when "unsigned long", "signed long", "uint32_t", "int32_t", "double"
                   output.puts("
     {
     char numstr[256];
     indentToString(string, indent, listable, first);
     first = 0;    
-    sprintf(numstr, \"#{field.name}: %lu\\n\", ptr->#{field.name});
-    string = rb_str_concat(string, rb_str_new2(strdup(numstr)));
-    }
-")                when "signed long"
-                  output.puts("
-    {
-    char numstr[256];
-    indentToString(string, indent, listable, first);
-    first = 0;    
-    sprintf(numstr, \"#{field.name}: %ld\\n\", ptr->#{field.name});
-    string = rb_str_concat(string, rb_str_new2(strdup(numstr)));
-    }
-")
-                when "double"
-                  output.puts("
-    {
-    char numstr[256];
-    indentToString(string, indent, listable, first);
-    first = 0;    
-    sprintf(numstr, \"#{field.name}: %lf\\n\", ptr->#{field.name});
+    sprintf(numstr, \"#{field.name}: %#{field.printf}\\n\", ptr->#{field.name});
     string = rb_str_concat(string, rb_str_new2(strdup(numstr)));
     }
 ")
@@ -111,8 +93,8 @@ VALUE #{params[:funcPrefix]}_xml_to_string(VALUE self, int indent){
 
     }
 ");
-
-                when "unsigned long"
+                    
+                when "unsigned long", "signed long", "uint32_t", "int32_t", "double"
                   output.puts("
    indentToString(string, indent, listable, first);
     first = 0;
@@ -122,49 +104,14 @@ VALUE #{params[:funcPrefix]}_xml_to_string(VALUE self, int indent){
         unsigned long i;
         for(i = 0; i < ptr->#{field.name}Len; i++){
             char numstr[256];
-            sprintf(numstr, \"#{field.name}: %lu\\n\", ptr->#{field.name}[i]);
+            sprintf(numstr, \"#{field.name}: %#{field.printf}\\n\", ptr->#{field.name}[i]);
             indentToString(string, indent + 1, 1, 1);
             string = rb_str_concat(string, rb_str_new2(strdup(numstr)));
             string = rb_str_concat(string, rb_str_new2(strdup(\"\\n\")));
         }
 
     }
-");                when "signed long"
-                  output.puts("
-   indentToString(string, indent, listable, first);
-    first = 0;
-    string = rb_str_concat(string, rb_str_new2(strdup(\"#{field.name}: \")));
-    string = rb_str_concat(string, rb_str_new2(strdup(\"\\n\")));
-    if(ptr->#{field.name} != NULL){
-        unsigned long i;
-        for(i = 0; i < ptr->#{field.name}Len; i++){
-            char numstr[256];
-            sprintf(numstr, \"#{field.name}: %ld\\n\", ptr->#{field.name}[i]);
-            indentToString(string, indent + 1, 1, 1);
-            string = rb_str_concat(string, rb_str_new2(strdup(numstr)));
-            string = rb_str_concat(string, rb_str_new2(strdup(\"\\n\")));
-        }
-
-    }
-");
-                when "double"
-                  output.puts("
-   indentToString(string, indent, listable, first);
-    first = 0;
-    string = rb_str_concat(string, rb_str_new2(strdup(\"#{field.name}: \")));
-    string = rb_str_concat(string, rb_str_new2(strdup(\"\\n\")));
-    if(ptr->#{field.name} != NULL){
-        unsigned long i;
-        for(i = 0; i < ptr->#{field.name}Len; i++){
-            char numstr[256];
-            sprintf(numstr, \"#{field.name}: %lf\\n\", ptr->#{field.name}[i]);
-            indentToString(string, indent + 1, 1, 1);
-            string = rb_str_concat(string, rb_str_new2(strdup(numstr)));
-            string = rb_str_concat(string, rb_str_new2(strdup(\"\\n\")));
-        }
-
-    }
-");
+");               
                 else
                   raise("Unsupported data type #{field.data_type}" )
                 end
@@ -233,29 +180,13 @@ VALUE #{params[:funcPrefix]}_xml_to_stringRowip(VALUE self, int indent){
     }
     string = rb_str_concat(string, rb_str_new2(strdup(\"\\\"\\n\")));
 ")
-                when "unsigned long"
+                when "unsigned long", "signed long", "uint32_t", "int32_t", "double"
+
                   output.puts("
     {
     char numstr[256];
     indentToString(string, indent, listable, first);
-    sprintf(numstr, \"#{field.name}: %lu\\n\", ptr->#{field.name});
-    string = rb_str_concat(string, rb_str_new2(strdup(numstr)));
-    }
-")                when "signed long"
-                  output.puts("
-    {
-    char numstr[256];
-    indentToString(string, indent, listable, first);
-    sprintf(numstr, \"#{field.name}: %ld\\n\", ptr->#{field.name});
-    string = rb_str_concat(string, rb_str_new2(strdup(numstr)));
-    }
-")
-                when "double"
-                  output.puts("
-    {
-    char numstr[256];
-    indentToString(string, indent, listable, first);
-    sprintf(numstr, \"#{field.name}: %lf\\n\", ptr->#{field.name});
+    sprintf(numstr, \"#{field.name}: %#{field.printf}\\n\", ptr->#{field.name});
     string = rb_str_concat(string, rb_str_new2(strdup(numstr)));
     }
 ")
@@ -292,7 +223,7 @@ VALUE #{params[:funcPrefix]}_xml_to_stringRowip(VALUE self, int indent){
     }
 ");
 
-                when "unsigned long"
+                when "unsigned long", "signed long", "uint32_t", "int32_t", "double"
                   output.puts("
    indentToString(string, indent, listable, first);
     string = rb_str_concat(string, rb_str_new2(strdup(\"#{field.name}: \")));
@@ -301,47 +232,14 @@ VALUE #{params[:funcPrefix]}_xml_to_stringRowip(VALUE self, int indent){
         unsigned long i;
         for(i = 0; i < ptr->#{field.name}Len; i++){
             char numstr[256];
-            sprintf(numstr, \"#{field.name}: %lu\\n\", __#{libName.upcase}_ROWIP_PTR(ptr, #{field.name})[i]);
+            sprintf(numstr, \"#{field.name}: %#{field.printf}\\n\", __#{libName.upcase}_ROWIP_PTR(ptr, #{field.name})[i]);
             indentToString(string, indent + 1, 1, 1);
             string = rb_str_concat(string, rb_str_new2(strdup(numstr)));
             string = rb_str_concat(string, rb_str_new2(strdup(\"\\n\")));
         }
 
     }
-");                when "signed long"
-                  output.puts("
-   indentToString(string, indent, listable, first);
-    string = rb_str_concat(string, rb_str_new2(strdup(\"#{field.name}: \")));
-    string = rb_str_concat(string, rb_str_new2(strdup(\"\\n\")));
-    if(ptr->#{field.name} != NULL){
-        unsigned long i;
-        for(i = 0; i < ptr->#{field.name}Len; i++){
-            char numstr[256];
-            sprintf(numstr, \"#{field.name}: %ld\\n\", __#{libName.upcase}_ROWIP_PTR(ptr, #{field.name})[i]);
-            indentToString(string, indent + 1, 1, 1);
-            string = rb_str_concat(string, rb_str_new2(strdup(numstr)));
-            string = rb_str_concat(string, rb_str_new2(strdup(\"\\n\")));
-        }
-
-    }
-");
-                when "double"
-                  output.puts("
-   indentToString(string, indent, listable, first);
-    string = rb_str_concat(string, rb_str_new2(strdup(\"#{field.name}: \")));
-    string = rb_str_concat(string, rb_str_new2(strdup(\"\\n\")));
-    if(ptr->#{field.name} != NULL){
-        unsigned long i;
-        for(i = 0; i < ptr->#{field.name}Len; i++){
-            char numstr[256];
-            sprintf(numstr, \"#{field.name}: %lf\\n\", __#{libName.upcase}_ROWIP_PTR(ptr, #{field.name})[i]);
-            indentToString(string, indent + 1, 1, 1);
-            string = rb_str_concat(string, rb_str_new2(strdup(numstr)));
-            string = rb_str_concat(string, rb_str_new2(strdup(\"\\n\")));
-        }
-
-    }
-");
+"); 
                 else
                   raise("Unsupported data type #{field.data_type}" )
                 end
