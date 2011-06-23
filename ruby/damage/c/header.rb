@@ -110,8 +110,8 @@ void *__#{libName}_malloc(unsigned long size)
 {
 	void *ptr = calloc(1, size);
 	if (ptr == NULL) {
-		__#{libName}_error(\"Failed to allocate memory: %s\\n\", errno,
-				strerror(errno));
+		fprintf(stderr, \"Failed to allocate memory: %s\\n\", strerror(errno));
+        exit(1);
 	}
 	return ptr;
 }
@@ -120,8 +120,8 @@ void *__#{libName}_realloc(void *ptr, unsigned long size)
 {
 	void *nptr = realloc(ptr, size);
 	if (nptr == NULL) {
-		__#{libName}_error(\"Failed to reallocate memory: %s\\n\", errno,
-				strerror(errno));
+		fprintf(stderr, \"Failed to allocate memory: %s\\n\", strerror(errno));
+        exit(1);
 	}
 	return nptr;
 }
