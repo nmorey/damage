@@ -79,6 +79,9 @@ signed long __#{libName}_read_value_slong_attr(xmlAttrPtr reader);
 double __#{libName}_read_value_double_attr(xmlAttrPtr reader);
 int __#{libName}_acquire_flock(const char* filename);
 int __#{libName}_release_flock();
+void __#{libName}_fread(void* buf, size_t elSize, int nbElem, FILE* input);
+void __#{libName}_fwrite(void* buf, size_t elSize, int nbElem, FILE* input);
+void __#{libName}_fseek(FILE *stream, long offset, int whence);
 
 #define __#{libName}_error(str, err, arg...) {								\\
 		fprintf(stderr, \"error: #{libName}:\" str \"\\n\", ##arg);			\\
@@ -134,6 +137,29 @@ void __#{libName}_free(void *ptr)
 	}
 }
 
+void __#{libName}_fread(void* buf, size_t elSize, int nbElem, FILE* input){
+    int ret;
+    ret = fread(buf, elSize, nbElem, input);
+    if(ret != nbElem){
+        __#{libName}_error(\"Failed to read from DB. Invalid format.\", errno);
+    }
+}
+
+void __#{libName}_fwrite(void* buf, size_t elSize, int nbElem, FILE* input){
+    int ret;
+    ret = fwrite(buf, elSize, nbElem, input);
+    if(ret != nbElem){
+        __#{libName}_error(\"Failed to write DB. Invalid format.\", errno);
+    }
+}
+
+void __#{libName}_fseek(FILE *stream, long offset, int whence){
+    int ret;
+    ret = fseek(stream, offset, whence);
+    if(ret < 0 ){
+        __#{libName}_error(\"Failed to read from DB. Invalid format.\", errno);
+    }
+}
 
 /*************************************
  * HELPER FUNCTIONS
