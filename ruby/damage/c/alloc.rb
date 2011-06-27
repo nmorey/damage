@@ -150,25 +150,10 @@ module Damage
 
                 output.printf("#ifndef __#{libName}_alloc_h__\n")
                 output.printf("#define __#{libName}_alloc_h__\n")
-                output.printf("#include <libxml/xmlreader.h>\n")
 
                 description.entries.each() {|name, entry|
                     output.printf("__#{libName}_%s *__#{libName}_%s_alloc();\n", entry.name, entry.name)
                     output.printf("void __#{libName}_%s_free(__#{libName}_%s *ptr);\n", entry.name, entry.name)
-
-                    output.printf("__#{libName}_%s *__#{libName}_%s_xml_load_file(const char* file);\n", entry.name, entry.name);
-                    output.printf("__#{libName}_%s *__#{libName}_%s_xml_load(xmlNodePtr node);\n", entry.name, entry.name)
-
-                    output.printf("int __#{libName}_%s_xml_dump_file(const char* file, __#{libName}_%s *ptr, int zipped);\n", entry.name, entry.name)
-                    output.printf("xmlNodePtr __#{libName}_create_%s_xml_node(xmlNodePtr node, __#{libName}_%s* ptr);\n", entry.name, entry.name)
-
-                    output.printf("unsigned long __#{libName}_%s_binary_dump_file(const char* file, __#{libName}_%s *ptr);\n", entry.name, entry.name)
-                    output.printf("__#{libName}_%s *__#{libName}_%s_binary_load_file(const char* file);\n", entry.name, entry.name);
-
-                    output.printf("unsigned long __#{libName}_%s_binary_dump_file_rowip(__#{libName}_%s *ptr);\n", entry.name, entry.name)
-                    output.printf("__#{libName}_%s *__#{libName}_%s_binary_load_file_rowip(const char* file);\n", entry.name, entry.name);
-
-
                     output.printf("\n")
                 }
                 output.printf("#endif /* __#{libName}_alloc_h__ */\n")

@@ -30,13 +30,13 @@ module Damage
 
             private
 
-            def genStruct(output, libPrefix, entry)
+            def genStruct(output, libName, entry)
 
-                output.printf("typedef struct ___#{libPrefix}_%s {\n", entry.name);
+                output.printf("typedef struct ___#{libName}_%s {\n", entry.name);
                 entry.fields.each() {|field|
                     case field.attribute
                     when :sort
-                        output.printf("\tstruct ___#{libPrefix}_%s** s_%s __attribute__((aligned(8)));\n", field.data_type, field.name)
+                        output.printf("\tstruct ___#{libName}_%s** s_%s __attribute__((aligned(8)));\n", field.data_type, field.name)
                         output.printf("\tunsigned long n_%s __attribute__((aligned(8)));\n", field.name)
                     when :pass
                         # Do NADA
@@ -51,7 +51,7 @@ module Damage
                                 output.printf("\tunsigned long %sLen __attribute__((aligned(8)));\n", field.name)
                             end
                         when :intern
-                            output.printf("\tstruct ___#{libPrefix}_%s* %s __attribute__((aligned(8)));\n", field.data_type, field.name)
+                            output.printf("\tstruct ___#{libName}_%s* %s __attribute__((aligned(8)));\n", field.data_type, field.name)
                         when :id, :idref
                             output.printf("\tchar* %s_str; __attribute__((aligned(8)))\n", field.name)
                             output.printf("\tunsigned long %s; __attribute__((aligned(8)))\n", field.name)
@@ -61,39 +61,33 @@ module Damage
                 }       
 
 
-                output.printf("\tstruct ___#{libPrefix}_%s* next  __attribute__((aligned(8)));\n", entry.name) if entry.attribute == :listable
+                output.printf("\tstruct ___#{libName}_%s* next  __attribute__((aligned(8)));\n", entry.name) if entry.attribute == :listable
                 output.printf("\tvoid* _private  __attribute__((aligned(8)));\n");
                 output.printf("\tunsigned long _rowip_pos  __attribute__((aligned(8)));\n");
                 output.printf("\tvoid* _rowip  __attribute__((aligned(8)));\n");
-                output.printf("} __#{libPrefix}_%s;\n\n", entry.name);
+                output.printf("} __#{libName}_%s;\n\n", entry.name);
 
             end
             module_function :genStruct
 
             def genH(output, description)
-                libPrefix = description.config.libname
+                libName = description.config.libname
 
-                output.printf("#ifndef __#{libPrefix}_structs_h__\n");
-                output.printf("#define __#{libPrefix}_structs_h__\n");
+                output.printf("#ifndef __#{libName}_structs_h__\n");
+                output.printf("#define __#{libName}_structs_h__\n");
                 
                 description.entries.each() {|name, entry|
-                    genStruct(output, libPrefix, entry)
+                    genStruct(output, libName, entry)
 
                 }
                 output.printf("\n\n");
-                output.printf("typedef struct ___#{libPrefix}_rowip_header {\n");
+                output.printf("typedef struct ___#{libName}_rowip_header {\n");
                 output.printf("\tchar* filename;\n");
                 output.printf("\tunsigned long len;\n");
                 output.printf("\tFILE* file;\n");
                 output.printf("\tvoid* base_adr;\n");
-                output.printf("} __#{libPrefix}_rowip_header;\n\n");
-                output.printf("#define __#{libPrefix.upcase}_ROWIP_PTR(ptr, field) ({typeof(ptr->field) _ptr = NULL; if(ptr->field != NULL) { _ptr = (void*)ptr - ptr->_rowip_pos + ((unsigned long)ptr->field);} _ptr;})\n");
-                output.printf("#define __#{libPrefix.upcase}_ROWIP_STR(ptr, field) ({char* _ptr = NULL; if(ptr->field != NULL) { _ptr = (void*)ptr - ptr->_rowip_pos + ((unsigned long)ptr->field + sizeof(uint32_t));} _ptr;})\n");
-
-                output.printf("#define __#{libPrefix.upcase}_ROWIP_PTR_ARRAY(ptr, field, idx) ({typeof(*ptr->field)_ptr = NULL; typeof(ptr->field) _array; if(ptr->field != NULL) { _array =  __#{libPrefix.upcase}_ROWIP_PTR(ptr, field); _ptr = ((void*)ptr - ptr->_rowip_pos) + (unsigned long)(_array[idx]);} _ptr;})\n")
-
-                output.printf("#define __#{libPrefix.upcase}_ROWIP_STR_ARRAY(ptr, field, idx) ({char*_ptr = NULL; uint32_t* _array; if(ptr->field != NULL) { _array =  (uint32_t*)__#{libPrefix.upcase}_ROWIP_PTR(ptr, field); _ptr = ((void*)ptr - ptr->_rowip_pos) + (unsigned long)(_array[idx] + sizeof(uint32_t));} _ptr;})\n")
-                output.printf("#endif /* __#{libPrefix}_structs_h__ */\n");
+                output.printf("} __#{libName}_rowip_header;\n\n");
+                output.printf("#endif /* __#{libName}_structs_h__ */\n");
             end
             module_function :genH
         end
