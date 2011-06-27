@@ -145,7 +145,6 @@ static inline void __#{libName}_rowip_header_free(__#{libName}_rowip_header* ptr
                     output.printf("\tvoid *mapped = NULL;\n");
                     output.printf("\tstruct stat buf;\n");
                     output.printf("\tFILE* output;\n")
-                    output.printf("\tint mmap_mode = PROT_READ;\n");
                     output.printf("\n")
 
                     output.printf("\tret = setjmp(__#{libName}_error_happened);\n");
@@ -168,8 +167,7 @@ static inline void __#{libName}_rowip_header_free(__#{libName}_rowip_header* ptr
                     output.printf("\theader->len = buf.st_size;\n");
                     output.printf("\tif(header->len == 0UL)\n");
                     output.printf("\t\t__#{libName}_error(\"File %%s is empty\", EINVAL, header->filename);\n");
-                    output.printf("\tmmap_mode |= ((rdonly == 0) ? PROT_WRITE : 0);\n");
-                    output.printf("\tif((mapped = mmap(NULL, header->len, mmap_mode, MAP_SHARED, fileno(header->file), 0)) == MAP_FAILED)\n");
+                    output.printf("\tif((mapped = mmap(NULL, header->len, PROT_READ|PROT_WRITE, MAP_SHARED, fileno(header->file), 0)) == MAP_FAILED)\n");
                     output.printf("\t\t__#{libName}_error(\"Failed to map %%s: %%s\", errno, header->filename, strerror(errno));\n");
                     output.printf("\theader->base_adr = mapped;\n");
                     output.printf("\tfclose(header->file);\n")
