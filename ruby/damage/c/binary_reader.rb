@@ -38,7 +38,7 @@ module Damage
                 output.puts("#define __#{libName}_binary_reader_h__\n")
                 description.entries.each() {|name, entry|
                     output.puts "__#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load(FILE* file, uint32_t offset);\n"
-                    output.printf("__#{libName}_%s* __#{libName}_%s_binary_load_file(const char* file);\n\n", entry.name, entry.name)
+                    output.printf("__#{libName}_%s* __#{libName}_%s_binary_load_file(const char* file, int rdonly);\n\n", entry.name, entry.name)
                 }
                 output.printf("\n\n");
                 output.puts("#endif /* __#{libName}_binary_reader_h__ */\n")
@@ -180,7 +180,7 @@ __#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load(FILE* file, u
                 }
 
                 description.entries.each() { | name, entry|
-                    output.printf("__#{libName}_%s* __#{libName}_%s_binary_load_file(const char* file)\n{\n", entry.name, entry.name)
+                    output.printf("__#{libName}_%s* __#{libName}_%s_binary_load_file(const char* file, int rdonly)\n{\n", entry.name, entry.name)
                     output.printf("\tint ret;\n")
                     output.printf("\t__#{libName}_%s *ptr = NULL;\n", entry.name);
                     output.printf("\tFILE* output;\n")
@@ -194,13 +194,17 @@ __#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load(FILE* file, u
                     output.printf("\t\treturn NULL;\n");
                     output.printf("\t}\n\n");
 
-                    output.printf("\tif(__#{libName}_acquire_flock(file))\n");
+                    output.printf("\tif(__#{libName}_acquire_flock(file, rdonly))\n");
                     output.printf("\t\t__#{libName}_error(\"Failed to lock output file %%s\", ENOENT, file);\n");
                     output.printf("\tif((output = fopen(file, \"r\")) == NULL)\n");
                     output.printf("\t\t__#{libName}_error(\"Failed to open output file %%s\", errno, file);\n");
 
                     output.printf("\tptr = __#{libName}_%s_binary_load(output, sizeof(uint32_t));\n", entry.name)
                     output.printf("\tfclose(output);\n")
+                    output.printf("\tif (rdonly) {\n");
+                    output.printf("\t__#{libName}_release_flock();\n");
+                    output.printf("\t}\n");
+
                     output.printf("\treturn ptr;\n");
                     output.printf("}\n");
                 }

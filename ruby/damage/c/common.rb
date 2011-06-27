@@ -57,7 +57,7 @@ char *__#{libName}_read_value_str_attr(xmlAttrPtr reader);
 unsigned long __#{libName}_read_value_ulong_attr(xmlAttrPtr reader);
 signed long __#{libName}_read_value_slong_attr(xmlAttrPtr reader);
 double __#{libName}_read_value_double_attr(xmlAttrPtr reader);
-int __#{libName}_acquire_flock(const char* filename);
+int __#{libName}_acquire_flock(const char* filename, int rdonly);
 int __#{libName}_release_flock();
 void __#{libName}_fread(void* buf, size_t elSize, int nbElem, FILE* input);
 void __#{libName}_fwrite(void* buf, size_t elSize, int nbElem, FILE* input);
@@ -275,7 +275,7 @@ static struct flock lock;
 static FILE* __#{libName}_filelock = NULL;
 
 
-int __#{libName}_acquire_flock(const char* filename){
+int __#{libName}_acquire_flock(const char* filename, int rdonly){
 	char* lock_file;
 	
 	if(__#{libName}_filelock != NULL){
@@ -288,7 +288,11 @@ int __#{libName}_acquire_flock(const char* filename){
 	lock.l_start = 0;
 	lock.l_len = 0;
 	lock.l_pid = getpid();
-	lock.l_type = F_WRLCK;
+    if(rdonly){
+        lock.l_type = F_RDLCK;
+    } else {
+        lock.l_type = F_WRLCK;
+    }
 	__#{libName}_filelock = fopen(lock_file, \"w+\");
 	free(lock_file);
 	if(__#{libName}_filelock == NULL){

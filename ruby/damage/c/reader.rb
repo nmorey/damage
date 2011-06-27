@@ -39,7 +39,7 @@ module Damage
                 description.entries.each() {|name, entry|
                     output.printf("__#{libName}_%s *__#{libName}_%s_xml_load(", entry.name, entry.name);
                     output.printf("xmlNodePtr node);\n");
-                    output.printf("__#{libName}_%s *__#{libName}_%s_xml_load_file(const char* file);\n", entry.name, entry.name);
+                    output.printf("__#{libName}_%s *__#{libName}_%s_xml_load_file(const char* file, int rdonly);\n", entry.name, entry.name);
                 }
                 description.containers.each() {|name, type|
                     output.printf("__#{libName}_%s *__#{libName}_%s%sContainer_xml_load(", type, name, type);
@@ -342,13 +342,13 @@ module Damage
                 
                 # Generate file parser
                 description.entries.each() { | name, entry|
-                    output.printf("__#{libName}_%s *__#{libName}_%s_xml_load_file(const char* file){\n", entry.name, entry.name);
+                    output.printf("__#{libName}_%s *__#{libName}_%s_xml_load_file(const char* file, int rdonly){\n", entry.name, entry.name);
                     output.printf("\t__#{libName}_%s *ptr = NULL;\n", entry.name);
                     
                     output.printf("\tint ret;\n");
                     output.printf("\txmlDocPtr document = NULL;\n\n");
                     output.printf("\txmlNode* root;\n");
-                    
+
                     output.printf("\tret = setjmp(__#{libName}_error_happened);\n");
                     output.printf("\tif (ret != 0) {\n");
                     output.printf("\t\tif (document != NULL){\n");
@@ -361,7 +361,7 @@ module Damage
                     output.printf("\t\treturn NULL;\n");
                     output.printf("\t}\n\n");
                     
-                    output.printf("\tif(__#{libName}_acquire_flock(file))\n");
+                    output.printf("\tif(__#{libName}_acquire_flock(file, rdonly))\n");
                     output.printf("\t\t__#{libName}_error(\"Failed to lock XML file %%s\",\n");
                     output.printf("\t\t\t  ENOENT, file);\n");
                     output.printf("\tdocument = xmlReadFile(file, NULL, 0);\n\n");
@@ -382,7 +382,9 @@ module Damage
                     output.printf("\t\t\t(\"%s: Invalid node \\\"%%s\\\" at line %%d in XML file\",\n", entry.name);
                     output.printf("\t\t\tEINVAL, root->name, root->line);\n");
                     output.printf("\t}\n");
-                    
+                    output.printf("\tif (rdonly) {\n");
+                    output.printf("\t__#{libName}_release_flock();\n");
+                    output.printf("\t}\n");
                     output.printf("\txmlFreeDoc(document);\n");
                     output.printf("\txmlCleanupParser();\n");
                     output.printf("\treturn ptr;\n");
