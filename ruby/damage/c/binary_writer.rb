@@ -87,6 +87,8 @@ uint32_t __#{libName}_#{entry.name}_binary_dump(__#{libName}_#{entry.name}* ptr,
                             elsif field.attribute == :sort
                                 output.printf("#{indent}val.s_%s = NULL;\n", field.name)
                                 output.printf("#{indent}val.n_%s = 0;\n", field.name)
+                            elsif field.attribute == :meta && field.category == :intern
+                                output.printf("#{indent}val.%s = NULL;\n", field.name)
                             end
                             next
                         end
