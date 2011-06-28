@@ -24,7 +24,7 @@ static VALUE #{params[:funcPrefix]}_to_xml(VALUE self, VALUE filePath){
     int ret;
     Check_Type(filePath, T_STRING);
 
-    ret = __#{libName}_#{entry.name}_xml_dump_file(StringValuePtr(filePath), DATA_PTR(self), 1);
+    ret = __#{libName}_#{entry.name}_xml_dump_file(StringValuePtr(filePath), DATA_PTR(self), 1, 1);
 
     if(ret < 0)
         rb_raise(rb_eArgError, \"Could not write XML file\");
@@ -36,7 +36,7 @@ static VALUE #{params[:funcPrefix]}_to_xmluz(VALUE self, VALUE filePath){
     int ret;
     Check_Type(filePath, T_STRING);
 
-    ret = __#{libName}_#{entry.name}_xml_dump_file(StringValuePtr(filePath), DATA_PTR(self), 0);
+    ret = __#{libName}_#{entry.name}_xml_dump_file(StringValuePtr(filePath), DATA_PTR(self), 0, 1);
 
     if(ret < 0)
         rb_raise(rb_eArgError, \"Could not write XML file\");
@@ -48,7 +48,7 @@ static VALUE #{params[:funcPrefix]}_to_binary(VALUE self, VALUE filePath){
     int ret;
     Check_Type(filePath, T_STRING);
 
-    ret = __#{libName}_#{entry.name}_binary_dump_file(StringValuePtr(filePath), DATA_PTR(self));
+    ret = __#{libName}_#{entry.name}_binary_dump_file(StringValuePtr(filePath), DATA_PTR(self), 1);
 
     if(ret < 0)
         rb_raise(rb_eArgError, \"Could not write binary file\");
@@ -60,7 +60,7 @@ static VALUE #{params[:funcPrefix]}_to_binary(VALUE self, VALUE filePath){
 static VALUE #{params[:funcPrefix]}_to_binary_rowip(VALUE self){
     int ret;
 
-    ret = __#{libName}_#{entry.name}_binary_dump_file_rowip( DATA_PTR(self));
+    ret = __#{libName}_#{entry.name}_binary_dump_file_rowip( DATA_PTR(self), 1);
 
     if(ret < 0)
         rb_raise(rb_eArgError, \"Could not write binary file\");

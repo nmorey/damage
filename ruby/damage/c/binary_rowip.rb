@@ -42,7 +42,7 @@ module Damage
                 output.puts("#ifndef __#{libName}_binary_rowip_h__")
                 output.puts("#define __#{libName}_binary_rowip_h__\n")
                 description.entries.each() {|name, entry|
-                    output.printf("unsigned long __#{libName}_%s_binary_dump_file_rowip(__#{libName}_%s *ptr);\n", entry.name, entry.name)
+                    output.printf("unsigned long __#{libName}_%s_binary_dump_file_rowip(__#{libName}_%s *ptr, int unlock);\n", entry.name, entry.name)
                     output.printf("__#{libName}_%s* __#{libName}_%s_binary_load_file_rowip(const char* file, int rdonly);\n\n", entry.name, entry.name)
                 }
                 output.printf("#define __#{libName.upcase}_ROWIP_PTR(ptr, field) ({typeof(ptr->field) _ptr = NULL; if(ptr->field != NULL) { _ptr = (void*)ptr - ptr->_rowip_pos + ((unsigned long)ptr->field);} _ptr;})\n");
@@ -95,7 +95,7 @@ static inline void __#{libName}_rowip_header_free(__#{libName}_rowip_header* ptr
 
                 
                 description.entries.each() { | name, entry|
-                    output.printf("unsigned long __#{libName}_%s_binary_dump_file_rowip(__#{libName}_%s *ptr)\n{\n", entry.name, entry.name)
+                    output.printf("unsigned long __#{libName}_%s_binary_dump_file_rowip(__#{libName}_%s *ptr, int unlock)\n{\n", entry.name, entry.name)
                     output.printf("\tunsigned long ret; int r;\n")
                     output.printf("\t__#{libName}_rowip_header *header = (__#{libName}_rowip_header*)ptr->_rowip;\n");
                     output.printf("\n")
@@ -114,9 +114,12 @@ static inline void __#{libName}_rowip_header_free(__#{libName}_rowip_header* ptr
                     output.printf("\tif((r = munmap(header->base_adr, header->len)) != 0)\n", entry.name)
                     output.printf("\t\t__#{libName}_error(\"Failed to unmap output file %%s\", errno, header->filename);\n");
 
-                    output.printf("\t__#{libName}_release_flock(header->filename);\n");
+                    output.printf("\tif(unlock)\n");
+                    output.printf("\t\t__#{libName}_release_flock();\n");
                     output.printf("\tret = header->len;\n")
-                    output.printf("\t__#{libName}_rowip_header_free(header);\n")
+
+                    output.printf("\tif(unlock)\n");
+                    output.printf("\t\t__#{libName}_rowip_header_free(header);\n")
                     output.printf("\treturn ret;\n");
                     output.printf("}\n");
                 }

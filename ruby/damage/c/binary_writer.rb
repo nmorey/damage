@@ -39,7 +39,7 @@ module Damage
                 output.puts("#define __#{libName}_binary_writer_h__\n")
                 description.entries.each() {|name, entry|
                     output.puts "uint32_t __#{libName}_#{entry.name}_binary_dump(__#{libName}_#{entry.name}* ptr, FILE* file, uint32_t offset);\n"
-                    output.printf("unsigned long __#{libName}_%s_binary_dump_file(const char* file, __#{libName}_%s *ptr);\n\n", entry.name, entry.name)
+                    output.printf("unsigned long __#{libName}_%s_binary_dump_file(const char* file, __#{libName}_%s *ptr, int unlock);\n\n", entry.name, entry.name)
 
                 }
                 output.printf("\n\n");
@@ -191,7 +191,7 @@ uint32_t __#{libName}_#{entry.name}_binary_dump(__#{libName}_#{entry.name}* ptr,
                 }
 
                 description.entries.each() { | name, entry|
-                    output.printf("unsigned long __#{libName}_%s_binary_dump_file(const char* file, __#{libName}_%s *ptr)\n{\n", entry.name, entry.name)
+                    output.printf("unsigned long __#{libName}_%s_binary_dump_file(const char* file, __#{libName}_%s *ptr, int unlock)\n{\n", entry.name, entry.name)
                     output.printf("\tuint32_t ret;\n")
                     output.printf("\tFILE* output;\n")
                     output.printf("\n")
@@ -212,7 +212,8 @@ uint32_t __#{libName}_#{entry.name}_binary_dump(__#{libName}_#{entry.name}* ptr,
                     output.printf("\t__#{libName}_fseek(output, 0, SEEK_SET);\n")
                     output.printf("\t__#{libName}_fwrite(&ret, sizeof(ret), 1, output);\n");
                     output.printf("\tfclose(output);\n")
-                    output.printf("\t__#{libName}_release_flock();\n");
+                    output.printf("\tif(unlock)\n");
+                    output.printf("\t\t__#{libName}_release_flock();\n");
                     output.printf("\treturn (unsigned long)ret;\n");
                     output.printf("}\n");
                 }

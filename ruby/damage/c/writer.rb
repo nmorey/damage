@@ -53,7 +53,7 @@ module Damage
                 output.puts("#define __#{libName}_xml_writer_h__\n")
                 description.entries.each() {|name, entry|
                     output.printf("xmlNodePtr __#{libName}_create_%s_xml_node(xmlNodePtr node, __#{libName}_%s *ptr);\n", entry.name, entry.name);
-                    output.printf("int __#{libName}_%s_xml_dump_file(const char* file, __#{libName}_%s *ptr, int zipped);\n\n", entry.name, entry.name)
+                    output.printf("int __#{libName}_%s_xml_dump_file(const char* file, __#{libName}_%s *ptr, int zipped, int unlock);\n\n", entry.name, entry.name)
                 }
                 output.printf("\n\n");
                output.puts("#endif /* __#{libName}_xml_writer_h__ */\n")
@@ -154,7 +154,7 @@ module Damage
                 }
 
                 description.entries.each() { | name, entry|
-                    output.printf("int __#{libName}_%s_xml_dump_file(const char* file, __#{libName}_%s *ptr, int zipped)\n{\n", entry.name, entry.name)
+                    output.printf("int __#{libName}_%s_xml_dump_file(const char* file, __#{libName}_%s *ptr, int zipped, int unlock)\n{\n", entry.name, entry.name)
                     output.printf("\txmlDocPtr doc = NULL;\n")
                     output.printf("\txmlNodePtr node = NULL;\n")
                     output.printf("\tint ret;\n")
@@ -172,7 +172,8 @@ module Damage
                     output.printf("\t\t\t  ENOENT, file);\n");
                     output.printf("\tret = xmlSaveFormatFileEnc(file, doc, \"us-ascii\", 1);\n");
                     output.printf("\txmlFreeDoc(doc);\n\n");
-                    output.printf("\t__#{libName}_release_flock();\n");
+                    output.printf("\tif(unlock)\n");
+                    output.printf("\t\t__#{libName}_release_flock();\n");
                     output.printf("\treturn ret;\n");
                     output.printf("}\n");
                 }      
