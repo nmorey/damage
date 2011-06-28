@@ -169,11 +169,12 @@ module Damage
         end
 
         class Entry
-            attr_accessor :name, :attribute, :fields, :children, :attributes, :sort, :containers, :cleanup
+            attr_accessor :name, :attribute, :fields, :children, :attributes, :sort, :containers, :cleanup, :postcleanup
             def initialize(entry)
                 @name = entry["name"]
                 @attribute = :none
                 @cleanup = entry["cleanup"]
+                @postcleanup = entry["postcleanup"]
                 @fields = []
                 @children = []
                 @attributes = []

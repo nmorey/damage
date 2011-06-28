@@ -82,6 +82,8 @@ module Damage
                         source="el"
                         indent="\t\t"
                     end
+                    output.printf("\t#{entry.postcleanup}(#{source});\n") if entry.postcleanup != nil 
+
                     entry.fields.each() { |field|
                         if field.target == :both then
                             case field.qty
