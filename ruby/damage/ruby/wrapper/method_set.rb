@@ -91,6 +91,30 @@ module Damage
     return self;
 }
 ");
+              when :enum
+                  output.puts("
+#{aliasFunc}
+#{setStr}{
+    #{params[:cType]}* ptr;
+    int i;
+    Data_Get_Struct(self, #{params[:cType]}, ptr);
+    assert(ptr);
+    Check_Type(val, T_SYMBOL);
+
+    for(i = 0; i < #{field.enum.length + 1}; i++){
+        if(#{entry.name}_#{field.name}_enumId[i] == SYM2ID(val)){
+            ptr->#{field.name} = i;
+            return self;
+        }
+    }
+
+    rb_raise(rb_eArgError, \"Invalid argument for enum #{entry.name}.#{field.name}\");
+    return self;
+}
+");
+              else
+                  raise("Unsupported data category for #{entry.name}.#{field.name}");
+
               end
             when :list, :container
               case field.category
@@ -181,6 +205,9 @@ module Damage
     return self;
 }
 ");
+                                else
+                                    raise("Unsupported data category for #{entry.name}.#{field.name}");
+
               end
             end
 

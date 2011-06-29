@@ -83,7 +83,15 @@ void #{params[:funcPrefix]}_init(void){
 ")
           end
 
-
+            entry.enums.each() {|field|
+                output.puts("
+    {
+        int i;
+        for(i = 0; i < #{field.enum.length + 1}; i++){
+            #{entry.name}_#{field.name}_enumId[i] = rb_intern(#{entry.name}_#{field.name}_enum[i]);
+        }
+    }
+") }
           output.puts("
 }
 ");

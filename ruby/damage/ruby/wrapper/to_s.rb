@@ -15,31 +15,31 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 module Damage
-  module Ruby
-    module Wrapper
-      module ToS
-        def write(output, entry, libName, params)
-          output.puts("
+    module Ruby
+        module Wrapper
+            module ToS
+                def write(output, entry, libName, params)
+                    output.puts("
 VALUE #{params[:funcPrefix]}_xml_to_string(VALUE self, int indent){
     #{params[:cType]}* ptr;
     Data_Get_Struct(self, #{params[:cType]}, ptr);
     VALUE string = rb_str_new2(strdup(\"\"));
     int first __attribute__((unused)) = 1;
 ");
-            if entry.attribute == :listable then
-                output.puts("    int listable = 1;")
-            else
-                output.puts("    int listable = 0;")
-            end
-          entry.fields.each() {|field|
-            next if field.target != :both
-            case field.qty
-            when :single
-              case field.category
-              when :simple
-                case field.data_type
-                when "char*"
-                  output.puts("
+                    if entry.attribute == :listable then
+                        output.puts("    int listable = 1;")
+                    else
+                        output.puts("    int listable = 0;")
+                    end
+                    entry.fields.each() {|field|
+                        next if field.target != :both
+                        case field.qty
+                        when :single
+                            case field.category
+                            when :simple
+                                case field.data_type
+                                when "char*"
+                                    output.puts("
     indentToString(string, indent, listable, first);
     first = 0;    
     string = rb_str_concat(string, rb_str_new2(strdup(\"#{field.name}: \\\"\")));
@@ -49,8 +49,8 @@ VALUE #{params[:funcPrefix]}_xml_to_string(VALUE self, int indent){
     string = rb_str_concat(string, rb_str_new2(strdup(\"\\\"\\n\")));
 ")
 
-                when "unsigned long", "signed long", "uint32_t", "int32_t", "double"
-                  output.puts("
+                                when "unsigned long", "signed long", "uint32_t", "int32_t", "double"
+                                    output.puts("
     {
     char numstr[256];
     indentToString(string, indent, listable, first);
@@ -59,12 +59,12 @@ VALUE #{params[:funcPrefix]}_xml_to_string(VALUE self, int indent){
     string = rb_str_concat(string, rb_str_new2(strdup(numstr)));
     }
 ")
-                else
-                   raise("Unsupported data type #{field.data_type}" )
-               end
-              when :intern
-                tParams = Damage::Ruby::nameToParams(libName, field.data_type)
-                output.puts("
+                                else
+                                    raise("Unsupported data type #{field.data_type}" )
+                                end
+                            when :intern
+                                tParams = Damage::Ruby::nameToParams(libName, field.data_type)
+                                output.puts("
     if(ptr->#{field.name} != NULL){
         indentToString(string, indent, listable, first);
         first = 0;
@@ -72,13 +72,24 @@ VALUE #{params[:funcPrefix]}_xml_to_string(VALUE self, int indent){
         string = rb_str_concat(string, #{tParams[:funcPrefix]}_xml_to_string((VALUE)ptr->#{field.name}->_private, indent+1));
     }
 ")
-              end
-            when :list, :container
-              case field.category
-              when :simple
-                case field.data_type
-                when "char*"
-                  output.puts("
+                            when :enum
+                                output.puts("
+    {
+    indentToString(string, indent, listable, first);
+    string = rb_str_concat(string, rb_str_new2(strdup(\"#{field.name}: \")));
+    string = rb_str_concat(string, rb_str_new2(strdup(#{entry.name}_#{field.name}_enum[ptr->#{field.name}])));
+    string = rb_str_concat(string, rb_str_new2(strdup(\"\\n\")));
+    }
+")
+                            else
+                                raise("Unsupported data category for #{entry.name}.#{field.name}");
+                            end
+                        when :list, :container
+                            case field.category
+                            when :simple
+                                case field.data_type
+                                when "char*"
+                                    output.puts("
     indentToString(string, indent, listable, first);
     first = 0;
     string = rb_str_concat(string, rb_str_new2(strdup(\"#{field.name}: \")));
@@ -93,9 +104,9 @@ VALUE #{params[:funcPrefix]}_xml_to_string(VALUE self, int indent){
 
     }
 ");
-                    
-                when "unsigned long", "signed long", "uint32_t", "int32_t", "double"
-                  output.puts("
+                                    
+                                when "unsigned long", "signed long", "uint32_t", "int32_t", "double"
+                                    output.puts("
    indentToString(string, indent, listable, first);
     first = 0;
     string = rb_str_concat(string, rb_str_new2(strdup(\"#{field.name}: \")));
@@ -112,12 +123,12 @@ VALUE #{params[:funcPrefix]}_xml_to_string(VALUE self, int indent){
 
     }
 ");               
-                else
-                  raise("Unsupported data type #{field.data_type}" )
-                end
-              when :intern
-                tParams=Damage::Ruby::nameToParams(libName, field.data_type)
-                output.puts("
+                                else
+                                    raise("Unsupported data type #{field.data_type}" )
+                                end
+                            when :intern
+                                tParams=Damage::Ruby::nameToParams(libName, field.data_type)
+                                output.puts("
    indentToString(string, indent, listable, first);
     first = 0;
     string = rb_str_concat(string, rb_str_new2(strdup(\"#{field.name}: \")));
@@ -131,11 +142,12 @@ VALUE #{params[:funcPrefix]}_xml_to_string(VALUE self, int indent){
     }
 
 ");
-              end
-            end
-
-            }
-            output.puts("
+                            else
+                                raise("Unsupported data category for #{entry.name}.#{field.name}");
+                            end
+                        end
+                    }
+                    output.puts("
     return string;
 }
 
@@ -146,33 +158,33 @@ static VALUE #{params[:funcPrefix]}_to_s(VALUE self){
 
 
 
-#
-#
-# ROWIP
-#
+                        #
+                        #
+                        # ROWIP
+                        #
 
-          output.puts("
+                        output.puts("
 VALUE #{params[:funcPrefix]}_xml_to_stringRowip(VALUE self, int indent){
     #{params[:cType]}* ptr;
     Data_Get_Struct(self, #{params[:cType]}, ptr);
     VALUE string = rb_str_new2(strdup(\"\"));
    int first __attribute__((unused)) = 1;
 ");
-            if entry.attribute == :listable then
-                output.puts("    int listable = 1;")
-            else
-                output.puts("    int listable = 0;")
-            end
+                        if entry.attribute == :listable then
+                            output.puts("    int listable = 1;")
+                        else
+                            output.puts("    int listable = 0;")
+                        end
 
-          entry.fields.each() {|field|
-            next if field.target != :both
-            case field.qty
-            when :single
-              case field.category
-              when :simple
-                case field.data_type
-                when "char*"
-                  output.puts("
+                        entry.fields.each() {|field|
+                            next if field.target != :both
+                            case field.qty
+                            when :single
+                                case field.category
+                                when :simple
+                                    case field.data_type
+                                    when "char*"
+                                        output.puts("
     indentToString(string, indent, listable, first);
     string = rb_str_concat(string, rb_str_new2(strdup(\"#{field.name}: \\\"\")));
     if(ptr->#{field.name} != NULL){
@@ -180,9 +192,9 @@ VALUE #{params[:funcPrefix]}_xml_to_stringRowip(VALUE self, int indent){
     }
     string = rb_str_concat(string, rb_str_new2(strdup(\"\\\"\\n\")));
 ")
-                when "unsigned long", "signed long", "uint32_t", "int32_t", "double"
+                                    when "unsigned long", "signed long", "uint32_t", "int32_t", "double"
 
-                  output.puts("
+                                        output.puts("
     {
     char numstr[256];
     indentToString(string, indent, listable, first);
@@ -190,25 +202,36 @@ VALUE #{params[:funcPrefix]}_xml_to_stringRowip(VALUE self, int indent){
     string = rb_str_concat(string, rb_str_new2(strdup(numstr)));
     }
 ")
-                else
-                   raise("Unsupported data type #{field.data_type}" )
-               end
-              when :intern
-                tParams = Damage::Ruby::nameToParams(libName, field.data_type)
-                output.puts("
+                                    else
+                                        raise("Unsupported data type #{field.data_type}" )
+                                    end
+                                when :intern
+                                    tParams = Damage::Ruby::nameToParams(libName, field.data_type)
+                                    output.puts("
     if(ptr->#{field.name} != NULL){
         indentToString(string, indent, listable, first);
         string = rb_str_concat(string, rb_str_new2(strdup(\"#{field.name}:\\n\")));
         string = rb_str_concat(string, #{tParams[:funcPrefix]}_xml_to_stringRowip((VALUE)__#{libName.upcase}_ROWIP_PTR(ptr, #{field.name})->_private, indent+1));
     }
 ")
-              end
-            when :list, :container
-              case field.category
-              when :simple
-                case field.data_type
-                when "char*"
-                  output.puts("
+                                when :enum
+                                    output.puts("
+    {
+    indentToString(string, indent, listable, first);
+    string = rb_str_concat(string, rb_str_new2(strdup(\"#{field.name}: \\\"\")));
+    string = rb_str_concat(string, rb_str_new2(strdup(#{entry.name}_#{field.name}_enum[ptr->#{field.name}])));
+    string = rb_str_concat(string, rb_str_new2(strdup(\"\\\"\\n\")));
+    }
+")
+                                else
+                                    raise("Unsupported data type #{field.data_type}" )
+                                end
+                            when :list, :container
+                                case field.category
+                                when :simple
+                                    case field.data_type
+                                    when "char*"
+                                        output.puts("
     indentToString(string, indent, listable, first);
     string = rb_str_concat(string, rb_str_new2(strdup(\"#{field.name}: \")));
     string = rb_str_concat(string, rb_str_new2(strdup(\"\\n\")));
@@ -223,8 +246,8 @@ VALUE #{params[:funcPrefix]}_xml_to_stringRowip(VALUE self, int indent){
     }
 ");
 
-                when "unsigned long", "signed long", "uint32_t", "int32_t", "double"
-                  output.puts("
+                                    when "unsigned long", "signed long", "uint32_t", "int32_t", "double"
+                                        output.puts("
    indentToString(string, indent, listable, first);
     string = rb_str_concat(string, rb_str_new2(strdup(\"#{field.name}: \")));
     string = rb_str_concat(string, rb_str_new2(strdup(\"\\n\")));
@@ -240,12 +263,12 @@ VALUE #{params[:funcPrefix]}_xml_to_stringRowip(VALUE self, int indent){
 
     }
 "); 
-                else
-                  raise("Unsupported data type #{field.data_type}" )
-                end
-              when :intern
-                tParams=Damage::Ruby::nameToParams(libName, field.data_type)
-                output.puts("
+                                    else
+                                        raise("Unsupported data type #{field.data_type}" )
+                                    end
+                                when :intern
+                                    tParams=Damage::Ruby::nameToParams(libName, field.data_type)
+                                    output.puts("
    indentToString(string, indent, listable, first);
     string = rb_str_concat(string, rb_str_new2(strdup(\"#{field.name}: \")));
     string = rb_str_concat(string, rb_str_new2(strdup(\"\\n\")));
@@ -258,11 +281,13 @@ VALUE #{params[:funcPrefix]}_xml_to_stringRowip(VALUE self, int indent){
     }
 
 ");
-              end
-            end
+                                else
+                                    raise("Unsupported data category for #{entry.name}.#{field.name}");
+                                end
+                            end
 
-            }
-            output.puts("
+                        }
+                        output.puts("
     return string;
 }
 
@@ -274,11 +299,11 @@ static VALUE #{params[:funcPrefix]}_to_sRowip(VALUE self){
 
 
 
-          end
-          module_function :write
-          
-          private
+                    end
+                    module_function :write
+                    
+                    private
+                end
+            end
         end
-      end
     end
-  end

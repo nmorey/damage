@@ -80,7 +80,7 @@ module Damage
                         entry.enums.each() { |field|
                             output.printf("\tconst char *#{field.name}_enum_str[] =\n\t{"); 
                             # Enumerate allowed keyword
-                            output.printf("\"N/A\", ");
+                            output.printf("\"N_A\", ");
                             field.enum.each() {|enum|
                                 output.printf("\"%s\", ", enum) ;
                             }

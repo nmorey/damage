@@ -45,6 +45,21 @@ VALUE #{params[:classValueListRowip]};
 
 ")
           end
+
+            entry.enums.each() { |field|
+                count = 1;
+                output.puts("
+static const char* #{entry.name}_#{field.name}_enum[] = {
+\t\"N_A\",")
+                field.enum.each() {|enum|
+                    output.puts("\t\"#{enum}\",")
+                    count +=1
+                }                     
+output.puts("};
+
+static ID #{entry.name}_#{field.name}_enumId[#{count}];")
+                
+            }
         end
         module_function :write
         

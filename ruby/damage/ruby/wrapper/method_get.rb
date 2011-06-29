@@ -112,6 +112,18 @@ module Damage
     return (VALUE)__#{libName.upcase}_ROWIP_PTR(ptr,#{field.name})->_private;
 }
 ")
+              when :enum
+                output.puts("
+#{aliasFunc}
+#{getStr}{
+    #{params[:cType]}* ptr;
+    Data_Get_Struct(self, #{params[:cType]}, ptr);
+    assert(ptr);
+    return ID2SYM(#{entry.name}_#{field.name}_enumId[ptr->#{field.name}]);
+}
+")               else
+                  raise("Unsupported data category for #{entry.name}.#{field.name}");
+
               end
             when :list, :container
               case field.category
@@ -217,6 +229,9 @@ module Damage
     return #{tParams[:funcPrefixList]}_wrapRowip(list);
 }
 ");
+              else
+                  raise("Unsupported data category for #{entry.name}.#{field.name}");
+
               end
             end
 
