@@ -19,10 +19,15 @@ module Damage
         module Enum
 
             @OUTFILE = "enum.h"
+            @OUTFILE_C = "enum.c"
             def write(description)
                 
                 output = Damage::Files.createAndOpen("gen/#{description.config.libname}/include/#{description.config.libname}", @OUTFILE)
                 genH(output, description)
+                output.close()
+
+                output = Damage::Files.createAndOpen("gen/#{description.config.libname}/src/", @OUTFILE_C)
+                genC(output, description)
                 output.close()
             end
             module_function :write
@@ -37,15 +42,14 @@ module Damage
                     if field.category == :enum then
                         enumPrefix="__#{libName.upcase}_#{entry.name.upcase}_#{field.name.upcase}"
                         output.printf("typedef enum {\n");
-                        output.printf("\t#{enumPrefix}_N_A = 0,\n")
+                        output.printf("\t#{enumPrefix}_N_A = 0")
                         count = 1;
-                        sep="\t"
                         field.enum.each() { |str, val|
-                            output.printf("#{sep}#{enumPrefix}_#{val} = #{count}")
+                            output.printf(",\n\t#{enumPrefix}_#{val} = #{count}")
                             count+=1
-                            sep=",\n\t"
                         }
-                        output.printf("\n} #{enumPrefix};\n\n");
+                        output.printf("\n} #{enumPrefix};\n");
+                        output.printf("extern const char*__#{libName}_#{entry.name}_#{field.name}_strings[#{field.enum.length+1}];\n\n");
                     end
 
                 }       
@@ -67,6 +71,30 @@ module Damage
                 output.printf("#endif /* __#{libName}_enu_h__ */\n");
             end
             module_function :genH
+
+            def genC(output, description)
+                libName = description.config.libname
+
+                output.printf("#include <sigmacDB.h>\n");
+
+                
+                description.entries.each() {|name, entry|
+                    entry.fields.each() {|field|
+                        if field.category == :enum then
+                            output.printf("const char*__#{libName}_#{entry.name}_#{field.name}_strings[#{field.enum.length+1}] = {\n");
+                            output.printf("\t\"N/A\"")
+                            field.enum.each() { |str, val|
+                                output.printf(",\n\t\"#{str}\"")
+                            } 
+                            output.printf("\n};\n");
+                        end
+
+                    }       
+
+                }
+                output.printf("\n\n");
+            end
+            module_function :genC
         end
     end
 end
