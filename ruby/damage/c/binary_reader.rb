@@ -139,7 +139,8 @@ __#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load(FILE* file, u
                                     output.printf("#{indent}\t\t\tarray[i] = __#{libName}_malloc(sizeof(char) * len);\n")
                                     output.printf("#{indent}\t\t\t__#{libName}_fread(array[i], sizeof(char), len, file);\n", field.name)
                                     output.printf("#{indent}\t\t}\n")
-                                    output.printf("#{indent}\t}\n\n");    
+                                    output.printf("#{indent}\t}\n");    
+                                    output.printf("#{indent}free(tmp_array);\n");
                                 else
                                     # Alloc and read the array of data
                                     output.printf("#{indent}\t%s* array = __#{libName}_malloc(#{source}->%sLen * sizeof(*array));\n", 
