@@ -18,7 +18,7 @@ module Damage
     module Description
         class Field
             attr_accessor :name, :data_type, :default_val, :category, :attribute, :qty, :target
-            attr_accessor :is_attribute, :required, :enum
+            attr_accessor :is_attribute, :required, :enum, :enumList
             attr_accessor :printf, :ruby2val, :val2ruby
 
             # Data used only for SORT fields
@@ -35,7 +35,6 @@ module Damage
                 @is_attribute = false
                 @sort_field = field["sort_field"]
                 @sort_key = field["sort_key"]
-
 
                 @required = false
                 @required = true if field["required"] != nil
@@ -138,10 +137,12 @@ module Damage
                     @val2ruby = "UINT2NUM"
                     @ruby2val = "NUM2UINT"
                     @default_val = "0";
+                    @enumList="(#{$1})"
                     @enum={}
                     $1.split('|').each() {|e|
                         @enum[e] = e.sub(/[^[:alnum:]]/, "_").upcase
                     }
+
                 when /T\(([\w+ ]*)\)/
                     @data_type = $1
                     @category = :simple

@@ -70,7 +70,7 @@ module Damage
             required= "#IMPLIED"
             required= "#REQUIRED" if field.required == true
             xmlType = "CDATA"
-            xmlType = field.enum if field.enum != nil
+            xmlType = field.enumList if field.enumList != nil
             xmlType = "ID" if (field.category == :id)
             xmlType = "IDREF" if (field.category == :idref)
             if ( field.target != :mem && field.is_attribute == true) then
