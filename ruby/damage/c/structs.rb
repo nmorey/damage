@@ -42,7 +42,7 @@ module Damage
                         # Do NADA
                     when :meta,:container,:none
                         case field.category
-                        when :simple
+                        when :simple, :enum
                             case field.qty
                             when :single
                                 output.printf("\t%s %s __attribute__((aligned(8)));\n", field.data_type, field.name)
@@ -55,6 +55,8 @@ module Damage
                         when :id, :idref
                             output.printf("\tchar* %s_str; __attribute__((aligned(8)))\n", field.name)
                             output.printf("\tunsigned long %s; __attribute__((aligned(8)))\n", field.name)
+                        else
+                            raise("Unsupported data category for #{entry.name}.#{field.name}");
                         end
                     end
 

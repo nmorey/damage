@@ -17,6 +17,7 @@
 module Damage
     module C
         require File.dirname(__FILE__) + '/c/structs'
+        require File.dirname(__FILE__) + '/c/enum'
         require File.dirname(__FILE__) + '/c/alloc'
         require File.dirname(__FILE__) + '/c/header'
         require File.dirname(__FILE__) + '/c/common'
@@ -32,6 +33,7 @@ module Damage
 
         def generate(description)
             Structs::write(description)
+            Enum::write(description)
             Alloc::write(description)
             Header::write(description)
             Common::write(description)

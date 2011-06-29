@@ -54,6 +54,7 @@ unsigned long __#{libName}_read_value_ulong(xmlNodePtr reader);
 signed long __#{libName}_read_value_slong(xmlNodePtr reader);
 double __#{libName}_read_value_double(xmlNodePtr reader);
 char *__#{libName}_read_value_str_attr(xmlAttrPtr reader);
+const char *__#{libName}_read_value_str_attr_nocopy(xmlAttrPtr reader);
 unsigned long __#{libName}_read_value_ulong_attr(xmlAttrPtr reader);
 signed long __#{libName}_read_value_slong_attr(xmlAttrPtr reader);
 double __#{libName}_read_value_double_attr(xmlAttrPtr reader);
@@ -228,6 +229,21 @@ double __#{libName}_read_value_double(xmlNodePtr node)
  * @return Value of the current node 
  */
 char *__#{libName}_read_value_str_attr(xmlAttrPtr node)
+{
+	char *val = NULL;
+	if (node->children && node->children->content)
+		val = strdup((char *)node->children->content);
+	return val;
+}
+
+/**
+ * Get the value of the current XML node without duplicating.
+ * This is equivalent to #__#{libName}_get_value but the string is duplicate
+ * so it won't change when new reads are dont to the XML file.
+ * @param[in] reader XML Reader
+ * @return Value of the current node 
+ */
+const char *__#{libName}_read_value_str_attr_nocopy(xmlAttrPtr node)
 {
 	char *val = NULL;
 	if (node->children && node->children->content)

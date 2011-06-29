@@ -118,6 +118,17 @@ module Damage
                         }
                         output.printf("NULL };\n");
                     end
+                    if entry.enums.length > 0 then
+                        entry.enums.each() { |field|
+                            output.printf("\tconst char *#{field.name}_enum_str[] =\n\t{"); 
+                            # Enumerate allowed keyword
+                            output.printf("\"N/A\", ");
+                            field.enum.each() {|enum|
+                                output.printf("\"%s\", ", enum) ;
+                            }
+                            output.printf("NULL };\n");
+                        }
+                    end
 
                     
                     #Get second level pointer to maneg "nexts" lists
@@ -157,6 +168,24 @@ module Damage
                                     else
                                         raise("Unsupported type #{field.data_type}\n")
                                     end
+                                when :enum
+                                    output.printf("\t\t\tname =  __#{libName}_read_value_str_attr_nocopy(attribute);\n\n");
+                                    output.printf("\t\t\tswitch (__#{libName}_compare(name, #{field.name}_enum_str)) {\n");
+                                    subCaseCount=1
+                                    field.enum.each() {|enum|
+                                        output.printf("\t\t\t\tcase %d:\n", subCaseCount);
+                                        output.printf("\t\t\t\t\t/* %s */\n", enum);
+                                        output.printf("\t\t\t\t\tptr->%s = __#{libName.upcase}_#{entry.name.upcase}_#{field.name.upcase}_#{enum.upcase};\n", field.name) ;
+                                        output.printf("\t\t\t\t\tbreak;\n");
+                                        subCaseCount+=1
+                                    }
+                                        output.printf("\t\t\t\tdefault:\n");
+                                        output.printf("\t\t\t\t\t/* N/A or something else*/\n");
+                                        output.printf("\t\t\t\t\tptr->%s = __#{libName.upcase}_#{entry.name.upcase}_#{field.name.upcase}_N_A;\n", field.name) ;
+                                        output.printf("\t\t\t\t\tbreak;\n");
+
+                                    output.printf("\t\t\t}\n");
+
                                 when :id, :idref
                                     # Every id or idref must be of the form:
                                     # type-integer. We store the whole string within
@@ -188,6 +217,9 @@ module Damage
                                     output.printf("\t\t\t\t\tEINVAL, name, node->line);\n");
                                     output.printf("\t\t\t\tbreak;\n");
                                     output.printf("\t\t\t}\n");
+                                else
+                                    raise("Unsupported data category for #{entry.name}.#{field.name}");
+
                                 end
                                 output.printf("\t\t\tbreak;\n");
                             when :list
@@ -267,6 +299,9 @@ module Damage
                                 when :intern
                                     output.printf("\t\t\tptr->%s = __#{libName}_%s_xml_load(child);\n",
                                                   field.name, field.data_type) ;
+                                else
+                                    raise("Unsupported data category for #{entry.name}.#{field.name}");
+
                                 end
                                 output.printf("\t\t\tbreak;\n");
                             when :list
@@ -307,6 +342,9 @@ module Damage
                                                   field.name, field.data_type) ;
                                     output.printf("\t\t\tlast_%s = &((*last_%s)->next);\n",
                                                   field.name, field.name);
+                                else
+                                    raise("Unsupported data category for #{entry.name}.#{field.name}");
+
                                 end
                                 output.printf("\t\t\tbreak;\n");
                             when :container

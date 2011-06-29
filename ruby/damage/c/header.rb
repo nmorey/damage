@@ -35,6 +35,7 @@ module Damage
                 output.puts("#include <stdio.h>")
                 output.puts("#include <stdint.h>")
                 output.puts("#include <libxml/tree.h>")
+                output.puts("#include <#{libName}/enum.h>")
                 output.puts("#include <#{libName}/structs.h>")
                 output.puts("#include <#{libName}/alloc.h>")
                 output.puts("#include <#{libName}/sort.h>")

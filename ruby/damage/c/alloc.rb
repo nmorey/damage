@@ -63,7 +63,7 @@ module Damage
                         else
                             output.printf("\tptr->%s = %s;\n", field.name, field.default_val)
                         end
-                        output.printf("\tptr->%sLen = 0UL;\n", field.name) if ((field.qty == :list) && (field.category == :simple))
+                        output.printf("\tptr->%sLen = 0UL;\n", field.name) if ((field.qty == :list) && (field.category == :simple || field.category == :enum))
                         output.printf("\tptr->%s_str = NULL;\n", field.name) if ((field.category == :id) || (field.category == :idref))
                     }
 
@@ -89,7 +89,7 @@ module Damage
                             case field.qty
                             when :single
                                 case field.category
-                                when :simple
+                                when :simple, :enum
                                     if(field.data_type == "char*") then
                                         output.printf("#{indent}if(#{source}->%s)\n", field.name)
                                         output.printf("#{indent}\t__#{libName}_free(#{source}->%s);\n", field.name)
@@ -106,6 +106,8 @@ module Damage
                                 when :id, :idref
                                     output.printf("#{indent}if(#{source}->%s_str)\n", field.name)
                                     output.printf("#{indent}\t__#{libName}_free(#{source}->%s_str);\n", field.name)
+                                else
+                                    raise("Unsupported data category for #{entry.name}.#{field.name}");
                                 end
                             when :list, :container
                                 case field.category
@@ -128,6 +130,8 @@ module Damage
                                     output.printf("#{indent}if(#{source}->%s)\n", field.name)
                                     output.printf("#{indent}\t__#{libName}_%s_free(#{source}->%s);\n", 
                                                   field.data_type, field.name)
+                                else
+                                    raise("Unsupported data category for #{entry.name}.#{field.name}");
                                 end
                             end
                         end

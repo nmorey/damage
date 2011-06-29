@@ -75,6 +75,19 @@ module Damage
                 description.entries.each() {|name, entry|
                     output.printf("xmlNodePtr __#{libName}_create_%s_xml_node(xmlNodePtr node, __#{libName}_%s *ptr)\n{\n",
                                   entry.name, entry.name)
+
+                    if entry.enums.length > 0 then
+                        entry.enums.each() { |field|
+                            output.printf("\tconst char *#{field.name}_enum_str[] =\n\t{"); 
+                            # Enumerate allowed keyword
+                            output.printf("\"N/A\", ");
+                            field.enum.each() {|enum|
+                                output.printf("\"%s\", ", enum) ;
+                            }
+                            output.printf("NULL };\n");
+                        }
+                    end
+
                     output.printf("\tif(node == NULL){ node = xmlNewNode(NULL, BAD_CAST \"%s\"); }\n", entry.name);
                     entry.fields.each() { |field|
                         next if field.target == :mem
@@ -105,6 +118,11 @@ module Damage
                             when :id, :idref
                                 output.printf("\tif(ptr->%s_str)\n", field.name);
                                 addXmlElt(output, field.name, "ptr->#{field.name}_str", {:is_attr => field.is_attribute})
+                            when :enum
+                                addXmlElt(output, field.name, "#{field.name}_enum_str[(ptr->#{field.name} < #{field.enum.length + 1}) ? ptr->#{field.name} : 0]", {:is_attr => field.is_attribute})
+                            else
+                                raise("Unsupported data category for #{entry.name}.#{field.name}");
+
                             end
                         when :list
                             case field.category
@@ -137,6 +155,9 @@ module Damage
                                 output.printf("\t\t\t__#{libName}_create_%s_xml_node(child, elnt);\n", field.data_type, field.name);
                                 output.printf("\t\t}\n");
                                 output.printf("\t}\n\n");
+                            else
+                                raise("Unsupported data category for #{entry.name}.#{field.name}");
+
                             end
                         when :container
                             output.printf("\tif(ptr->%s){\n", field.name);

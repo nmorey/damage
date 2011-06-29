@@ -40,8 +40,7 @@ module Damage
                 @required = false
                 @required = true if field["required"] != nil
 
-                @enum=field["enum"]
-                
+             
                 case field["quantity"]
                 when "SINGLE", nil
                     @qty = :single
@@ -130,13 +129,20 @@ module Damage
                     @val2ruby = "INT2NUM"
                     @ruby2val = "NUM2INT"
                     @default_val = "0";
+                when /ENUM\(([\w+|]*)\)/
+                    @data_type = "uint32_t"
+                    @category = :enum
+                    raise("Enums cannot be used as containers or list") if @qty != :single
+                    @is_attribute = true if @qty == :single
+                    @printf="u"
+                    @val2ruby = "UINT2NUM"
+                    @ruby2val = "NUM2UINT"
+                    @default_val = "0";
+                    @enum=$1.split('|')
                 when /T\(([\w+ ]*)\)/
                     @data_type = $1
                     @category = :simple
                     @is_attribute = true if @qty == :single
-                when /EXT\(([\w+ ]*)\)/
-                    @data_type = $1
-                    @category = :simple
                 when /(S|STRUCT)\(([\w+ ]*)\)/
                     @data_type = $2
                     @category = :intern
@@ -169,7 +175,7 @@ module Damage
         end
 
         class Entry
-            attr_accessor :name, :attribute, :fields, :children, :attributes, :sort, :containers, :cleanup, :postcleanup
+            attr_accessor :name, :attribute, :fields, :children, :attributes, :sort, :containers, :enums, :cleanup, :postcleanup
             def initialize(entry)
                 @name = entry["name"]
                 @attribute = :none
@@ -180,6 +186,7 @@ module Damage
                 @attributes = []
                 @sort = []
                 @containers = {}
+                @enums=[]
 
                 case entry["attribute"]
                 when "TOP"
@@ -200,6 +207,7 @@ module Damage
 
                     @children << _field if _field.is_attribute == false && _field.target != :mem
                     @attributes << _field if _field.is_attribute == true && _field.target != :mem
+                    @enums << _field if _field.category == :enum
                     if _field.attribute == :sort then
                         @sort << _field 
                     elsif field["sort_key"] != nil && _field.category == :intern && 
@@ -214,6 +222,7 @@ module Damage
 
                     end
                     @containers[_field.name] = _field.data_type if _field.qty == :container
+
 
 
 

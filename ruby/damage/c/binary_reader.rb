@@ -84,7 +84,7 @@ __#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load(FILE* file, u
                         case field.qty
                         when :single
                             case field.category
-                            when :simple
+                            when :simple, :enum
                                 if(field.data_type == "char*") then
                                     output.printf("#{indent}if(#{source}->%s){\n", field.name)
                                     output.printf("#{indent}\tuint32_t len;\n")
@@ -107,7 +107,9 @@ __#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load(FILE* file, u
                                 output.printf("#{indent}\t#{source}->%s_str = __#{libName}_malloc(len * sizeof(char));\n", field.name)
                                 output.printf("#{indent}\t__#{libName}_fread(#{source}->%s_str, sizeof(char), len, file);\n", field.name)
                                 output.printf("#{indent}}\n")
-                            end
+                            else
+                                raise("Unsupported data category for #{entry.name}.#{field.name}");
+                             end
                         when :list, :container
                             case field.category
                             when :simple
@@ -156,8 +158,10 @@ __#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load(FILE* file, u
                                 output.printf("#{indent}\t#{source}->%s = __#{libName}_%s_binary_load(file, (uint32_t)(unsigned long)(#{source}->%s));\n", 
                                               field.name, field.data_type, field.name)
                                 output.printf("#{indent}}\n")
+                            else
+                                raise("Unsupported data category for #{entry.name}.#{field.name}");
                             end
-                        end
+                         end
                     }
                     # Autosort generation
                     entry.sort.each() {|field|

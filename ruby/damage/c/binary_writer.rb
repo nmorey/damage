@@ -95,7 +95,7 @@ uint32_t __#{libName}_#{entry.name}_binary_dump(__#{libName}_#{entry.name}* ptr,
                         case field.qty
                         when :single
                             case field.category
-                            when :simple
+                            when :simple, :enum
                                 if(field.data_type == "char*") then
                                     output.printf("#{indent}if(#{source}->%s){\n", field.name)
                                     output.printf("#{indent}\tuint32_t len = strlen(#{source}->%s) + 1;\n", field.name)
@@ -125,6 +125,8 @@ uint32_t __#{libName}_#{entry.name}_binary_dump(__#{libName}_#{entry.name}* ptr,
                                 output.printf("#{indent}\t__#{libName}_fseek(file, child_offset, SEEK_SET);\n")
                                 output.printf("#{indent}\t__#{libName}_fwrite(&#{source}->%s, sizeof(unsigned long), 1, file);\n", field.name)
                                 output.printf("#{indent}\tchild_offset += sizeof(unsigned long);\n", field.name)
+                            else
+                                raise("Unsupported data category for #{entry.name}.#{field.name}");
                             end
                         when :list, :container
                             case field.category
@@ -167,6 +169,8 @@ uint32_t __#{libName}_#{entry.name}_binary_dump(__#{libName}_#{entry.name}* ptr,
                                 output.printf("#{indent}\tchild_offset = __#{libName}_%s_binary_dump(#{source}->%s, file, child_offset);\n", 
                                               field.data_type, field.name)
                                 output.printf("#{indent}}\n")
+                            else
+                                raise("Unsupported data category for #{entry.name}.#{field.name}");
                             end
                         end
                     }
