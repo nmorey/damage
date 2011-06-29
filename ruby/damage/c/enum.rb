@@ -39,11 +39,13 @@ module Damage
                         output.printf("typedef enum {\n");
                         output.printf("\t#{enumPrefix}_N_A = 0,\n")
                         count = 1;
-                        field.enum.each() { |val|
-                            output.printf("\t#{enumPrefix}_#{val.upcase} = #{count},\n")
+                        sep="\t"
+                        field.enum.each() { |str, val|
+                            output.printf("#{sep}#{enumPrefix}_#{val} = #{count}")
                             count+=1
+                            sep=",\n\t"
                         }
-                        output.printf("} #{enumPrefix};\n\n");
+                        output.printf("\n} #{enumPrefix};\n\n");
                     end
 
                 }       

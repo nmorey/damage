@@ -129,7 +129,7 @@ module Damage
                     @val2ruby = "INT2NUM"
                     @ruby2val = "NUM2INT"
                     @default_val = "0";
-                when /ENUM\(([\w+|]*)\)/
+                when /ENUM\(([^)]*)\)/
                     @data_type = "uint32_t"
                     @category = :enum
                     raise("Enums cannot be used as containers or list") if @qty != :single
@@ -138,7 +138,10 @@ module Damage
                     @val2ruby = "UINT2NUM"
                     @ruby2val = "NUM2UINT"
                     @default_val = "0";
-                    @enum=$1.split('|')
+                    @enum={}
+                    $1.split('|').each() {|e|
+                        @enum[e] = e.sub(/[^[:alnum:]]/, "_").upcase
+                    }
                 when /T\(([\w+ ]*)\)/
                     @data_type = $1
                     @category = :simple
