@@ -18,7 +18,7 @@ module Damage
     module Description
         class Field
             attr_accessor :name, :data_type, :default_val, :category, :attribute, :qty, :target
-            attr_accessor :is_attribute, :required, :enum, :enumList
+            attr_accessor :is_attribute, :required, :enum, :enumList, :description
             attr_accessor :printf, :ruby2val, :val2ruby
 
             # Data used only for SORT fields
@@ -35,6 +35,7 @@ module Damage
                 @is_attribute = false
                 @sort_field = field["sort_field"]
                 @sort_key = field["sort_key"]
+                @description = field["description"]
 
                 @required = false
                 @required = true if field["required"] != nil
@@ -179,7 +180,9 @@ module Damage
         end
 
         class Entry
-            attr_accessor :name, :attribute, :fields, :children, :attributes, :sort, :containers, :enums, :cleanup, :postcleanup
+            attr_accessor :name, :attribute, :fields, :children, :attributes, :sort,
+            :containers, :enums, :cleanup, :postcleanup, :description
+
             def initialize(entry)
                 @name = entry["name"]
                 @attribute = :none
@@ -191,6 +194,8 @@ module Damage
                 @sort = []
                 @containers = {}
                 @enums=[]
+
+                @description = entry["description"]
 
                 case entry["attribute"]
                 when "TOP"

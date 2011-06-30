@@ -32,11 +32,14 @@ module Damage
 
             def genStruct(output, libName, entry)
 
+                output.printf("/** Structure __#{libName}_%s: #{entry.description} */\n", entry.name)
                 output.printf("typedef struct ___#{libName}_%s {\n", entry.name);
                 entry.fields.each() {|field|
                     case field.attribute
                     when :sort
-                        output.printf("\tstruct ___#{libName}_%s** s_%s __attribute__((aligned(8)));\n", field.data_type, field.name)
+                        output.printf("\t/** Sorted array (index) of \"#{field.sort_field}\" by #{field.sort_key} (not necessary dense) */\n")
+                       output.printf("\tstruct ___#{libName}_%s** s_%s __attribute__((aligned(8)));\n", field.data_type, field.name)
+                        output.printf("\t/** Length of the s_%s array */\n", field.name)
                         output.printf("\tunsigned long n_%s __attribute__((aligned(8)));\n", field.name)
                     when :pass
                         # Do NADA
@@ -45,15 +48,22 @@ module Damage
                         when :simple, :enum
                             case field.qty
                             when :single
+                                output.printf("\t/** #{field.description} */\n") if field.description != nil
+                                output.printf("\t/** Field is an enum of type #__#{libName.upcase}_#{entry.name.upcase}_#{field.name.upcase} #{field.enumList}*/\n") if field.category == :enum
                                 output.printf("\t%s %s __attribute__((aligned(8)));\n", field.data_type, field.name)
                             when :list
+                                output.printf("\t/** Array of elements #{field.description} */\n")
                                 output.printf("\t%s* %s __attribute__((aligned(8)));\n", field.data_type, field.name)
+                                output.printf("\t/** Number of elements in the %s array */\n", field.name)
                                 output.printf("\tunsigned long %sLen __attribute__((aligned(8)));\n", field.name)
                             end
                         when :intern
+                            output.printf("\t/** #{field.description} */\n") if field.description != nil
                             output.printf("\tstruct ___#{libName}_%s* %s __attribute__((aligned(8)));\n", field.data_type, field.name)
                         when :id, :idref
+                            output.printf("\t/** Field ID: #{field.description} */\n")
                             output.printf("\tchar* %s_str; __attribute__((aligned(8)))\n", field.name)
+                            output.printf("\t/** Field ID as string */\n")
                             output.printf("\tunsigned long %s; __attribute__((aligned(8)))\n", field.name)
                         else
                             raise("Unsupported data category for #{entry.name}.#{field.name}");
@@ -61,11 +71,15 @@ module Damage
                     end
 
                 }       
-
-
-                output.printf("\tstruct ___#{libName}_%s* next  __attribute__((aligned(8)));\n", entry.name) if entry.attribute == :listable
+                if entry.attribute == :listable then
+                    output.printf("\t/** Pointer to the next element in the list */\n")
+                    output.printf("\tstruct ___#{libName}_%s* next  __attribute__((aligned(8)));\n", entry.name) 
+                end
+                output.printf("\t/** Internal: Pointer to the ruby VALUE when using the ruby wrapper  */\n")
                 output.printf("\tvoid* _private  __attribute__((aligned(8)));\n");
+                output.printf("\t/** Internal: Offset in the binary DB */\n")
                 output.printf("\tunsigned long _rowip_pos  __attribute__((aligned(8)));\n");
+                output.printf("\t/** Internal: DB infos */\n")
                 output.printf("\tvoid* _rowip  __attribute__((aligned(8)));\n");
                 output.printf("} __#{libName}_%s;\n\n", entry.name);
 
