@@ -42,13 +42,72 @@ module Damage
                 output.puts("#ifndef __#{libName}_binary_rowip_h__")
                 output.puts("#define __#{libName}_binary_rowip_h__\n")
                 description.entries.each() {|name, entry|
+output.puts("
+/**
+ * Write a complete #__#{libName}_#{entry.name} structure and its children in binary form from a file in ROWIP mode.
+ * ROWIP (Read Or Write-In-Place) is a fast access mode that mapped the whole file in memory.
+ * To write in ROWIP mode, the structure *MUST* have been obtained by using #__#{libName}_%s* __#{libName}_%s_binary_load_file_rowip
+ * @param[in] ptr Structure to write
+ * @param[in] unlock 1 if the lock on the DB should be released after the write or 0 to keep it locked.
+ * @return Amount of bytes wrote to file
+ * @retval 0 in case of error
+ */");
                     output.printf("unsigned long __#{libName}_%s_binary_dump_file_rowip(__#{libName}_%s *ptr, int unlock);\n", entry.name, entry.name)
+
+output.puts("
+/**
+ * Read a complete #__#{libName}_#{entry.name} structure and its children in binary form from a file in ROWIP mode.
+ * ROWIP (Read Or Write-In-Place) is a fast access mode that mapped the whole file in memory.
+ * It allows a very fast loading of the DB but has several restriction:
+ *     - Access to \"pointers\" or arrays within structs must be done through the  __#{libName.upcase}_ROWIP described later in the file
+ *     - There can be no pointer or array changes in the structures
+ *     - Changes to values (char within string) or numerals are allowed.
+ * @param[in] file Filename
+ * @param[in] rdonly True if the file is only read. False is the file need to stay lock until it is written back
+ * @return Pointer to a #__#{libName}_#{entry.name} structure
+ * @retval NULL Failed to read the file
+ * @retval !=NULL Valid structure
+ */");
                     output.printf("__#{libName}_%s* __#{libName}_%s_binary_load_file_rowip(const char* file, int rdonly);\n\n", entry.name, entry.name)
                 }
+
+                output.puts("
+/**
+ * Access a __#{libName} structure within a struct in ROWIP mode
+ * @param[in] ptr Pointer to the structure
+ * @param[in] field Field name
+ * @return Pointer to the structure pointed by ptr->field
+ */");
                 output.printf("#define __#{libName.upcase}_ROWIP_PTR(ptr, field) ({typeof(ptr->field) _ptr = NULL; if(ptr->field != NULL) { _ptr = (void*)ptr - ptr->_rowip_pos + ((unsigned long)ptr->field);} _ptr;})\n");
+
+
+                output.puts("
+/**
+ * Access a string within a struct in ROWIP mode
+ * @param[in] ptr Pointer to the structure
+ * @param[in] field Field name
+ * @return Pointer to the string pointed by ptr->field
+ */");
                 output.printf("#define __#{libName.upcase}_ROWIP_STR(ptr, field) ({char* _ptr = NULL; if(ptr->field != NULL) { _ptr = (void*)ptr - ptr->_rowip_pos + ((unsigned long)ptr->field + sizeof(uint32_t));} _ptr;})\n");
 
+                output.puts("
+/**
+ * Access a __#{libName} structure or a straight value stored in an array within a struct in ROWIP mode
+ * @param[in] ptr Pointer to the structure
+ * @param[in] field Field name
+ * @param[in] idx Position of the value in the array
+ * @return Pointer to the structure pointed by or the value stored at ptr->field[idx]
+ */");
                 output.printf("#define __#{libName.upcase}_ROWIP_PTR_ARRAY(ptr, field, idx) ({typeof(*ptr->field)_ptr = NULL; typeof(ptr->field) _array; if(ptr->field != NULL) { _array =  __#{libName.upcase}_ROWIP_PTR(ptr, field); _ptr = ((void*)ptr - ptr->_rowip_pos) + (unsigned long)(_array[idx]);} _ptr;})\n")
+
+                output.puts("
+/**
+ * Access a string stored in an array within a struct in ROWIP mode
+ * @param[in] ptr Pointer to the structure
+ * @param[in] field Field name
+ * @param[in] idx Position of the string in the array
+ * @return Pointer to the string stored at ptr->field[idx]
+ */");
 
                 output.printf("#define __#{libName.upcase}_ROWIP_STR_ARRAY(ptr, field, idx) ({char*_ptr = NULL; uint32_t* _array; if(ptr->field != NULL) { _array =  (uint32_t*)__#{libName.upcase}_ROWIP_PTR(ptr, field); _ptr = ((void*)ptr - ptr->_rowip_pos) + (unsigned long)(_array[idx] + sizeof(uint32_t));} _ptr;})\n")
 
