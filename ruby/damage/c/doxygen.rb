@@ -608,7 +608,8 @@ WARN_LOGFILE           =
 # with spaces.
 
 INPUT                  = ./include/#{libName}.h \\
-                         ./include/#{libName}/
+                         ./include/#{libName}/ \\
+                         ./src/
 
 # This tag can be used to specify the character encoding of the source files 
 # that doxygen parses. Internally doxygen uses the UTF-8 encoding, which is 
