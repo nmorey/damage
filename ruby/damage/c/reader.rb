@@ -400,8 +400,7 @@ module Damage
                     output.printf("\t}\n\n");
                     
                     output.printf("\tif(__#{libName}_acquire_flock(file, rdonly))\n");
-                    output.printf("\t\t__#{libName}_error(\"Failed to lock XML file %%s\",\n");
-                    output.printf("\t\t\t  ENOENT, file);\n");
+                    output.printf("\t\t__#{libName}_error(\"Failed to lock output file %%s: %%s\", ENOENT, file, strerror(errno));\n");
                     output.printf("\tdocument = xmlReadFile(file, NULL, 0);\n\n");
                     
                     output.printf("\tif (document == NULL) {\n");

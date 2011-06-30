@@ -209,7 +209,7 @@ uint32_t __#{libName}_#{entry.name}_binary_dump(__#{libName}_#{entry.name}* ptr,
                     output.printf("\t}\n\n");
 
                     output.printf("\tif(__#{libName}_acquire_flock(file, 1))\n");
-                    output.printf("\t\t__#{libName}_error(\"Failed to lock output file %%s\", ENOENT, file);\n");
+                    output.printf("\t\t__#{libName}_error(\"Failed to lock output file %%s: %%s\", ENOENT, file, strerror(errno));\n");
 
                     output.printf("\tif((output = fopen(file, \"w+\")) == NULL)\n");
                     output.printf("\t\t__#{libName}_error(\"Failed to open output file %%s\", errno, file);\n");

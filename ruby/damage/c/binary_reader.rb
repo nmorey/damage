@@ -200,7 +200,7 @@ __#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load(FILE* file, u
                     output.printf("\t}\n\n");
 
                     output.printf("\tif(__#{libName}_acquire_flock(file, rdonly))\n");
-                    output.printf("\t\t__#{libName}_error(\"Failed to lock output file %%s\", ENOENT, file);\n");
+                    output.printf("\t\t__#{libName}_error(\"Failed to lock output file %%s: %%s\", ENOENT, file, strerror(errno));\n");
                     output.printf("\tif((output = fopen(file, \"r\")) == NULL)\n");
                     output.printf("\t\t__#{libName}_error(\"Failed to open output file %%s\", errno, file);\n");
 

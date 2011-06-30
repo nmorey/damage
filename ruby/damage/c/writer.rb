@@ -189,8 +189,7 @@ module Damage
                     addXmlElt(output, "xsi:noNamespaceSchemaLocation", "sigmaC.xsd", {:is_attr =>true, :quote =>true})
                     output.printf("\n")
                     output.printf("\tif(__#{libName}_acquire_flock(file, 1))\n");
-                    output.printf("\t\t__#{libName}_error(\"Failed to lock XML file %%s\",\n");
-                    output.printf("\t\t\t  ENOENT, file);\n");
+                    output.printf("\t\t__#{libName}_error(\"Failed to lock output file %%s: %%s\", ENOENT, file, strerror(errno));\n");
                     output.printf("\tret = xmlSaveFormatFileEnc(file, doc, \"us-ascii\", 1);\n");
                     output.printf("\txmlFreeDoc(doc);\n\n");
                     output.printf("\tif(unlock)\n");

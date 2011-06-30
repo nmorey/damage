@@ -161,7 +161,7 @@ static inline void __#{libName}_rowip_header_free(__#{libName}_rowip_header* ptr
                     output.printf("\theader = __#{libName}_rowip_header_alloc();\n\n");
                     output.printf("\theader->filename = strdup(file);\n");
                     output.printf("\tif(__#{libName}_acquire_flock(file, rdonly))\n");
-                    output.printf("\t\t__#{libName}_error(\"Failed to lock output file %%s\", ENOENT, header->filename);\n");
+                    output.printf("\t\t__#{libName}_error(\"Failed to lock output file %%s: %%s\", ENOENT, header->filename, strerror(errno));\n");
                     output.printf("\tif((output = fopen(header->filename, \"r+\")) == NULL)\n");
                     output.printf("\t\t__#{libName}_error(\"Failed to open %%s\", errno, header->filename);\n");
                     output.printf("\theader->file = output;\n");
