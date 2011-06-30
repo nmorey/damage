@@ -38,7 +38,26 @@ module Damage
                 output.puts("#ifndef __#{libName}_binary_writer_h__")
                 output.puts("#define __#{libName}_binary_writer_h__\n")
                 description.entries.each() {|name, entry|
+output.puts("
+/**
+ * Internal: Write a complete #__#{libName}_#{entry.name} structure and its children in binary form to an open file.
+ * This function uses longjmp to the \"__#{libName}_error_happened\".
+ * Thus it needs to be set up properly before calling this function.
+ * @param[in] ptr Structure to write
+ * @param[in] file Pointer to the FILE
+ * @param[in] offset Position of the beginning of the struct within the file
+ * @return offset + number of bytes written
+ */");
                     output.puts "uint32_t __#{libName}_#{entry.name}_binary_dump(__#{libName}_#{entry.name}* ptr, FILE* file, uint32_t offset);\n"
+output.puts("
+/**
+ * Write a complete #__#{libName}_#{entry.name} structure and its children in binary form to a file
+ * @param[in] file Filename
+ * @param[in] ptr Structure to write
+ * @param[in] unlock 1 if the lock on the DB should be released after the write or 0 to keep it locked.
+ * @return Amount of bytes wrote to file
+ * @retval 0 in case of error
+ */");
                     output.printf("unsigned long __#{libName}_%s_binary_dump_file(const char* file, __#{libName}_%s *ptr, int unlock);\n\n", entry.name, entry.name)
 
                 }

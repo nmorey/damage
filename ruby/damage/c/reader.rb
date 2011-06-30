@@ -37,11 +37,36 @@ module Damage
                 output.puts("#ifndef __#{libName}_xml_reader_h__")
                 output.puts("#define __#{libName}_xml_reader_h__\n")
                 description.entries.each() {|name, entry|
+output.puts("
+/**
+ * Internal: Read a complete #__#{libName}_#{entry.name} structure and its children from a parsed XML tree.
+ * This function uses longjmp to the \"__#{libName}_error_happened\".
+ * Thus it needs to be set up properly before calling this function.
+ * @param[in] node XML subtree 
+ * @return Pointer to a valid #__#{libName}_#{entry.name} structure. If something fails, it executes a longjmp to __#{libName}_error_happened
+ */");
                     output.printf("__#{libName}_%s *__#{libName}_%s_xml_load(", entry.name, entry.name);
                     output.printf("xmlNodePtr node);\n");
+output.puts("
+/**
+ * Read a complete #__#{libName}_#{entry.name} structure and its children in XML from a file
+ * @param[in] file Filename
+ * @param[in] rdonly True if the file is only read. False is the file need to stay lock until it is written back
+ * @return Pointer to a #__#{libName}_#{entry.name} structure
+ * @retval NULL Failed to read the file
+ * @retval !=NULL Valid structure
+ */");
                     output.printf("__#{libName}_%s *__#{libName}_%s_xml_load_file(const char* file, int rdonly);\n", entry.name, entry.name);
                 }
                 description.containers.each() {|name, type|
+output.puts("
+/**
+ * Internal: Read a complete #__#{libName}_#{type} structure and its children from a parsed XML tree.
+ * This function uses longjmp to the \"__#{libName}_error_happened\".
+ * Thus it needs to be set up properly before calling this function.
+ * @param[in] node XML subtree 
+ * @return Pointer to a valid #__#{libName}_#{type} structure. If something fails, it executes a longjmp to __#{libName}_error_happened
+ */");
                     output.printf("__#{libName}_%s *__#{libName}_%s%sContainer_xml_load(", type, name, type);
                     output.printf("xmlNodePtr node);\n\n");
                 }

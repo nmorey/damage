@@ -38,9 +38,9 @@ module Damage
                     case field.attribute
                     when :sort
                         output.printf("\t/** Sorted array (index) of \"#{field.sort_field}\" by #{field.sort_key} (not necessary dense) */\n")
-                       output.printf("\tstruct ___#{libName}_%s** s_%s __attribute__((aligned(8)));\n", field.data_type, field.name)
+                       output.printf("\tstruct ___#{libName}_%s** s_%s __#{libName.upcase}_ALIGN__;\n", field.data_type, field.name)
                         output.printf("\t/** Length of the s_%s array */\n", field.name)
-                        output.printf("\tunsigned long n_%s __attribute__((aligned(8)));\n", field.name)
+                        output.printf("\tunsigned long n_%s __#{libName.upcase}_ALIGN__;\n", field.name)
                     when :pass
                         # Do NADA
                     when :meta,:container,:none
@@ -50,21 +50,21 @@ module Damage
                             when :single
                                 output.printf("\t/** #{field.description} */\n") if field.description != nil
                                 output.printf("\t/** Field is an enum of type #__#{libName.upcase}_#{entry.name.upcase}_#{field.name.upcase} #{field.enumList}*/\n") if field.category == :enum
-                                output.printf("\t%s %s __attribute__((aligned(8)));\n", field.data_type, field.name)
+                                output.printf("\t%s %s __#{libName.upcase}_ALIGN__;\n", field.data_type, field.name)
                             when :list
                                 output.printf("\t/** Array of elements #{field.description} */\n")
-                                output.printf("\t%s* %s __attribute__((aligned(8)));\n", field.data_type, field.name)
+                                output.printf("\t%s* %s __#{libName.upcase}_ALIGN__;\n", field.data_type, field.name)
                                 output.printf("\t/** Number of elements in the %s array */\n", field.name)
-                                output.printf("\tunsigned long %sLen __attribute__((aligned(8)));\n", field.name)
+                                output.printf("\tunsigned long %sLen __#{libName.upcase}_ALIGN__;\n", field.name)
                             end
                         when :intern
                             output.printf("\t/** #{field.description} */\n") if field.description != nil
-                            output.printf("\tstruct ___#{libName}_%s* %s __attribute__((aligned(8)));\n", field.data_type, field.name)
+                            output.printf("\tstruct ___#{libName}_%s* %s __#{libName.upcase}_ALIGN__;\n", field.data_type, field.name)
                         when :id, :idref
                             output.printf("\t/** Field ID: #{field.description} */\n")
-                            output.printf("\tchar* %s_str; __attribute__((aligned(8)))\n", field.name)
+                            output.printf("\tchar* %s_str; __#{libName.upcase}_ALIGN__\n", field.name)
                             output.printf("\t/** Field ID as string */\n")
-                            output.printf("\tunsigned long %s; __attribute__((aligned(8)))\n", field.name)
+                            output.printf("\tunsigned long %s; __#{libName.upcase}_ALIGN__\n", field.name)
                         else
                             raise("Unsupported data category for #{entry.name}.#{field.name}");
                         end
@@ -73,14 +73,14 @@ module Damage
                 }       
                 if entry.attribute == :listable then
                     output.printf("\t/** Pointer to the next element in the list */\n")
-                    output.printf("\tstruct ___#{libName}_%s* next  __attribute__((aligned(8)));\n", entry.name) 
+                    output.printf("\tstruct ___#{libName}_%s* next  __#{libName.upcase}_ALIGN__;\n", entry.name) 
                 end
                 output.printf("\t/** Internal: Pointer to the ruby VALUE when using the ruby wrapper  */\n")
-                output.printf("\tvoid* _private  __attribute__((aligned(8)));\n");
+                output.printf("\tvoid* _private  __#{libName.upcase}_ALIGN__;\n");
                 output.printf("\t/** Internal: Offset in the binary DB */\n")
-                output.printf("\tunsigned long _rowip_pos  __attribute__((aligned(8)));\n");
+                output.printf("\tunsigned long _rowip_pos  __#{libName.upcase}_ALIGN__;\n");
                 output.printf("\t/** Internal: DB infos */\n")
-                output.printf("\tvoid* _rowip  __attribute__((aligned(8)));\n");
+                output.printf("\tvoid* _rowip  __#{libName.upcase}_ALIGN__;\n");
                 output.printf("} __#{libName}_%s;\n\n", entry.name);
 
             end
@@ -90,17 +90,24 @@ module Damage
                 libName = description.config.libname
 
                 output.printf("#ifndef __#{libName}_structs_h__\n");
-                output.printf("#define __#{libName}_structs_h__\n");
+                output.printf("#define __#{libName}_structs_h__\n\n");
+                output.puts("/** We need to force alignment to ptr%8 to avoid compatibility problem for binary format between x86 and x86_64*/");
+                output.printf("#define __#{libName.upcase}_ALIGN__ __attribute__((aligned(8)))\n\n");
                 
                 description.entries.each() {|name, entry|
                     genStruct(output, libName, entry)
 
                 }
                 output.printf("\n\n");
+                output.printf("/** Internal structure for ROWIP maintenant */\n");
                 output.printf("typedef struct ___#{libName}_rowip_header {\n");
+                output.printf("\t/** Source filename */\n");
                 output.printf("\tchar* filename;\n");
+                output.printf("\t/** Source file length */\n");
                 output.printf("\tunsigned long len;\n");
+                output.printf("\t/** Source FILE* */\n");
                 output.printf("\tFILE* file;\n");
+                output.printf("\t/** Base memory address */\n");
                 output.printf("\tvoid* base_adr;\n");
                 output.printf("} __#{libName}_rowip_header;\n\n");
                 output.printf("#endif /* __#{libName}_structs_h__ */\n");

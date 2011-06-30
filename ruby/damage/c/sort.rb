@@ -38,6 +38,13 @@ module Damage
                 output.puts("#define __#{libName}_sort_h__\n")
                 description.entries.each() {|name, entry|
                     entry.sort.each() {|field|
+                        output.puts("
+/**
+ * Generates an array of #__#{libName}_#{field.name} indexed by their #{field.sort_key} field.
+ * The array is stored at ptr->s_#{field.name} and its length at ptr->n_#{field.name}.
+ * @param[in] ptr Structure containing the list to sort and where to store the indexed array
+ * @return Nothing
+*/");
                         output.printf("void __#{libName}_#{entry.name}_sort_#{field.name}(__#{libName}_#{entry.name}* ptr);\n\n")
    
                     }

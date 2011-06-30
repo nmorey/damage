@@ -37,7 +37,26 @@ module Damage
                 output.puts("#ifndef __#{libName}_binary_reader_h__")
                 output.puts("#define __#{libName}_binary_reader_h__\n")
                 description.entries.each() {|name, entry|
+output.puts("
+/**
+ * Internal: Read a complete #__#{libName}_#{entry.name} structure and its children in binary form from an open file.
+ * This function uses longjmp to the \"__#{libName}_error_happened\".
+ * Thus it needs to be set up properly before calling this function.
+ * @param[in] file Pointer to the FILE
+ * @param[in] offset Position of the beginning of the struct within the file
+ * @return Pointer to a valid #__#{libName}_#{entry.name} structure. If something fails, it executes a longjmp to __#{libName}_error_happened
+ */");
+
                     output.puts "__#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load(FILE* file, uint32_t offset);\n"
+output.puts("
+/**
+ * Read a complete #__#{libName}_#{entry.name} structure and its children in binary form from a file
+ * @param[in] file Filename
+ * @param[in] rdonly True if the file is only read. False is the file need to stay lock until it is written back
+ * @return Pointer to a #__#{libName}_#{entry.name} structure
+ * @retval NULL Failed to read the file
+ * @retval !=NULL Valid structure
+ */");
                     output.printf("__#{libName}_%s* __#{libName}_%s_binary_load_file(const char* file, int rdonly);\n\n", entry.name, entry.name)
                 }
                 output.printf("\n\n");

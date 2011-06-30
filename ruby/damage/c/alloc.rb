@@ -158,7 +158,18 @@ module Damage
                 output.printf("#define __#{libName}_alloc_h__\n")
 
                 description.entries.each() {|name, entry|
+output.puts("
+/**
+ * Allocate a #__#{libName}_#{entry.name} and initialize its elements with their default values
+ * @return A valid pointer to a #__#{libName}_#{entry.name}. Exit with an error message if alloc failed.
+*/")
                     output.printf("__#{libName}_%s *__#{libName}_%s_alloc();\n", entry.name, entry.name)
+output.puts("
+/**
+ * Free #__#{libName}_#{entry.name}, its siblings and children (if any).
+ * @param[in] ptr Pointer to the structure to free.
+ * @return Nothing.
+*/")
                     output.printf("void __#{libName}_%s_free(__#{libName}_%s *ptr);\n", entry.name, entry.name)
                     output.printf("\n")
                 }

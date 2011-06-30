@@ -52,7 +52,26 @@ module Damage
                 output.puts("#ifndef __#{libName}_xml_writer_h__")
                 output.puts("#define __#{libName}_xml_writer_h__\n")
                 description.entries.each() {|name, entry|
+output.puts("
+/**
+ * Internal: Write a complete #__#{libName}_#{entry.name} structure and its children in XML form to an open file.
+ * This function uses longjmp to the \"__#{libName}_error_happened\".
+ * Thus it needs to be set up properly before calling this function.
+ * @param[in] node XML node to attach the structure too
+ * @param[in] ptr Structure to write
+ * @return node
+ */");
                     output.printf("xmlNodePtr __#{libName}_create_%s_xml_node(xmlNodePtr node, __#{libName}_%s *ptr);\n", entry.name, entry.name);
+output.puts("
+/**
+ * Write a complete #__#{libName}_#{entry.name} structure and its children in XML form to a file
+ * @param[in] file Filename
+ * @param[in] ptr Structure to write
+ * @param[in] zipped 1 if the XML should be gzipped. 0 if not.
+ * @param[in] unlock 1 if the lock on the DB should be released after the write or 0 to keep it locked.
+ * @return Amount of bytes wrote to file
+ * @retval -1 in case of error
+ */");
                     output.printf("int __#{libName}_%s_xml_dump_file(const char* file, __#{libName}_%s *ptr, int zipped, int unlock);\n\n", entry.name, entry.name)
                 }
                 output.printf("\n\n");
