@@ -71,8 +71,8 @@ ruby/lib#{libName}_ruby.so: ruby/ruby_#{libName}.c $(libs)
 	+cd ruby; ruby extconf.rb; make $(MFLAGS)
 
 install: ruby/lib#{libName}_ruby.so
-	mkdir -p $(PREFIX)/$(LIBDIR64)/$(SUFFIX)
-	install ruby/lib#{libName}_ruby.so $(PREFIX)/$(LIBDIR)/$(SUFFIX)
+	mkdir -p $(PREFIX)/share/$(SUFFIX)
+	install ruby/lib#{libName}_ruby.so $(PREFIX)/share/$(SUFFIX)
 
 clean:
 	if [ -f ruby/Makefile ]; then cd ruby; make $(MFLAGS) clean; fi
