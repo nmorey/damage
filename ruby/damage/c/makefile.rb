@@ -67,9 +67,9 @@ all: $(libs)
 
 tests: $(tests)
 
-doc:doc/doxygen/latex/Makefile doc/doxygen/latex/refman.pdf
+doc:doc/doxygen/latex/Makefile 
 
-doc/doxygen/latex/Makefile: $(headers)
+doc/doxygen/latex/Makefile: $(headers) doc/Doxyfile
 	doxygen doc/Doxyfile
 
 doc/doxygen/latex/refman.pdf: doc/doxygen/latex/Makefile
