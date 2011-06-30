@@ -51,9 +51,11 @@ CFLAGS= -Iinclude/ $(cflags) -Wall -Wextra -Werror -g -I/usr/include/libxml2 -We
 ifeq ($(ARCH), x86_64)
 	libs := $(lib) $(lib64) 
 	install-libs := install-lib install-lib64
+    LIBDIR:=$(LIBDIR64)
 else
 	libs := $(lib) 
 	install-libs := install-lib
+    LIBDIR:=$(LIBDIR32)
 endif
 
 
@@ -70,7 +72,7 @@ ruby/lib#{libName}_ruby.so: ruby/ruby_#{libName}.c $(libs)
 
 install: ruby/lib#{libName}_ruby.so
 	mkdir -p $(PREFIX)/$(LIBDIR64)/$(SUFFIX)
-	install ruby/lib#{libName}_ruby.so $(PREFIX)/$(LIBDIR64)/$(SUFFIX)
+	install ruby/lib#{libName}_ruby.so $(PREFIX)/$(LIBDIR)/$(SUFFIX)
 
 clean:
 	if [ -f ruby/Makefile ]; then cd ruby; make $(MFLAGS) clean; fi

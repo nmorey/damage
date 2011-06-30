@@ -59,10 +59,12 @@ ifeq ($(ARCH), x86_64)
 	libs := $(lib) $(lib64) $(dlib) $(dlib64)
 	install-libs := install-lib install-lib64
 	libdir := obj/x86_64/
+    LIBDIR := $(LIBDIR64)
 else
 	libs := $(lib) $(dlib)
 	install-libs := install-lib
 	libdir := obj/i686/
+    LIBDIR := $(LIBDIR32)
 endif
 
 
@@ -116,8 +118,8 @@ install-lib: $(lib) $(dlib)
 	install $(lib) $(dlib) $(PREFIX)/$(LIBDIR32)/$(SUFFIX)
 
 install-lib64: $(lib64) $(dlib64)
-	mkdir -p $(PREFIX)/$(LIBDIR64)/$(SUFFIX)
-	install $(lib64) $(dlib64) $(PREFIX)/$(LIBDIR64)/$(SUFFIX)
+	mkdir -p $(PREFIX)/$(LIBDIR)/$(SUFFIX)
+	install $(lib64) $(dlib64) $(PREFIX)/$(LIBDIR)/$(SUFFIX)
 
 install-doc: doc
 	mkdir -p $(PREFIX)/share/$(SUFFIX)
