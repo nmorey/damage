@@ -49,6 +49,9 @@ install_headers := $(wildcard include/#{libName}/*.h)
 
 ARCH	:= $(shell uname -m)
 
+PREFIX  := /usr
+SUFFIX  := #{libName}
+
 CC=gcc
 CFLAGS  := -Iinclude/ $(cflags) -Wall -Wextra -Werror -g -I/usr/include/libxml2 -Werror -O3 -fPIC
 
@@ -70,7 +73,7 @@ tests: $(tests)
 doc:doc/doxygen/latex/Makefile 
 
 doc/doxygen/latex/Makefile: $(headers) doc/Doxyfile
-	doxygen doc/Doxyfile
+	doxygen doc/Doxyfile > obj/doxygen.log
 
 doc/doxygen/latex/refman.pdf: doc/doxygen/latex/Makefile
 	make -C doc/doxygen/latex
@@ -95,9 +98,6 @@ $(dlib): $(objs)
 $(dlib64): $(objs64)
 	$(CC) -shared -o $@ $(objs64) -lxml2 -lz -lm 
 
-#wrapper/lib#{libName}_ruby.so: wrapper/ruby_scp2dir.c $(libs) 
-#	+cd wrapper; ruby extconf.rb; make $(MFLAGS)
-
 obj/i686/%.o:src/%.c $(headers)
 	@if [ ! -d obj/i686/ ]; then mkdir -p obj/i686/; fi
 	$(CC) $(CFLAGS) -m32 -o $@ -c $<
@@ -106,20 +106,22 @@ obj/x86_64/%.o:src/%.c $(headers)
 	@if [ ! -d obj/x86_64/ ]; then mkdir -p obj/x86_64/; fi
 	$(CC) $(CFLAGS) -o $@ -c $<
 
-install: $(install-libs) doc # ruby/sigmaC.xsd ruby/scp2dir.rb wrapper/libscp2dir_ruby.so
-	mkdir -p $(SIGMAC_TOOLCHAIN_DIR)/include/sigmaC/IRS/#{libName}/
-	install $(main_header) $(SIGMAC_TOOLCHAIN_DIR)/include/sigmaC/IRS/
-	install $(install_headers) $(SIGMAC_TOOLCHAIN_DIR)/include/sigmaC/IRS/#{libName}/
-	mkdir -p $(SIGMAC_TOOLCHAIN_DIR)/share/sigmaC/IRS/
-#	install wrapper/libscp2dir_ruby.so ruby/sigmaC.xsd ruby/scp2dir.rb $(SIGMAC_TOOLCHAIN_DIR)/share/sigmaC/IRS/
+install: $(install-libs) install-doc 
+	mkdir -p $(PREFIX)/include/$(SUFFIX)/#{libName}
+	install $(main_header) $(PREFIX)/include/$(SUFFIX)
+	install $(install_headers) $(PREFIX)/include/$(SUFFIX)/#{libName}
 
 install-lib: $(lib) $(dlib)
-	mkdir -p $(SIGMAC_TOOLCHAIN_DIR)/$(LIBDIR32)/sigmaC/IRS/
-	install $(lib) $(dlib) $(SIGMAC_TOOLCHAIN_DIR)/$(LIBDIR32)/sigmaC/IRS/
+	mkdir -p $(PREFIX)/$(LIBDIR32)/$(SUFFIX)
+	install $(lib) $(dlib) $(PREFIX)/$(LIBDIR32)/$(SUFFIX)
 
 install-lib64: $(lib64) $(dlib64)
-	mkdir -p $(SIGMAC_TOOLCHAIN_DIR)/$(LIBDIR64)/sigmaC/IRS/
-	install $(lib64) $(dlib64) $(SIGMAC_TOOLCHAIN_DIR)/$(LIBDIR64)/sigmaC/IRS/
+	mkdir -p $(PREFIX)/$(LIBDIR64)/$(SUFFIX)
+	install $(lib64) $(dlib64) $(PREFIX)/$(LIBDIR64)/$(SUFFIX)
+
+install-doc: doc
+	mkdir -p $(PREFIX)/share/$(SUFFIX)
+	cp -R doc/doxygen/man doc/doxygen/html $(PREFIX)/share/$(SUFFIX)/
 
 
 clean:

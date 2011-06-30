@@ -44,6 +44,9 @@ install_header := $(wildcard include/#{libName}/*.h)
 
 ARCH	:= $(shell uname -m)
 
+PREFIX  := /usr
+SUFFIX  := #{libName}
+
 CFLAGS= -Iinclude/ $(cflags) -Wall -Wextra -Werror -g -I/usr/include/libxml2 -Werror -O3 -fPIC
 ifeq ($(ARCH), x86_64)
 	libs := $(lib) $(lib64) 
@@ -66,8 +69,8 @@ ruby/lib#{libName}_ruby.so: ruby/ruby_#{libName}.c $(libs)
 	+cd ruby; ruby extconf.rb; make $(MFLAGS)
 
 install: ruby/lib#{libName}_ruby.so
-	mkdir -p $(SIGMAC_TOOLCHAIN_DIR)/include/sigmaC/IRS/
-	install ruby/lib#{libName}_ruby.so $(SIGMAC_TOOLCHAIN_DIR)/share/sigmaC/IRS/
+	mkdir -p $(PREFIX)/$(LIBDIR64)/$(SUFFIX)
+	install ruby/lib#{libName}_ruby.so $(PREFIX)/$(LIBDIR64)/$(SUFFIX)
 
 clean:
 	if [ -f ruby/Makefile ]; then cd ruby; make $(MFLAGS) clean; fi
