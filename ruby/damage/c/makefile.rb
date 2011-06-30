@@ -63,7 +63,7 @@ else
 endif
 
 
-all: $(libs) doc
+all: $(libs) 
 
 tests: $(tests)
 

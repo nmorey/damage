@@ -41,7 +41,7 @@ module Damage
 
                 output.puts("#ifndef __#{libName}_binary_rowip_h__")
                 output.puts("#define __#{libName}_binary_rowip_h__\n")
-output.puts("
+                output.puts("
 
 /** \\addtogroup #{libName} DAMAGE #{libName} Library
  * @{
@@ -51,7 +51,7 @@ output.puts("
  **/
 ");
                 description.entries.each() {|name, entry|
-output.puts("
+                    output.puts("
 /**
  * Write a complete #__#{libName}_#{entry.name} structure and its children in binary form from a file in ROWIP mode.
  * ROWIP (Read Or Write-In-Place) is a fast access mode that mapped the whole file in memory.
@@ -63,7 +63,7 @@ output.puts("
  */");
                     output.printf("unsigned long __#{libName}_%s_binary_dump_file_rowip(__#{libName}_%s *ptr, int unlock);\n", entry.name, entry.name)
 
-output.puts("
+                    output.puts("
 /**
  * Read a complete #__#{libName}_#{entry.name} structure and its children in binary form from a file in ROWIP mode.
  * ROWIP (Read Or Write-In-Place) is a fast access mode that mapped the whole file in memory.
@@ -122,11 +122,11 @@ output.puts("
 
                 output.printf("\n\n");
 
-output.puts("
+                output.puts("
 /** @} */
 /** @} */
 ")
-                  output.puts("#endif /* __#{libName}_binary_rowip_h__ */\n")
+                output.puts("#endif /* __#{libName}_binary_rowip_h__ */\n")
             end
             module_function :genBinaryGlobalHeader
 
@@ -166,6 +166,15 @@ static inline void __#{libName}_rowip_header_free(__#{libName}_rowip_header* ptr
                 output.printf("#include \"binary_rowip.h\"\n")
                 output.printf("\n\n") 
 
+                output.puts("
+
+/** \\addtogroup #{libName} DAMAGE #{libName} Library
+ * @{
+**/
+/** \\addtogroup binary_rowip Binary ROWIP (Read Or Write In Place) API
+ * @{
+ **/
+");
                 
                 description.entries.each() { | name, entry|
                     output.printf("unsigned long __#{libName}_%s_binary_dump_file_rowip(__#{libName}_%s *ptr, int unlock)\n{\n", entry.name, entry.name)
@@ -196,6 +205,12 @@ static inline void __#{libName}_rowip_header_free(__#{libName}_rowip_header* ptr
                     output.printf("\treturn ret;\n");
                     output.printf("}\n");
                 }
+
+                output.puts("
+/** @} */
+/** @} */
+")
+                
             end
             module_function :genBinaryWriter
             
@@ -211,6 +226,16 @@ static inline void __#{libName}_rowip_header_free(__#{libName}_rowip_header* ptr
                 output.printf("#include \"_#{libName}/common.h\"\n")
                 output.printf("#include \"binary_rowip.h\"\n")
                 output.printf("\n\n") 
+
+                output.puts("
+
+/** \\addtogroup #{libName} DAMAGE #{libName} Library
+ * @{
+**/
+/** \\addtogroup binary_rowip Binary ROWIP (Read Or Write In Place) API
+ * @{
+ **/
+");
 
 
                 description.entries.each() { | name, entry|
@@ -260,6 +285,11 @@ static inline void __#{libName}_rowip_header_free(__#{libName}_rowip_header* ptr
                 }
 
 
+                output.puts("
+/** @} */
+/** @} */
+")
+                
             end
             module_function :genBinaryReader
         end

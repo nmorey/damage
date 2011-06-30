@@ -71,7 +71,6 @@ output.puts("
                 }
 output.puts("
 /** @} */
-/** @} */
 ")
                 output.puts("#endif /* __#{libName}_h__ */\n")
             end

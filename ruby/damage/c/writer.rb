@@ -51,7 +51,7 @@ module Damage
 
                 output.puts("#ifndef __#{libName}_xml_writer_h__")
                 output.puts("#define __#{libName}_xml_writer_h__\n")
-output.puts("
+                output.puts("
 
 /** \\addtogroup #{libName} DAMAGE #{libName} Library
  * @{
@@ -60,8 +60,8 @@ output.puts("
  * @{
  **/
 ");
-                 description.entries.each() {|name, entry|
-output.puts("
+                description.entries.each() {|name, entry|
+                    output.puts("
 /**
  * Internal: Write a complete #__#{libName}_#{entry.name} structure and its children in XML form to an open file.
  * This function uses longjmp to the \"__#{libName}_error_happened\".
@@ -71,7 +71,7 @@ output.puts("
  * @return node
  */");
                     output.printf("xmlNodePtr __#{libName}_create_%s_xml_node(xmlNodePtr node, __#{libName}_%s *ptr);\n", entry.name, entry.name);
-output.puts("
+                    output.puts("
 /**
  * Write a complete #__#{libName}_#{entry.name} structure and its children in XML form to a file
  * @param[in] file Filename
@@ -85,11 +85,11 @@ output.puts("
                 }
                 output.printf("\n\n");
 
-output.puts("
+                output.puts("
 /** @} */
 /** @} */
 ")
-                 output.puts("#endif /* __#{libName}_xml_writer_h__ */\n")
+                output.puts("#endif /* __#{libName}_xml_writer_h__ */\n")
             end
             module_function :genWriterH
             def genWriter(output, description)
@@ -98,9 +98,16 @@ output.puts("
                 output.printf("#include \"#{libName}.h\"\n")
                 output.printf("#include \"_#{libName}/common.h\"\n")
                 output.printf("\n")
-                output.printf("jmp_buf __#{libName}_error_happened;\n")
                 output.printf("\n\n")
+                output.puts("
 
+/** \\addtogroup #{libName} DAMAGE #{libName} Library
+ * @{
+**/
+/** \\addtogroup xml_write XML Writer API
+ * @{
+ **/
+");
                 description.entries.each() {|name, entry|
                     output.printf("xmlNodePtr __#{libName}_create_%s_xml_node(xmlNodePtr node, __#{libName}_%s *ptr);\n", entry.name, entry.name);
                 }
@@ -231,6 +238,10 @@ output.puts("
                     output.printf("}\n");
                 }      
 
+                output.puts("
+/** @} */
+/** @} */
+")
             end
             module_function :genWriter, :addXmlElt
         end

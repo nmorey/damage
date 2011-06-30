@@ -36,7 +36,7 @@ module Damage
 
                 output.puts("#ifndef __#{libName}_binary_reader_h__")
                 output.puts("#define __#{libName}_binary_reader_h__\n")
-output.puts("
+                output.puts("
 
 /** \\addtogroup #{libName} DAMAGE #{libName} Library
  * @{
@@ -46,7 +46,7 @@ output.puts("
  **/
 ");
                 description.entries.each() {|name, entry|
-output.puts("
+                    output.puts("
 /**
  * Internal: Read a complete #__#{libName}_#{entry.name} structure and its children in binary form from an open file.
  * This function uses longjmp to the \"__#{libName}_error_happened\".
@@ -57,7 +57,7 @@ output.puts("
  */");
 
                     output.puts "__#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load(FILE* file, uint32_t offset);\n"
-output.puts("
+                    output.puts("
 /**
  * Read a complete #__#{libName}_#{entry.name} structure and its children in binary form from a file
  * @param[in] file Filename
@@ -70,7 +70,7 @@ output.puts("
                 }
                 output.printf("\n\n");
 
-output.puts("
+                output.puts("
 /** @} */
 /** @} */
 ")
@@ -84,6 +84,16 @@ output.puts("
                 output.printf("#include \"_#{libName}/common.h\"\n")
                 output.printf("#include <stdint.h>\n")
                 output.printf("\n\n") 
+
+                output.puts("
+
+/** \\addtogroup #{libName} DAMAGE #{libName} Library
+ * @{
+**/
+/** \\addtogroup binary_reader Binary Reader API
+ * @{
+ **/
+");
 
                 description.entries.each() { |name, entry|
                     output.puts "
@@ -142,7 +152,7 @@ __#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load(FILE* file, u
                                 output.printf("#{indent}}\n")
                             else
                                 raise("Unsupported data category for #{entry.name}.#{field.name}");
-                             end
+                            end
                         when :list, :container
                             case field.category
                             when :simple
@@ -194,7 +204,7 @@ __#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load(FILE* file, u
                             else
                                 raise("Unsupported data category for #{entry.name}.#{field.name}");
                             end
-                         end
+                        end
                     }
                     # Autosort generation
                     entry.sort.each() {|field|
@@ -246,6 +256,10 @@ __#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load(FILE* file, u
                     output.printf("\treturn ptr;\n");
                     output.printf("}\n");
                 }
+                output.puts("
+/** @} */
+/** @} */
+")
 
 
             end

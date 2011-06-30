@@ -46,6 +46,16 @@ module Damage
                 output.printf("#include \"#{libName}.h\"\n")
                 output.printf("#include \"_#{libName}/common.h\"\n")
                 output.printf("\n\n") 
+
+                output.puts("
+
+/** \\addtogroup #{libName} DAMAGE #{libName} Library
+ * @{
+**/
+/** \\addtogroup alloc Allocation API
+ * @{
+ **/
+");
                 
                 description.entries.each() { |name, entry|
                     output.printf("__#{libName}_%s *__#{libName}_%s_alloc()\n",
@@ -149,6 +159,11 @@ module Damage
                     output.printf("\treturn;\n")
                     output.printf("}\n\n")
                 }
+
+                output.puts("
+/** @} */
+/** @} */
+") 
             end
 
             def genH(output, description)
@@ -156,7 +171,7 @@ module Damage
 
                 output.printf("#ifndef __#{libName}_alloc_h__\n")
                 output.printf("#define __#{libName}_alloc_h__\n")
-output.puts("
+                output.puts("
 
 /** \\addtogroup #{libName} DAMAGE #{libName} Library
  * @{
@@ -166,13 +181,13 @@ output.puts("
  **/
 ");
                 description.entries.each() {|name, entry|
-output.puts("
+                    output.puts("
 /**
  * Allocate a #__#{libName}_#{entry.name} and initialize its elements with their default values
  * @return A valid pointer to a #__#{libName}_#{entry.name}. Exit with an error message if alloc failed.
 */")
                     output.printf("__#{libName}_%s *__#{libName}_%s_alloc();\n", entry.name, entry.name)
-output.puts("
+                    output.puts("
 /**
  * Free #__#{libName}_#{entry.name}, its siblings and children (if any).
  * @param[in] ptr Pointer to the structure to free.
@@ -182,7 +197,7 @@ output.puts("
                     output.printf("\n")
                 }
 
-output.puts("
+                output.puts("
 /** @} */
 /** @} */
 ")

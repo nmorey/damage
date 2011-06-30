@@ -38,7 +38,7 @@ module Damage
                     case field.attribute
                     when :sort
                         output.printf("\t/** Sorted array (index) of \"#{field.sort_field}\" by #{field.sort_key} (not necessary dense) */\n")
-                       output.printf("\tstruct ___#{libName}_%s** s_%s __#{libName.upcase}_ALIGN__;\n", field.data_type, field.name)
+                        output.printf("\tstruct ___#{libName}_%s** s_%s __#{libName.upcase}_ALIGN__;\n", field.data_type, field.name)
                         output.printf("\t/** Length of the s_%s array */\n", field.name)
                         output.printf("\tunsigned long n_%s __#{libName.upcase}_ALIGN__;\n", field.name)
                     when :pass
@@ -91,7 +91,7 @@ module Damage
 
                 output.printf("#ifndef __#{libName}_structs_h__\n");
                 output.printf("#define __#{libName}_structs_h__\n\n");
-output.puts("
+                output.puts("
 
 /** \\addtogroup #{libName} DAMAGE #{libName} Library
  * @{
@@ -119,7 +119,7 @@ output.puts("
                 output.printf("\t/** Base memory address */\n");
                 output.printf("\tvoid* base_adr;\n");
                 output.printf("} __#{libName}_rowip_header;\n\n");
-output.puts("
+                output.puts("
 /** @} */
 /** @} */
 ")

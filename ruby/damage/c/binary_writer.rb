@@ -37,7 +37,7 @@ module Damage
 
                 output.puts("#ifndef __#{libName}_binary_writer_h__")
                 output.puts("#define __#{libName}_binary_writer_h__\n")
-output.puts("
+                output.puts("
 
 /** \\addtogroup #{libName} DAMAGE #{libName} Library
  * @{
@@ -47,7 +47,7 @@ output.puts("
  **/
 ");
                 description.entries.each() {|name, entry|
-output.puts("
+                    output.puts("
 /**
  * Internal: Write a complete #__#{libName}_#{entry.name} structure and its children in binary form to an open file.
  * This function uses longjmp to the \"__#{libName}_error_happened\".
@@ -58,7 +58,7 @@ output.puts("
  * @return offset + number of bytes written
  */");
                     output.puts "uint32_t __#{libName}_#{entry.name}_binary_dump(__#{libName}_#{entry.name}* ptr, FILE* file, uint32_t offset);\n"
-output.puts("
+                    output.puts("
 /**
  * Write a complete #__#{libName}_#{entry.name} structure and its children in binary form to a file
  * @param[in] file Filename
@@ -72,7 +72,7 @@ output.puts("
                 }
                 output.printf("\n\n");
 
-output.puts("
+                output.puts("
 /** @} */
 /** @} */
 ")
@@ -86,6 +86,15 @@ output.puts("
                 output.printf("#include \"_#{libName}/common.h\"\n")
                 output.printf("#include <stdint.h>\n")
                 output.printf("\n\n") 
+                output.puts("
+
+/** \\addtogroup #{libName} DAMAGE #{libName} Library
+ * @{
+**/
+/** \\addtogroup binary_writer Binary Writer API
+ * @{
+ **/
+");
 
                 description.entries.each() { |name, entry|
                     output.puts "
@@ -256,6 +265,11 @@ uint32_t __#{libName}_#{entry.name}_binary_dump(__#{libName}_#{entry.name}* ptr,
                     output.printf("\treturn (unsigned long)ret;\n");
                     output.printf("}\n");
                 }
+                output.puts("
+/** @} */
+/** @} */
+")
+                
             end
             module_function :genBinaryWriter
 

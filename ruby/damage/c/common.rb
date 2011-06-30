@@ -15,25 +15,25 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 module Damage
-  module C
-    module Common
+    module C
+        module Common
 
-      def write(description)
-        output = Damage::Files.createAndOpen("gen/#{description.config.libname}/include/_#{description.config.libname}/", "common.h")
-        self.genCommonH(output, description)
-        output.close()
-        output = Damage::Files.createAndOpen("gen/#{description.config.libname}/src/", "common.c")
-        self.genCommonC(output, description)
-        output.close()
-      end
-      module_function :write
+            def write(description)
+                output = Damage::Files.createAndOpen("gen/#{description.config.libname}/include/_#{description.config.libname}/", "common.h")
+                self.genCommonH(output, description)
+                output.close()
+                output = Damage::Files.createAndOpen("gen/#{description.config.libname}/src/", "common.c")
+                self.genCommonC(output, description)
+                output.close()
+            end
+            module_function :write
 
 
-      private
+            private
 
-      def genCommonH(output, description)
-        libName = description.config.libname
-        output.puts "
+            def genCommonH(output, description)
+                libName = description.config.libname
+                output.puts "
 #ifndef __#{libName}_common_h__
 #define __#{libName}_common_h__
 
@@ -72,12 +72,12 @@ extern jmp_buf __#{libName}_error_happened;
 extern int __#{libName}_line;
 #endif /* __#{libName}_common_h__ */
 "
-      end
-      module_function :genCommonH
+            end
+            module_function :genCommonH
 
-      def genCommonC(output, description)
-        libName = description.config.libname
-        output.puts "
+            def genCommonC(output, description)
+                libName = description.config.libname
+                output.puts "
 #include <assert.h>
 #include <errno.h>
 #include <setjmp.h>
@@ -89,6 +89,8 @@ extern int __#{libName}_line;
 #include <libxml/xmlreader.h>
 #include \"#{libName}.h\"
 #include \"_#{libName}/common.h\"
+
+jmp_buf __#{libName}_error_happened;
 
 void *__#{libName}_malloc(unsigned long size)
 {
@@ -332,8 +334,8 @@ int __#{libName}_release_flock(){
 }
 
 "
-      end
-      module_function :genCommonC
+            end
+            module_function :genCommonC
+        end
     end
-  end
 end

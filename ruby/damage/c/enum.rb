@@ -51,7 +51,7 @@ module Damage
                             count+=1
                         }
                         output.printf("\n} #{enumPrefix};\n");
-output.puts("
+                        output.puts("
 /** Array containing the string for each enum entry */");
                         output.printf("extern const char*__#{libName}_#{entry.name}_#{field.name}_strings[#{field.enum.length+1}];\n\n");
                     end
@@ -67,7 +67,7 @@ output.puts("
                 output.printf("#ifndef __#{libName}_enum_h__\n");
                 output.printf("#define __#{libName}_enum_h__\n");
                 
-  output.puts("
+                output.puts("
 
 /** \\addtogroup #{libName} DAMAGE #{libName} Library
  * @{
@@ -77,17 +77,17 @@ output.puts("
  **/
 ");
 
-              description.entries.each() {|name, entry|
+                description.entries.each() {|name, entry|
                     genEnum(output, libName, entry)
 
                 }
                 output.printf("\n\n");
- 
-output.puts("
+                
+                output.puts("
 /** @} */
 /** @} */
 ")
-               output.printf("#endif /* __#{libName}_enu_h__ */\n");
+                output.printf("#endif /* __#{libName}_enu_h__ */\n");
             end
             module_function :genH
 

@@ -33,10 +33,10 @@ module Damage
             private
             def genHeader(output, description)
                 libName = description.config.libname
- 
+                
                 output.puts("#ifndef __#{libName}_sort_h__")
                 output.puts("#define __#{libName}_sort_h__\n")
-output.puts("
+                output.puts("
 
 /** \\addtogroup #{libName} DAMAGE #{libName} Library
  * @{
@@ -55,15 +55,15 @@ output.puts("
  * @return Nothing
 */");
                         output.printf("void __#{libName}_#{entry.name}_sort_#{field.name}(__#{libName}_#{entry.name}* ptr);\n\n")
-   
+                        
                     }
                 }
 
-output.puts("
+                output.puts("
 /** @} */
 /** @} */
 ")
-                   output.puts("#endif /* __#{libName}_sort_h__ */\n")
+                output.puts("#endif /* __#{libName}_sort_h__ */\n")
             end
             module_function :genHeader
             def genSorter(output, description)
@@ -71,8 +71,17 @@ output.puts("
                 output.printf("#include \"#{libName}.h\"\n");
                 output.printf("#include \"_#{libName}/common.h\"\n");
                 output.printf("\n");
-                output.printf("jmp_buf __#{libName}_error_happened;\n");
                 output.printf("\n\n");
+                output.puts("
+
+/** \\addtogroup #{libName} DAMAGE #{libName} Library
+ * @{
+**/
+/** \\addtogroup sort Sort API
+ * @{
+ **/
+");
+                
                 description.entries.each() {|name, entry|
                     entry.sort.each() {|field|
                         output.printf("void __#{libName}_#{entry.name}_sort_#{field.name}(__#{libName}_#{entry.name}* ptr){\n")
@@ -99,6 +108,11 @@ output.puts("
                         output.printf("}\n\n");
                     }
                 }
+                output.puts("
+/** @} */
+/** @} */
+")
+
             end
             module_function :genSorter
         end
