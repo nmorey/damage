@@ -63,10 +63,18 @@ else
 endif
 
 
-all: $(libs) # wrapper/lib#{libName}_ruby.so test1
+all: $(libs) doc
 
 tests: $(tests)
 
+doc:doc/doxygen/latex/Makefile doc/doxygen/latex/refman.pdf
+
+doc/doxygen/latex/Makefile: $(headers)
+	doxygen doc/Doxyfile
+
+doc/doxygen/latex/refman.pdf: doc/doxygen/latex/Makefile
+	make -C doc/doxygen/latex
+	
 obj/tests/%: test/%.c $(libs)
 	@if [ ! -d obj/tests/ ]; then mkdir -p obj/tests/; fi
 	$(CC) -o $@ $< $(CFLAGS) $(libdir)/lib#{libName}.a -lxml2
@@ -98,7 +106,7 @@ obj/x86_64/%.o:src/%.c $(headers)
 	@if [ ! -d obj/x86_64/ ]; then mkdir -p obj/x86_64/; fi
 	$(CC) $(CFLAGS) -o $@ -c $<
 
-install: $(install-libs) # ruby/sigmaC.xsd ruby/scp2dir.rb wrapper/libscp2dir_ruby.so
+install: $(install-libs) doc # ruby/sigmaC.xsd ruby/scp2dir.rb wrapper/libscp2dir_ruby.so
 	mkdir -p $(SIGMAC_TOOLCHAIN_DIR)/include/sigmaC/IRS/#{libName}/
 	install $(main_header) $(SIGMAC_TOOLCHAIN_DIR)/include/sigmaC/IRS/
 	install $(install_headers) $(SIGMAC_TOOLCHAIN_DIR)/include/sigmaC/IRS/#{libName}/
@@ -113,10 +121,11 @@ install-lib64: $(lib64) $(dlib64)
 	mkdir -p $(SIGMAC_TOOLCHAIN_DIR)/$(LIBDIR64)/sigmaC/IRS/
 	install $(lib64) $(dlib64) $(SIGMAC_TOOLCHAIN_DIR)/$(LIBDIR64)/sigmaC/IRS/
 
+
 clean:
 	rm -Rf .commit/
 	rm -Rf obj/
-	rm -Rf $(awksrcs) $(awkheaders)
+	rm -Rf $(awksrcs) $(awkheaders) doc/doxygen/
 	if [ -f Makefile.ruby ]; then make $(MFLAGS) -f Makefile.ruby clean; fi
 
 "

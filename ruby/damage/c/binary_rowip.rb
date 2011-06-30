@@ -41,12 +41,21 @@ module Damage
 
                 output.puts("#ifndef __#{libName}_binary_rowip_h__")
                 output.puts("#define __#{libName}_binary_rowip_h__\n")
+output.puts("
+
+/** \\addtogroup #{libName} DAMAGE #{libName} Library
+ * @{
+**/
+/** \\addtogroup binary_rowip Binary ROWIP (Read Or Write In Place) API
+ * @{
+ **/
+");
                 description.entries.each() {|name, entry|
 output.puts("
 /**
  * Write a complete #__#{libName}_#{entry.name} structure and its children in binary form from a file in ROWIP mode.
  * ROWIP (Read Or Write-In-Place) is a fast access mode that mapped the whole file in memory.
- * To write in ROWIP mode, the structure *MUST* have been obtained by using #__#{libName}_%s* __#{libName}_%s_binary_load_file_rowip
+ * To write in ROWIP mode, the structure *MUST* have been obtained by using #__#{libName}_#{entry.name}* #__#{libName}_#{entry.name}_binary_load_file_rowip
  * @param[in] ptr Structure to write
  * @param[in] unlock 1 if the lock on the DB should be released after the write or 0 to keep it locked.
  * @return Amount of bytes wrote to file
@@ -112,7 +121,12 @@ output.puts("
                 output.printf("#define __#{libName.upcase}_ROWIP_STR_ARRAY(ptr, field, idx) ({char*_ptr = NULL; uint32_t* _array; if(ptr->field != NULL) { _array =  (uint32_t*)__#{libName.upcase}_ROWIP_PTR(ptr, field); _ptr = ((void*)ptr - ptr->_rowip_pos) + (unsigned long)(_array[idx] + sizeof(uint32_t));} _ptr;})\n")
 
                 output.printf("\n\n");
-                output.puts("#endif /* __#{libName}_binary_rowip_h__ */\n")
+
+output.puts("
+/** @} */
+/** @} */
+")
+                  output.puts("#endif /* __#{libName}_binary_rowip_h__ */\n")
             end
             module_function :genBinaryGlobalHeader
 

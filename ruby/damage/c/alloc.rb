@@ -156,7 +156,15 @@ module Damage
 
                 output.printf("#ifndef __#{libName}_alloc_h__\n")
                 output.printf("#define __#{libName}_alloc_h__\n")
+output.puts("
 
+/** \\addtogroup #{libName} DAMAGE #{libName} Library
+ * @{
+**/
+/** \\addtogroup alloc Allocation API
+ * @{
+ **/
+");
                 description.entries.each() {|name, entry|
 output.puts("
 /**
@@ -173,6 +181,11 @@ output.puts("
                     output.printf("void __#{libName}_%s_free(__#{libName}_%s *ptr);\n", entry.name, entry.name)
                     output.printf("\n")
                 }
+
+output.puts("
+/** @} */
+/** @} */
+")
                 output.printf("#endif /* __#{libName}_alloc_h__ */\n")
             end
             module_function :genC, :genH

@@ -36,11 +36,20 @@ module Damage
  
                 output.puts("#ifndef __#{libName}_sort_h__")
                 output.puts("#define __#{libName}_sort_h__\n")
+output.puts("
+
+/** \\addtogroup #{libName} DAMAGE #{libName} Library
+ * @{
+**/
+/** \\addtogroup sort Sort API
+ * @{
+ **/
+");
                 description.entries.each() {|name, entry|
                     entry.sort.each() {|field|
                         output.puts("
 /**
- * Generates an array of #__#{libName}_#{field.name} indexed by their #{field.sort_key} field.
+ * Generates an array of #__#{libName}_#{field.data_type} indexed by their #{field.sort_key} field.
  * The array is stored at ptr->s_#{field.name} and its length at ptr->n_#{field.name}.
  * @param[in] ptr Structure containing the list to sort and where to store the indexed array
  * @return Nothing
@@ -49,7 +58,12 @@ module Damage
    
                     }
                 }
-                output.puts("#endif /* __#{libName}_sort_h__ */\n")
+
+output.puts("
+/** @} */
+/** @} */
+")
+                   output.puts("#endif /* __#{libName}_sort_h__ */\n")
             end
             module_function :genHeader
             def genSorter(output, description)

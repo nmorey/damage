@@ -37,6 +37,15 @@ module Damage
 
                 output.puts("#ifndef __#{libName}_binary_writer_h__")
                 output.puts("#define __#{libName}_binary_writer_h__\n")
+output.puts("
+
+/** \\addtogroup #{libName} DAMAGE #{libName} Library
+ * @{
+**/
+/** \\addtogroup binary_writer Binary Writer API
+ * @{
+ **/
+");
                 description.entries.each() {|name, entry|
 output.puts("
 /**
@@ -62,6 +71,11 @@ output.puts("
 
                 }
                 output.printf("\n\n");
+
+output.puts("
+/** @} */
+/** @} */
+")
                 output.puts("#endif /* __#{libName}_binary_writer_h__ */\n")
             end
             module_function :genBinaryWriterH

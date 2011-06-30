@@ -51,7 +51,16 @@ module Damage
 
                 output.puts("#ifndef __#{libName}_xml_writer_h__")
                 output.puts("#define __#{libName}_xml_writer_h__\n")
-                description.entries.each() {|name, entry|
+output.puts("
+
+/** \\addtogroup #{libName} DAMAGE #{libName} Library
+ * @{
+**/
+/** \\addtogroup xml_write XML Writer API
+ * @{
+ **/
+");
+                 description.entries.each() {|name, entry|
 output.puts("
 /**
  * Internal: Write a complete #__#{libName}_#{entry.name} structure and its children in XML form to an open file.
@@ -75,7 +84,12 @@ output.puts("
                     output.printf("int __#{libName}_%s_xml_dump_file(const char* file, __#{libName}_%s *ptr, int zipped, int unlock);\n\n", entry.name, entry.name)
                 }
                 output.printf("\n\n");
-               output.puts("#endif /* __#{libName}_xml_writer_h__ */\n")
+
+output.puts("
+/** @} */
+/** @} */
+")
+                 output.puts("#endif /* __#{libName}_xml_writer_h__ */\n")
             end
             module_function :genWriterH
             def genWriter(output, description)

@@ -239,19 +239,24 @@ module Damage
             end
         end
         class Config
-            attr_accessor :libname, :hfiles
+            attr_accessor :libname, :hfiles, :version, :description
             def initialize(config)
                 @libname = config["libname"]
+                raise("Missing a library name") if @libname == nil
+                @description = config["description"]
+                @version="N/A"
               if config["hfiles"] != nil
                 @hfiles = config["hfiles"].split 
               else
                 @hfiles=[]
               end
+                @version = config["version"] if config["version"] != nil
             end
         end
         class Description
             attr_accessor :config
             attr_accessor :entries, :top_entry, :containers
+
 
             def initialize(tree)
                 @config = Config.new(tree["config"])

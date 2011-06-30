@@ -29,6 +29,7 @@ module Damage
         require File.dirname(__FILE__) + '/c/binary_rowip'
         require File.dirname(__FILE__) + '/c/makefile'
         require File.dirname(__FILE__) + '/c/tests'
+        require File.dirname(__FILE__) + '/c/doxygen'
 
 
         def generate(description)
@@ -45,6 +46,7 @@ module Damage
             BinaryRowip::write(description)
             Makefile::write(description)
             Tests::write(description)
+            Doxygen::write(description)
         end
         module_function :generate
     end

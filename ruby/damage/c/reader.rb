@@ -36,6 +36,15 @@ module Damage
 
                 output.puts("#ifndef __#{libName}_xml_reader_h__")
                 output.puts("#define __#{libName}_xml_reader_h__\n")
+output.puts("
+
+/** \\addtogroup #{libName} DAMAGE #{libName} Library
+ * @{
+**/
+/** \\addtogroup xml_reader XML Reader API
+ * @{
+ **/
+");
                 description.entries.each() {|name, entry|
 output.puts("
 /**
@@ -71,6 +80,11 @@ output.puts("
                     output.printf("xmlNodePtr node);\n\n");
                 }
                 output.printf("\n\n");
+
+output.puts("
+/** @} */
+/** @} */
+")
                 output.puts("#endif /* __#{libName}_xml_reader_h__ */\n")
             end
             module_function :genReaderH

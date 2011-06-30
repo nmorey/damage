@@ -36,6 +36,15 @@ module Damage
 
                 output.puts("#ifndef __#{libName}_binary_reader_h__")
                 output.puts("#define __#{libName}_binary_reader_h__\n")
+output.puts("
+
+/** \\addtogroup #{libName} DAMAGE #{libName} Library
+ * @{
+**/
+/** \\addtogroup binary_reader Binary Reader API
+ * @{
+ **/
+");
                 description.entries.each() {|name, entry|
 output.puts("
 /**
@@ -60,6 +69,11 @@ output.puts("
                     output.printf("__#{libName}_%s* __#{libName}_%s_binary_load_file(const char* file, int rdonly);\n\n", entry.name, entry.name)
                 }
                 output.printf("\n\n");
+
+output.puts("
+/** @} */
+/** @} */
+")
                 output.puts("#endif /* __#{libName}_binary_reader_h__ */\n")
             end
             module_function :genBinaryReaderH

@@ -67,12 +67,27 @@ output.puts("
                 output.printf("#ifndef __#{libName}_enum_h__\n");
                 output.printf("#define __#{libName}_enum_h__\n");
                 
-                description.entries.each() {|name, entry|
+  output.puts("
+
+/** \\addtogroup #{libName} DAMAGE #{libName} Library
+ * @{
+**/
+/** \\addtogroup enum Enum definitions
+ * @{
+ **/
+");
+
+              description.entries.each() {|name, entry|
                     genEnum(output, libName, entry)
 
                 }
                 output.printf("\n\n");
-                output.printf("#endif /* __#{libName}_enu_h__ */\n");
+ 
+output.puts("
+/** @} */
+/** @} */
+")
+               output.printf("#endif /* __#{libName}_enu_h__ */\n");
             end
             module_function :genH
 

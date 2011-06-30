@@ -91,6 +91,15 @@ module Damage
 
                 output.printf("#ifndef __#{libName}_structs_h__\n");
                 output.printf("#define __#{libName}_structs_h__\n\n");
+output.puts("
+
+/** \\addtogroup #{libName} DAMAGE #{libName} Library
+ * @{
+**/
+/** \\addtogroup structs Structure definitions
+ * @{
+ **/
+");
                 output.puts("/** We need to force alignment to ptr%8 to avoid compatibility problem for binary format between x86 and x86_64*/");
                 output.printf("#define __#{libName.upcase}_ALIGN__ __attribute__((aligned(8)))\n\n");
                 
@@ -110,6 +119,10 @@ module Damage
                 output.printf("\t/** Base memory address */\n");
                 output.printf("\tvoid* base_adr;\n");
                 output.printf("} __#{libName}_rowip_header;\n\n");
+output.puts("
+/** @} */
+/** @} */
+")
                 output.printf("#endif /* __#{libName}_structs_h__ */\n");
             end
             module_function :genH
