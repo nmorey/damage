@@ -54,8 +54,10 @@ module Damage
  * @{
 **/
 ")
-                output.puts("#define __#{libName.upcase}_VERSION__ \"#{description.config.version}\"\n")
-               output.puts("#include <stdio.h>")
+                output.puts("
+/** Library version */
+#define __#{libName.upcase}_VERSION__ \"#{description.config.version}\"\n")
+                output.puts("#include <stdio.h>")
                             output.puts("#include <stdint.h>")
                             output.puts("#include <libxml/tree.h>")
                             output.puts("#include <#{libName}/enum.h>")
