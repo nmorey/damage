@@ -42,11 +42,9 @@ module Damage
 
                 case field["comparable"]
                 when "YES", nil
-                    @comparable=:yes
-                when "FALSE"
-                    @comparable=:false
+                    @comparable=true
                 when "NO"
-                    @comparable=:no
+                    @comparable=false
                 else
                     raise("Unknown comparable value #{field["comparable"]}")
                 end
@@ -194,7 +192,7 @@ module Damage
 
         class Entry
             attr_accessor :name, :attribute, :fields, :children, :attributes, :sort,
-            :containers, :enums, :cleanup, :postcleanup, :description
+            :containers, :enums, :cleanup, :postcleanup, :description, :comparable
 
             def initialize(entry)
                 @name = entry["name"]
@@ -219,6 +217,16 @@ module Damage
                 else
                     raise("Unknown entry attribute #{entry["attribute"]}")
                 end
+
+                case field["comparable"]
+                when "YES", nil
+                    @comparable= true
+                when "NO"
+                    @comparable= false
+                else
+                    raise("Unknown comparable value #{field["comparable"]}")
+                end
+
                 entry["fields"].each() { |field|
                     _field =  Field.new(field)
                     
