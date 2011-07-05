@@ -48,7 +48,10 @@ module Damage
                     @qty = :list
                     # when "ARRAY"
                     #   @qty = :array
+                else
+                    raise("Unknown quantity value #{field["quantity"]}")
                 end
+
                 case field["attribute"]
                 when "META"
                     @attribute = :meta
