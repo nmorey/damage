@@ -199,7 +199,7 @@ module Damage
                                 output.printf("\t\tcase %d:\n", caseCount);
                                 output.printf("\t\t\t/* %s */\n", field.name);
                                 case field.category
-                                when :simple
+                                when :simple, :string
                                     case field.data_type
                                     when "char*"
                                         output.printf("\t\t\tptr->%s = __#{libName}_read_value_str_attr(attribute);\n",
@@ -356,7 +356,7 @@ module Damage
                                 output.printf("\t\tcase %d:\n", caseCount);
                                 output.printf("\t\t\t/* %s */\n", field.name);
                                 case field.category
-                                when :simple
+                                when :simple, :string
                                     case field.data_type
                                     when "char*"
                                         output.printf("\t\t\tptr->%s = __#{libName}_realloc(ptr->%s, sizeof(*(ptr->%s))" +

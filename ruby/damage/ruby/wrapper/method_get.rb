@@ -15,24 +15,35 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 module Damage
-  module Ruby
-    module Wrapper
-      module MethodGet
+    module Ruby
+        module Wrapper
+            module MethodGet
 
-        def write(output, entry, libName, params)
-          entry.fields.each() {|field|
-            getStr="static VALUE #{params[:funcPrefix]}_#{field.name}_get(VALUE self)"
-            getStrRowip="static VALUE #{params[:funcPrefix]}_#{field.name}_getRowip(VALUE self)"
-            aliasFunc="#define #{params[:funcPrefix]}_#{field.name}_getRowip #{params[:funcPrefix]}_#{field.name}_get"
-            next if field.target != :both
+                def write(output, entry, libName, params)
+                    entry.fields.each() {|field|
+                        getStr="static VALUE #{params[:funcPrefix]}_#{field.name}_get(VALUE self)"
+                        getStrRowip="static VALUE #{params[:funcPrefix]}_#{field.name}_getRowip(VALUE self)"
+                        aliasFunc="#define #{params[:funcPrefix]}_#{field.name}_getRowip #{params[:funcPrefix]}_#{field.name}_get"
+                        next if field.target != :both
 
-            case field.qty
-            when :single
-              case field.category
-              when :simple
-                case field.data_type
-                when "char*"
-                  output.puts("
+                        case field.qty
+                        when :single
+                            case field.category
+                            when :simple
+                                raise("Unsupported simple type #{field.data_type}") if field.val2ruby == nil
+                                
+                                output.puts("
+#{aliasFunc}
+#{getStr}{
+    #{params[:cType]}* ptr;
+    Data_Get_Struct(self, #{params[:cType]}, ptr);
+    assert(ptr);
+    return #{field.val2ruby}((long)ptr->#{field.name});
+}
+")           
+
+                            when :string
+                                output.puts("
 #{getStr}{
     #{params[:cType]}* ptr;
     Data_Get_Struct(self, #{params[:cType]}, ptr);
@@ -50,24 +61,11 @@ module Damage
     return rb_str_new2(__#{libName.upcase}_ROWIP_STR(ptr, #{field.name}));
 }
 ")
-                when "unsigned long", "signed long", "uint32_t", "int32_t", "double"
-                  output.puts("
-#{aliasFunc}
-#{getStr}{
-    #{params[:cType]}* ptr;
-    Data_Get_Struct(self, #{params[:cType]}, ptr);
-    assert(ptr);
-    return #{field.val2ruby}((long)ptr->#{field.name});
-}
-")           
-                else
-                  raise("Unsupported data type #{field.data_type}" )
-                end
-              when :id, :idref
-                getStr_str="static VALUE #{params[:funcPrefix]}_#{field.name}_str_get(VALUE self)"
-                getStrRowip_str="static VALUE #{params[:funcPrefix]}_#{field.name}_str_getRowip(VALUE self)"
+                            when :id, :idref
+                                getStr_str="static VALUE #{params[:funcPrefix]}_#{field.name}_str_get(VALUE self)"
+                                getStrRowip_str="static VALUE #{params[:funcPrefix]}_#{field.name}_str_getRowip(VALUE self)"
 
-                   output.puts("
+                                output.puts("
 #{getStr_str}{
     #{params[:cType]}* ptr;
     Data_Get_Struct(self, #{params[:cType]}, ptr);
@@ -85,7 +83,7 @@ module Damage
     return rb_str_new2(__#{libName.upcase}_ROWIP_STR(ptr, #{field.name}_str));
 }
 ")
-                  output.puts("
+                                output.puts("
 #{aliasFunc}
 #{getStr}{
     #{params[:cType]}* ptr;
@@ -93,8 +91,8 @@ module Damage
     assert(ptr);
     return ULONG2NUM((long)ptr->#{field.name});
 }")               
-              when :intern
-                output.puts("
+                            when :intern
+                                output.puts("
 #{getStr}{
     #{params[:cType]}* ptr;
     Data_Get_Struct(self, #{params[:cType]}, ptr);
@@ -112,8 +110,8 @@ module Damage
     return (VALUE)__#{libName.upcase}_ROWIP_PTR(ptr,#{field.name})->_private;
 }
 ")
-              when :enum
-                output.puts("
+                            when :enum
+                                output.puts("
 #{aliasFunc}
 #{getStr}{
     #{params[:cType]}* ptr;
@@ -122,15 +120,13 @@ module Damage
     return ID2SYM(#{entry.name}_#{field.name}_enumId[ptr->#{field.name}]);
 }
 ")               else
-                  raise("Unsupported data category for #{entry.name}.#{field.name}");
+                                raise("Unsupported data category for #{entry.name}.#{field.name}");
 
-              end
-            when :list, :container
-              case field.category
-              when :simple
-                case field.data_type
-                when "char*"
-                  output.puts("
+                            end
+                        when :list, :container
+                            case field.category
+                            when :string
+                                output.puts("
 #{getStr}{
     #{params[:cType]}* ptr;
     VALUE array;
@@ -157,8 +153,9 @@ module Damage
 }
 ");
 
-                when "unsigned long", "signed long", "uint32_t", "int32_t", "double"
-                  output.puts("
+                            when :simple
+                                raise("Unsupported simple type #{field.data_type}") if field.val2ruby == nil
+                                output.puts("
 #{getStr}{
     #{params[:cType]}* ptr;
     VALUE array;
@@ -183,12 +180,10 @@ module Damage
     }
     return array;
 }
-");                else
-                  raise("Unsupported data type #{field.data_type}" )
-                end
-              when :intern
-                tParams=Damage::Ruby::nameToParams(libName, field.data_type)
-                output.puts("
+");
+                            when :intern
+                                tParams=Damage::Ruby::nameToParams(libName, field.data_type)
+                                output.puts("
 #{getStr}{
     #{params[:cType]} *ptr;
     #{tParams[:cTypeList]}* list;
@@ -229,17 +224,17 @@ module Damage
     return #{tParams[:funcPrefixList]}_wrapRowip(list);
 }
 ");
-              else
-                  raise("Unsupported data category for #{entry.name}.#{field.name}");
+                            else
+                                raise("Unsupported data category for #{entry.name}.#{field.name}");
 
-              end
+                            end
+                        end
+
+                    }
+
+                end
+                module_function :write
             end
-
-          }
-
         end
-        module_function :write
-      end
     end
-  end
 end

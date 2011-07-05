@@ -138,16 +138,15 @@ uint32_t __#{libName}_#{entry.name}_binary_dump(__#{libName}_#{entry.name}* ptr,
                         when :single
                             case field.category
                             when :simple, :enum
-                                if(field.data_type == "char*") then
-                                    output.printf("#{indent}if(#{source}->%s){\n", field.name)
-                                    output.printf("#{indent}\tuint32_t len = strlen(#{source}->%s) + 1;\n", field.name)
-                                    output.printf("#{indent}\tval.%s = (char*)(unsigned long) child_offset;\n", field.name)
-                                    output.printf("#{indent}\t__#{libName}_fseek(file, child_offset, SEEK_SET);\n")
-                                    output.printf("#{indent}\t__#{libName}_fwrite(&len, sizeof(len), 1, file);\n", field.name)
-                                    output.printf("#{indent}\t__#{libName}_fwrite(#{source}->%s, sizeof(char), len, file);\n", field.name)
-                                    output.printf("#{indent}\tchild_offset += len + sizeof(len);\n", field.name)
-                                    output.printf("#{indent}}\n")
-                                end
+                            when :string
+                                output.printf("#{indent}if(#{source}->%s){\n", field.name)
+                                output.printf("#{indent}\tuint32_t len = strlen(#{source}->%s) + 1;\n", field.name)
+                                output.printf("#{indent}\tval.%s = (char*)(unsigned long) child_offset;\n", field.name)
+                                output.printf("#{indent}\t__#{libName}_fseek(file, child_offset, SEEK_SET);\n")
+                                output.printf("#{indent}\t__#{libName}_fwrite(&len, sizeof(len), 1, file);\n", field.name)
+                                output.printf("#{indent}\t__#{libName}_fwrite(#{source}->%s, sizeof(char), len, file);\n", field.name)
+                                output.printf("#{indent}\tchild_offset += len + sizeof(len);\n", field.name)
+                                output.printf("#{indent}}\n")
                             when :intern
                                 output.printf("#{indent}if(#{source}->%s){\n", field.name)
                                 output.printf("#{indent}\tval.%s = (__#{libName}_%s*)(unsigned long)child_offset;\n", field.name, field.name)
@@ -173,38 +172,37 @@ uint32_t __#{libName}_#{entry.name}_binary_dump(__#{libName}_#{entry.name}* ptr,
                         when :list, :container
                             case field.category
                             when :simple
-                                if(field.data_type == "char*") then
-                                    output.printf("#{indent}if(#{source}->%s){\n", field.name)
-                                    output.printf("#{indent}\t__#{libName}_fseek(file, child_offset, SEEK_SET);\n")
-                                    output.printf("#{indent}\tuint32_t *tmp_array = __#{libName}_malloc(#{source}->%sLen * sizeof(*tmp_array));\n", field.name)
-                                    output.printf("#{indent}\tunsigned int i; for(i = 0; i < #{source}->%sLen; i++){\n", 
-                                                  field.name);
-                                    output.printf("#{indent}\t\tif(#{source}->%s[i]){\n", field.name);
-                                    output.printf("#{indent}\t\t\tuint32_t len = strlen(#{source}->%s[i]) + 1;\n", field.name)
-                                    output.printf("#{indent}\t\t\ttmp_array[i] = child_offset;\n")
-                                    output.printf("#{indent}\t\t\t__#{libName}_fwrite(&len, sizeof(len), 1, file);\n", field.name)
-                                    output.printf("#{indent}\t\t\t__#{libName}_fwrite(#{source}->%s[i], sizeof(char), len, file);\n", field.name)
-                                    output.printf("#{indent}\t\t\tchild_offset += len + sizeof(len);\n", field.name)
-                                    output.printf("#{indent}\t\t}\n")
-                                    output.printf("#{indent}\t}\n\n");
-                                    
-                                    output.printf("#{indent}\tval.%s = (char**)(unsigned long)child_offset;\n", field.name)
-                                    output.printf("#{indent}\t__#{libName}_fwrite(tmp_array, sizeof(*tmp_array), #{source}->%sLen, file);\n",
-                                                  field.name, field.name);
-                                    output.printf("#{indent}\tchild_offset += (sizeof(*#{source}->%s) * #{source}->%sLen);\n",
-                                                  field.name, field.name)
-                                    output.printf("#{indent}\t__#{libName}_free(tmp_array);\n")
+                                output.printf("#{indent}if(#{source}->%s){\n", field.name)
+                                output.printf("#{indent}\tval.%s = (void*)(unsigned long)child_offset;\n", field.name)
+                                output.printf("#{indent}\t__#{libName}_fwrite(#{source}->%s, sizeof(*#{source}->%s), #{source}->%sLen, file);\n",
+                                              field.name, field.name, field.name);
+                                output.printf("#{indent}\tchild_offset += (sizeof(*#{source}->%s) * #{source}->%sLen);\n",
+                                              field.name, field.name)
+                                output.printf("#{indent}}\n")
+                            when :string
+                                output.printf("#{indent}if(#{source}->%s){\n", field.name)
+                                output.printf("#{indent}\t__#{libName}_fseek(file, child_offset, SEEK_SET);\n")
+                                output.printf("#{indent}\tuint32_t *tmp_array = __#{libName}_malloc(#{source}->%sLen * sizeof(*tmp_array));\n", field.name)
+                                output.printf("#{indent}\tunsigned int i; for(i = 0; i < #{source}->%sLen; i++){\n", 
+                                              field.name);
+                                output.printf("#{indent}\t\tif(#{source}->%s[i]){\n", field.name);
+                                output.printf("#{indent}\t\t\tuint32_t len = strlen(#{source}->%s[i]) + 1;\n", field.name)
+                                output.printf("#{indent}\t\t\ttmp_array[i] = child_offset;\n")
+                                output.printf("#{indent}\t\t\t__#{libName}_fwrite(&len, sizeof(len), 1, file);\n", field.name)
+                                output.printf("#{indent}\t\t\t__#{libName}_fwrite(#{source}->%s[i], sizeof(char), len, file);\n", field.name)
+                                output.printf("#{indent}\t\t\tchild_offset += len + sizeof(len);\n", field.name)
+                                output.printf("#{indent}\t\t}\n")
+                                output.printf("#{indent}\t}\n\n");
+                                
+                                output.printf("#{indent}\tval.%s = (char**)(unsigned long)child_offset;\n", field.name)
+                                output.printf("#{indent}\t__#{libName}_fwrite(tmp_array, sizeof(*tmp_array), #{source}->%sLen, file);\n",
+                                              field.name, field.name);
+                                output.printf("#{indent}\tchild_offset += (sizeof(*#{source}->%s) * #{source}->%sLen);\n",
+                                              field.name, field.name)
+                                output.printf("#{indent}\t__#{libName}_free(tmp_array);\n")
 
-                                    output.printf("#{indent}}\n")
-                                else
-                                    output.printf("#{indent}if(#{source}->%s){\n", field.name)
-                                    output.printf("#{indent}\tval.%s = (void*)(unsigned long)child_offset;\n", field.name)
-                                    output.printf("#{indent}\t__#{libName}_fwrite(#{source}->%s, sizeof(*#{source}->%s), #{source}->%sLen, file);\n",
-                                                  field.name, field.name, field.name);
-                                    output.printf("#{indent}\tchild_offset += (sizeof(*#{source}->%s) * #{source}->%sLen);\n",
-                                                  field.name, field.name)
-                                    output.printf("#{indent}}\n")
-                                end
+                                output.printf("#{indent}}\n")
+
                             when :intern
                                 output.printf("#{indent}if(#{source}->%s){\n", field.name)
                                 output.printf("#{indent}\tval.%s = (void*)(unsigned long)child_offset;\n", field.name)

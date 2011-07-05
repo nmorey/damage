@@ -36,6 +36,7 @@ module Damage
                 @sort_field = field["sort_field"]
                 @sort_key = field["sort_key"]
                 @description = field["description"]
+                @printf = nil
 
                 @required = false
                 @required = true if field["required"] != nil
@@ -82,7 +83,7 @@ module Damage
                 case field["type"]
                 when "String"
                     @data_type = "char*"
-                    @category = :simple
+                    @category = :string
                     @is_attribute = true if @qty == :single
                     @default_val = "NULL"
                 when "UL"
@@ -218,7 +219,7 @@ module Damage
                     raise("Unknown entry attribute #{entry["attribute"]}")
                 end
 
-                case field["comparable"]
+                case entry["comparable"]
                 when "YES", nil
                     @comparable= true
                 when "NO"

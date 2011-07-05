@@ -128,15 +128,14 @@ __#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load(FILE* file, u
                         when :single
                             case field.category
                             when :simple, :enum
-                                if(field.data_type == "char*") then
-                                    output.printf("#{indent}if(#{source}->%s){\n", field.name)
-                                    output.printf("#{indent}\tuint32_t len;\n")
-                                    output.printf("#{indent}\t__#{libName}_fseek(file, (unsigned long)#{source}->%s, SEEK_SET);\n", field.name)
-                                    output.printf("#{indent}\t__#{libName}_fread(&len, sizeof(len), 1, file);\n")
-                                    output.printf("#{indent}\t#{source}->%s = __#{libName}_malloc(len * sizeof(char));\n", field.name)
-                                    output.printf("#{indent}\t__#{libName}_fread(#{source}->%s, sizeof(char), len, file);\n", field.name)
-                                    output.printf("#{indent}}\n")
-                                end
+                            when :string
+                                output.printf("#{indent}if(#{source}->%s){\n", field.name)
+                                output.printf("#{indent}\tuint32_t len;\n")
+                                output.printf("#{indent}\t__#{libName}_fseek(file, (unsigned long)#{source}->%s, SEEK_SET);\n", field.name)
+                                output.printf("#{indent}\t__#{libName}_fread(&len, sizeof(len), 1, file);\n")
+                                output.printf("#{indent}\t#{source}->%s = __#{libName}_malloc(len * sizeof(char));\n", field.name)
+                                output.printf("#{indent}\t__#{libName}_fread(#{source}->%s, sizeof(char), len, file);\n", field.name)
+                                output.printf("#{indent}}\n")
                             when :intern
                                 output.printf("#{indent}if(#{source}->%s){\n", field.name)
                                 output.printf("#{indent}\t#{source}->%s = __#{libName}_%s_binary_load(file, (uint32_t)(unsigned long)(#{source}->%s));\n", 
@@ -155,46 +154,45 @@ __#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load(FILE* file, u
                             end
                         when :list, :container
                             case field.category
+                                
                             when :simple
                                 output.printf("#{indent}if(#{source}->%s){\n", field.name)
-                                
-                                # Array was in fact indexes to the strings so we need to read some more stuff...
-                                if(field.data_type == "char*") then
-                                    # Alloc and read the array of data
-                                    output.printf("#{indent}\tuint32_t *tmp_array = __#{libName}_malloc(#{source}->%sLen * sizeof(*tmp_array));\n", 
-                                                  field.name)
-                                    output.printf("#{indent}\t%s* array = __#{libName}_malloc(#{source}->%sLen * sizeof(*array));\n", 
-                                                  field.data_type, field.name)
+                                # Alloc and read the array of data
+                                output.printf("#{indent}\t%s* array = __#{libName}_malloc(#{source}->%sLen * sizeof(*array));\n", 
+                                              field.data_type, field.name, field.data_type)
+                                output.printf("#{indent}\t__#{libName}_fseek(file, (unsigned long)#{source}->%s, SEEK_SET);\n", field.name)
+                                output.printf("#{indent}\t__#{libName}_fread(array, sizeof(*array), #{source}->%sLen, file);\n",
+                                              field.name, field.name);
+                                output.printf("#{indent}\t#{source}->%s = array;\n", field.name)              
+                                output.printf("#{indent}}\n")
+                            when :string
+                                output.printf("#{indent}if(#{source}->%s){\n", field.name)
+                                # Alloc and read the array of data
+                                output.printf("#{indent}\tuint32_t *tmp_array = __#{libName}_malloc(#{source}->%sLen * sizeof(*tmp_array));\n", 
+                                              field.name)
+                                output.printf("#{indent}\t%s* array = __#{libName}_malloc(#{source}->%sLen * sizeof(*array));\n", 
+                                              field.data_type, field.name)
 
-                                    output.printf("#{indent}\t__#{libName}_fseek(file, (unsigned long)#{source}->%s, SEEK_SET);\n", field.name)
-                                    output.printf("#{indent}\t__#{libName}_fread(tmp_array, sizeof(*tmp_array), #{source}->%sLen, file);\n",
-                                                  field.name, field.name);
-                                    output.printf("#{indent}\t#{source}->%s = array;\n", field.name)
+                                output.printf("#{indent}\t__#{libName}_fseek(file, (unsigned long)#{source}->%s, SEEK_SET);\n", field.name)
+                                output.printf("#{indent}\t__#{libName}_fread(tmp_array, sizeof(*tmp_array), #{source}->%sLen, file);\n",
+                                              field.name, field.name);
+                                output.printf("#{indent}\t#{source}->%s = array;\n", field.name)
 
-                                    # Read the string at each index
-                                    output.printf("#{indent}\tunsigned int i; for(i = 0; i < #{source}->%sLen; i++){\n", 
-                                                  field.name);
+                                # Read the string at each index
+                                output.printf("#{indent}\tunsigned int i; for(i = 0; i < #{source}->%sLen; i++){\n", 
+                                              field.name);
 
-                                    output.printf("#{indent}\t\tif(tmp_array[i]){\n", field.name);
-                                    output.printf("#{indent}\t\t\t__#{libName}_fseek(file, (unsigned long)tmp_array[i], SEEK_SET);\n")
-                                    output.printf("#{indent}\t\t\tuint32_t len;\n")
-                                    # get the string size
-                                    output.printf("#{indent}\t\t\t__#{libName}_fread(&len, sizeof(len), 1, file);\n")
-                                    # Alloc it and read it
-                                    output.printf("#{indent}\t\t\tarray[i] = __#{libName}_malloc(sizeof(char) * len);\n")
-                                    output.printf("#{indent}\t\t\t__#{libName}_fread(array[i], sizeof(char), len, file);\n", field.name)
-                                    output.printf("#{indent}\t\t}\n")
-                                    output.printf("#{indent}\t}\n");    
-                                    output.printf("#{indent}free(tmp_array);\n");
-                                else
-                                    # Alloc and read the array of data
-                                    output.printf("#{indent}\t%s* array = __#{libName}_malloc(#{source}->%sLen * sizeof(*array));\n", 
-                                                  field.data_type, field.name, field.data_type)
-                                    output.printf("#{indent}\t__#{libName}_fseek(file, (unsigned long)#{source}->%s, SEEK_SET);\n", field.name)
-                                    output.printf("#{indent}\t__#{libName}_fread(array, sizeof(*array), #{source}->%sLen, file);\n",
-                                                  field.name, field.name);
-                                    output.printf("#{indent}\t#{source}->%s = array;\n", field.name)              
-                                end
+                                output.printf("#{indent}\t\tif(tmp_array[i]){\n", field.name);
+                                output.printf("#{indent}\t\t\t__#{libName}_fseek(file, (unsigned long)tmp_array[i], SEEK_SET);\n")
+                                output.printf("#{indent}\t\t\tuint32_t len;\n")
+                                # get the string size
+                                output.printf("#{indent}\t\t\t__#{libName}_fread(&len, sizeof(len), 1, file);\n")
+                                # Alloc it and read it
+                                output.printf("#{indent}\t\t\tarray[i] = __#{libName}_malloc(sizeof(char) * len);\n")
+                                output.printf("#{indent}\t\t\t__#{libName}_fread(array[i], sizeof(char), len, file);\n", field.name)
+                                output.printf("#{indent}\t\t}\n")
+                                output.printf("#{indent}\t}\n");    
+                                output.printf("#{indent}free(tmp_array);\n");
                                 output.printf("#{indent}}\n")
                             when :intern
                                 output.printf("#{indent}if(#{source}->%s){\n", field.name)

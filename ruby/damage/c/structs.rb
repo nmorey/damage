@@ -45,7 +45,7 @@ module Damage
                         # Do NADA
                     when :meta,:container,:none
                         case field.category
-                        when :simple, :enum
+                        when :simple, :enum, :string
                             case field.qty
                             when :single
                                 output.printf("\t/** #{field.description} */\n") if field.description != nil

@@ -100,10 +100,10 @@ module Damage
                             when :single
                                 case field.category
                                 when :simple, :enum
-                                    if(field.data_type == "char*") then
-                                        output.printf("#{indent}if(#{source}->%s)\n", field.name)
-                                        output.printf("#{indent}\t__#{libName}_free(#{source}->%s);\n", field.name)
-                                    end
+                                    # Do nothing
+                                when :string
+                                    output.printf("#{indent}if(#{source}->%s)\n", field.name)
+                                    output.printf("#{indent}\t__#{libName}_free(#{source}->%s);\n", field.name)
                                 when :intern
                                     if field.attribute == :sort then
                                         output.printf("#{indent}if(#{source}->s_%s)\n", field.name)
@@ -122,20 +122,18 @@ module Damage
                             when :list, :container
                                 case field.category
                                 when :simple
-                                    if(field.data_type == "char*") then
-                                        output.printf("#{indent}if(#{source}->%s){\n", field.name)
-                                        output.printf("#{indent}\t{ unsigned int i; for(i = 0; i < #{source}->%sLen; i++){\n", 
-                                                      field.name);
-                                        output.printf("#{indent}\t\tif(#{source}->%s[i])\n", field.name);
-                                        output.printf("#{indent}\t\t\t__#{libName}_free(#{source}->%s[i]);\n", 
-                                                      field.name) ;
-                                        output.printf("#{indent}\t} }\n");
-                                        output.printf("#{indent}\t__#{libName}_free(#{source}->%s);\n", field.name)
-                                        output.printf("#{indent}}\n")
-                                    else
-                                        output.printf("#{indent}if(#{source}->%s)\n", field.name)
-                                        output.printf("#{indent}\t__#{libName}_free(#{source}->%s);\n", field.name)
-                                    end
+                                    output.printf("#{indent}if(#{source}->%s)\n", field.name)
+                                    output.printf("#{indent}\t__#{libName}_free(#{source}->%s);\n", field.name)
+                                when :string
+                                    output.printf("#{indent}if(#{source}->%s){\n", field.name)
+                                    output.printf("#{indent}\t{ unsigned int i; for(i = 0; i < #{source}->%sLen; i++){\n", 
+                                                  field.name);
+                                    output.printf("#{indent}\t\tif(#{source}->%s[i])\n", field.name);
+                                    output.printf("#{indent}\t\t\t__#{libName}_free(#{source}->%s[i]);\n", 
+                                                  field.name) ;
+                                    output.printf("#{indent}\t} }\n");
+                                    output.printf("#{indent}\t__#{libName}_free(#{source}->%s);\n", field.name)
+                                    output.printf("#{indent}}\n")
                                 when :intern
                                     output.printf("#{indent}if(#{source}->%s)\n", field.name)
                                     output.printf("#{indent}\t__#{libName}_%s_free(#{source}->%s);\n", 

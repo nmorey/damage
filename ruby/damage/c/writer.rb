@@ -135,20 +135,16 @@ module Damage
                         case field.qty
                         when :single
                             case field.category
+                            when :string
+                                output.printf("\tif(ptr->%s)\n", field.name);
+                                addXmlElt(output, field.name, "ptr->#{field.name}", {:is_attr => field.is_attribute})
                             when :simple
-                                case field.data_type
-                                when "char*"
-                                    output.printf("\tif(ptr->%s)\n", field.name);
-                                    addXmlElt(output, field.name, "ptr->#{field.name}", {:is_attr => field.is_attribute})
-                                when "unsigned long", "signed long", "uint32_t", "int32_t", "double"
-                                    output.printf("\t{\n");
-                                    output.printf("\t\tchar numStr[64];\n");
-                                    output.printf("\t\tsnprintf(numStr, 64, \"%%#{field.printf}\", ptr->%s);\n", field.name);
-                                    addXmlElt(output, field.name, "numStr", {:is_attr => field.is_attribute})
-                                    output.printf("\t}\n");
-                                else
-                                    raise("Unsupported type #{field.data_type}\n")
-                                end
+                                raise("Unsupported simple type #{field.data_type}") if field.printf == nil
+                                output.printf("\t{\n");
+                                output.printf("\t\tchar numStr[64];\n");
+                                output.printf("\t\tsnprintf(numStr, 64, \"%%#{field.printf}\", ptr->%s);\n", field.name);
+                                addXmlElt(output, field.name, "numStr", {:is_attr => field.is_attribute})
+                                output.printf("\t}\n");
                             when :intern
                                 output.printf("\tif(ptr->%s){\n", field.name);
                                 addXmlElt(output, field.name, "NULL", {:prefix => "xmlNodePtr child = "})
@@ -166,27 +162,23 @@ module Damage
                             end
                         when :list
                             case field.category
+                            when :string
+                                output.printf("\tif(ptr->%s){\n", field.name);
+                                output.printf("\t\tunsigned int lCount;\n");
+                                output.printf("\t\tfor(lCount=0; lCount < ptr->%sLen; lCount++){\n", field.name);
+                                addXmlElt(output, field.name, "ptr->#{field.name}[lCount]")
+                                output.printf("\t\t}\n");
+                                output.printf("\t}\n\n");
                             when :simple
-                                case field.data_type
-                                when "char*"
-                                    output.printf("\tif(ptr->%s){\n", field.name);
-                                    output.printf("\t\tunsigned int lCount;\n");
-                                    output.printf("\t\tfor(lCount=0; lCount < ptr->%sLen; lCount++){\n", field.name);
-                                    addXmlElt(output, field.name, "ptr->#{field.name}[lCount]")
-                                    output.printf("\t\t}\n");
-                                    output.printf("\t}\n\n");
-                                when "unsigned long", "signed long", "uint32_t", "int32_t", "double"
-                                    output.printf("\tif(ptr->%s){\n", field.name);
-                                    output.printf("\t\tchar numStr[64];\n");
-                                    output.printf("\t\tunsigned int lCount;\n");
-                                    output.printf("\t\tfor(lCount=0; lCount < ptr->%sLen; lCount++){\n", field.name);
-                                    output.printf("\t\t\tsnprintf(numStr, 64, \"%%#{field.printf}\", ptr->%s[lCount]);\n", field.name);
-                                    addXmlElt(output, field.name, "numStr")
-                                    output.printf("\t\t}\n");
-                                    output.printf("\t}\n\n");
-                                else
-                                    raise("Unsupported type #{field.data_type}\n")
-                                end
+                                raise("Unsupported simple type #{field.data_type}") if field.printf == nil
+                                output.printf("\tif(ptr->%s){\n", field.name);
+                                output.printf("\t\tchar numStr[64];\n");
+                                output.printf("\t\tunsigned int lCount;\n");
+                                output.printf("\t\tfor(lCount=0; lCount < ptr->%sLen; lCount++){\n", field.name);
+                                output.printf("\t\t\tsnprintf(numStr, 64, \"%%#{field.printf}\", ptr->%s[lCount]);\n", field.name);
+                                addXmlElt(output, field.name, "numStr")
+                                output.printf("\t\t}\n");
+                                output.printf("\t}\n\n");
                             when :intern
                                 output.printf("\tif(ptr->%s){\n", field.name);
                                 output.printf("\t\t__#{libName}_%s* elnt;\n", field.data_type);
