@@ -18,7 +18,7 @@ module Damage
     module Description
         class Field
             attr_accessor :name, :data_type, :default_val, :category, :attribute, :qty, :target
-            attr_accessor :is_attribute, :required, :enum, :enumList, :description
+            attr_accessor :is_attribute, :required, :enum, :enumList, :description, :comparable
             attr_accessor :printf, :ruby2val, :val2ruby
 
             # Data used only for SORT fields
@@ -40,7 +40,17 @@ module Damage
                 @required = false
                 @required = true if field["required"] != nil
 
-             
+                case field["comparable"]
+                when "YES", nil
+                    @comparable=:yes
+                when "FALSE"
+                    @comparable=:false
+                when "NO"
+                    @comparable=:no
+                else
+                    raise("Unknown comparable value #{field["comparable"]}")
+                end
+
                 case field["quantity"]
                 when "SINGLE", nil
                     @qty = :single
