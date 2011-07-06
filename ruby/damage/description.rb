@@ -225,7 +225,7 @@ module Damage
                 when "NO"
                     @comparable= false
                 else
-                    raise("Unknown comparable value #{field["comparable"]}")
+                    raise("Unknown comparable value #{entry["comparable"]}")
                 end
 
                 entry["fields"].each() { |field|
