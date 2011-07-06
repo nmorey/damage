@@ -51,9 +51,9 @@ module Damage
                 end
 
                 case field["quantity"]
-                when "SINGLE", nil
+                when "SINGLE", "single", nil
                     @qty = :single
-                when "LIST"
+                when "LIST", "list"
                     @qty = :list
                     # when "ARRAY"
                     #   @qty = :array
@@ -62,16 +62,16 @@ module Damage
                 end
 
                 case field["attribute"]
-                when "META"
+                when "META", "meta"
                     @attribute = :meta
                     @target = :mem
-                when "SORT"
+                when "SORT", "sort"
                     @attribute = :sort
                     @target = :mem
-                when "PASS"
+                when "PASS", "pass"
                     @attribute = :pass
                     @target = :parser
-                when "CONTAINER"
+                when "CONTAINER", "container"
                     @attribute = :container
                     @target = :both
                     @qty = :container
@@ -220,9 +220,9 @@ module Damage
                 end
 
                 case entry["comparable"]
-                when "YES", nil
+                when "YES","yes", "true","TRUE", nil
                     @comparable= true
-                when "NO"
+                when "NO","no","false","FALSE"
                     @comparable= false
                 else
                     raise("Unknown comparable value #{entry["comparable"]}")
