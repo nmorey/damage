@@ -220,10 +220,10 @@ module Damage
                 end
 
                 case entry["comparable"]
-                when "YES","yes", "true","TRUE", nil
-                    @comparable= true
-                when "NO","no","false","FALSE"
-                    @comparable= false
+                when "YES","yes", "true", "TRUE", true, nil
+                    @comparable= :true
+                when "NO","no","false", "FALSE",false
+                    @comparable= :false
                 else
                     raise("Unknown comparable value #{entry["comparable"]}")
                 end
