@@ -29,6 +29,7 @@ module Damage
             require  File.dirname(__FILE__) + '/wrapper/method_array.rb'
             require  File.dirname(__FILE__) + '/wrapper/to_s.rb'
             require  File.dirname(__FILE__) + '/wrapper/init.rb'
+            require  File.dirname(__FILE__) + '/wrapper/method_compare.rb'
 
             def generate(description)
                 genWrappers(description)
@@ -46,6 +47,7 @@ module Damage
                 NewFile::write(output, entry, libName, params)
                 MethodGet::write(output, entry, libName, params)
                 MethodSet::write(output, entry, libName, params)
+                MethodCompare::write(output, entry, libName, params)
                 if(entry.attribute == :listable)
                     MethodArray::write(output, entry, libName, params)
                 end

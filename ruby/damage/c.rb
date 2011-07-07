@@ -30,6 +30,7 @@ module Damage
         require File.dirname(__FILE__) + '/c/makefile'
         require File.dirname(__FILE__) + '/c/tests'
         require File.dirname(__FILE__) + '/c/doxygen'
+        require File.dirname(__FILE__) + '/c/compare'
 
 
         def generate(description)
@@ -47,6 +48,7 @@ module Damage
             Makefile::write(description)
             Tests::write(description)
             Doxygen::write(description)
+            Compare::write(description)
         end
         module_function :generate
     end
