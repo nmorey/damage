@@ -15,14 +15,79 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 module Damage
-    module Description
-        class Field
-            attr_accessor :name, :data_type, :default_val, :category, :attribute, :qty, :target
-            attr_accessor :is_attribute, :required, :enum, :enumList, :description, :comparable
-            attr_accessor :printf, :ruby2val, :val2ruby
 
-            # Data used only for SORT fields
-            attr_accessor :sort_field, :sort_key
+    # Description modules
+    # Defines all the classes that are required
+    # for the memory representation of the DB format
+    module Description
+
+        # DAMAGE Field
+        # This define a data uynit stores in an         
+        class Field
+            # Name of the field
+            attr_accessor :name
+            # C data type
+            attr_accessor :data_type
+            # Default value set after allocation
+            attr_accessor :default_val
+
+            # Category of data
+            # * :simple for straight forward C types
+            # * :string for string
+            # * :intern for DAMAGE Entry
+            # * :enum for an enum (C enum in memory, string in XML)
+            # * :id, :idref for XML id, idref (untested)
+            attr_accessor :category
+
+            # Field attribute
+            # * :meta for memory/runtime data that needs not be stored/loaded from file
+            # * :sort for field that is automatically constructed as an index array of another Field of the same entry
+            #    Sort fields are not stored/loaded from file
+            # * :container for list of Entry that output a special border element in XML mode
+            attr_accessor :attribute
+
+            # Field quantity
+            # * :single for a single element
+            # * :list for a list of elements (if the element is an Entry, it must have the Entry.attributes == :listable)
+            # * :container for a list of elements with a specific border element in XML mode
+            attr_accessor :qty
+
+            # Wheter the Field exists in the memory representation, the file drepresentation or both
+            # * :mem Memory only representation
+            # * :file File only representation
+            # * :both Memory AND file representation
+            attr_accessor :target
+
+            # Wheter the Field can be stored as an XML attribute or nor
+            attr_accessor :is_attribute
+
+            # Wheter the field is compulsory (DTD)
+            attr_accessor :required
+
+            # Possible values of the field  if category is :enum
+            attr_accessor :enum
+            # Possible values  of the field  if category is :enum in DTD form
+            attr_accessor :enumList
+            # Field description for documentation
+            attr_accessor :description
+            # Wheter this field is comparable
+            attr_accessor :comparable
+            # Modifier to use in printf to print the field value
+            attr_accessor :printf
+            # Ruby method to convert a ruby VALUE to the field real value
+            attr_accessor :ruby2val
+            # Ruby method to convert the field real value to a ruby VALUE
+            attr_accessor :val2ruby
+
+            # For field with category :sort:
+            # Other field (must have cateogyr :intern) from this struct to index automatically
+            attr_accessor :sort_field
+
+            # For field with category :sort:
+            # Name of the other field to use to sort the Entry
+            attr_accessor :sort_key
+
+            # Build a new Field from a parsed YAML tree
             def initialize(field)
 
                 raise ("Field #{field} has no name!") if field["name"] == nil
@@ -188,9 +253,35 @@ module Damage
             end
         end
 
+        # DAMAGE Entry
+        # An entry is a structure than contains data (standard types or pointers to other entries)
         class Entry
-            attr_accessor :name, :attribute, :fields, :children, :attributes, :sort,
-            :containers, :enums, :cleanup, :postcleanup, :description, :comparable
+            # Name of the entry used for class and struct generation
+            attr_accessor :name
+            # Entry attribute (TOP if top entry or LISTABLE if they need to be used as a chained list)
+            attr_accessor :attribute
+            # List of the fields (data) stored in the Entry
+            attr_accessor :fields
+            # List of the fields which needs to be stored as children (not attributes) in XML mode
+            attr_accessor :children
+            # List of the fields which needs to be stored as attributes (not children) in XML mode
+            attr_accessor :attributes
+            # List of the fields that are automatically sorted lists  (see Field for more info)
+            attr_accessor :sort
+            # List of the fields that are containers (see Field for more info)
+            attr_accessor :containers
+            # List of the fields that are enums (see Field for more info)
+            attr_accessor :enums
+            # Name of the eventual cleanup functioon (called after parsing the entry)
+            attr_accessor :cleanup
+            # Name of the eventual postcleanup functioon (called after freeing the entry)
+            attr_accessor :postcleanup
+            # Description of the entry (for documentation)
+            attr_accessor :description
+            # Wheter two entries of this types are comparable or not. If not, they are always equals
+            attr_accessor :comparable
+
+            # Build an entry from a parsed YAML tree
 
             def initialize(entry)
                 @name = entry["name"]
@@ -241,6 +332,7 @@ module Damage
                     elsif field["sort_key"] != nil && _field.category == :intern && 
                             (_field.qty == :list || _field.qty == :container)
                         # This is a shortcut to define a sorted array !
+                        # Add the new implied field
                         field["attribute"] = "SORT"
                         field["sort_field"] = field["name"]
                         field["quantity"] = "SINGLE"
@@ -257,31 +349,55 @@ module Damage
                 } if entry["fields"] != nil
             end
         end
+
+        # DAMAGE library config
+        # Contains settings for the code generation
         class Config
-            attr_accessor :libname, :hfiles, :version, :description
+            # Name of the library
+            attr_accessor :libname
+            # List of headers to include in the global damahe header
+            attr_accessor :hfiles
+            # Version of the generated library
+            attr_accessor :version
+            # Description of the library for documentation
+            attr_accessor :description
+
+            # Build a new config from a parsed YAML tree
             def initialize(config)
                 @libname = config["libname"]
                 raise("Missing a library name") if @libname == nil
                 @description = config["description"]
                 @version="N/A"
-              if config["hfiles"] != nil
-                @hfiles = config["hfiles"].split 
-              else
-                @hfiles=[]
-              end
+                if config["hfiles"] != nil
+                    @hfiles = config["hfiles"].split 
+                else
+                    @hfiles=[]
+                end
                 @version = config["version"] if config["version"] != nil
             end
         end
+
+        # Contains a DAMAGE database description
+        # including library config, and entry list
         class Description
+            # Return the Config associated with the description
             attr_accessor :config
-            attr_accessor :entries, :top_entry, :containers
+            # Returns a map of the DB entries index by their name
+            attr_accessor :entries
+            # Returns the top entry (highesht entry of all)
+            attr_accessor :top_entry
+            # Returns a list of all the containers defined in the entries
+            # This is useful are containers are implied entries only defined as field
+            attr_accessor  :containers
 
 
+            # Build a description from a parsed YAML tree
             def initialize(tree)
                 @config = Config.new(tree["config"])
                 @entries = {}
                 @containers = {}
 
+                #Iterate one each entry and eventually store it as top or store its containers as needed
                 tree["entries"].each() { |entry|
                     _entry = Entry.new(entry)
                     @top_entry = _entry if (_entry.attribute == :top)
