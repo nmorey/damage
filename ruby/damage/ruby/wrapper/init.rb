@@ -29,6 +29,7 @@ void #{params[:funcPrefix]}_init(void){
     rb_define_method(#{params[:classValue]}, \"initialize\", #{params[:funcPrefix]}_initialize, -1);
     rb_define_method(#{params[:classValue]}, \"to_binary\", #{params[:funcPrefix]}_to_binary, 1);
     rb_define_method(#{params[:classValue]}, \"to_xml\", #{params[:funcPrefix]}_to_xml, 1);
+    rb_define_method(#{params[:classValue]}, \"==\", #{params[:funcPrefix]}_compare_list, 1);
     rb_define_method(#{params[:classValue]}, \"to_xmluz\", #{params[:funcPrefix]}_to_xmluz, 1);
     rb_define_singleton_method(#{params[:classValue]}, \"load_xml\", #{params[:funcPrefix]}_load_xml, -1);
     rb_define_singleton_method(#{params[:classValue]}, \"load_binary\", #{params[:funcPrefix]}_load_binary, -1);

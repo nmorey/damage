@@ -1332,7 +1332,7 @@ INCLUDE_FILE_PATTERNS  =
 # undefined via #undef or recursively expanded use the := operator 
 # instead of the = operator.
 
-PREDEFINED             = __#{libName.upcase}_ALIGN__
+PREDEFINED             = __#{libName.upcase}_ALIGN__ __#{libName.upcase}_UNUSED__=""
 
 # If the MACRO_EXPANSION and EXPAND_ONLY_PREDEF tags are set to YES then 
 # this tag can be used to specify a list of macro names that should be expanded. 
