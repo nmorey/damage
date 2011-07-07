@@ -15,60 +15,61 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 module Damage
-  module Ruby
+    module Ruby
 
-    require File.dirname(__FILE__) + '/ruby/global'
-    require File.dirname(__FILE__) + '/ruby/wrapper'
-    require File.dirname(__FILE__) + '/ruby/makefile'
-    require File.dirname(__FILE__) + '/ruby/tests'
-
-
-    def generate(description)
-      Makefile::write(description)
-      Global::write(description)
-      #Generate C files per class
-      Wrapper::generate(description)
-      #      
-      genExtConf(description)
-      Tests::write(description)
-    end
-    module_function :generate
+        require File.dirname(__FILE__) + '/ruby/global'
+        require File.dirname(__FILE__) + '/ruby/wrapper'
+        require File.dirname(__FILE__) + '/ruby/makefile'
+        require File.dirname(__FILE__) + '/ruby/tests'
 
 
-    #Generate class name, C type  and prefixes from an entry or field name
-    def nameToParams(libName, name)
-      params={}
-      params[:className] = name.slice(0,1).upcase + name.slice(1..-1)
-      params[:classNameRowip] = name.slice(0,1).upcase + name.slice(1..-1) + "Rowip"
-      params[:classNameList] = name.slice(0,1).upcase + name.slice(1..-1) + "List"
-      params[:classNameListRowip] = name.slice(0,1).upcase + name.slice(1..-1) + "ListRowip"
-      params[:funcPrefix] = "rub#{params[:className]}"
-      params[:funcPrefixList] = "rub#{params[:className]}List"
-      params[:classValue] = "cDAMAGE#{params[:className]}"
-      params[:classValueRowip] = "cDAMAGE#{params[:classNameRowip]}Rowip"
-      params[:classValueList] = "cDAMAGE#{params[:className]}List"
-      params[:classValueListRowip] = "cDAMAGE#{params[:className]}ListRowip"
-      params[:cType] = "__#{libName}_#{name}"
-      params[:cTypeList] = "__#{libName}_#{name}List"
-      return params
-    end
-    module_function :nameToParams
+        def generate(description)
+            Makefile::write(description)
+            Global::write(description)
+            #Generate C files per class
+            Wrapper::generate(description)
+            #      
+            genExtConf(description)
+            Tests::write(description)
+        end
+        module_function :generate
 
-    private
-    def genExtConf(description)
-      libName = description.config.libname
-      output = Damage::Files.createAndOpen("gen/#{libName}/ruby/", "extconf.rb")
-      arch=`uname -m`.chomp
-      output.printf('
+
+        #Generate class name, C type  and prefixes from an entry or field name
+        def nameToParams(libName, name)
+            params={}
+            params[:moduleName] = libName.slice(0,1).upcase + libName.slice(1..-1)
+            params[:className] = name.slice(0,1).upcase + name.slice(1..-1)
+            params[:classNameRowip] = name.slice(0,1).upcase + name.slice(1..-1) + "Rowip"
+            params[:classNameList] = name.slice(0,1).upcase + name.slice(1..-1) + "List"
+            params[:classNameListRowip] = name.slice(0,1).upcase + name.slice(1..-1) + "ListRowip"
+            params[:funcPrefix] = "rub#{params[:className]}"
+            params[:funcPrefixList] = "rub#{params[:className]}List"
+            params[:classValue] = "cDAMAGE#{params[:className]}"
+            params[:classValueRowip] = "cDAMAGE#{params[:classNameRowip]}Rowip"
+            params[:classValueList] = "cDAMAGE#{params[:className]}List"
+            params[:classValueListRowip] = "cDAMAGE#{params[:className]}ListRowip"
+            params[:cType] = "__#{libName}_#{name}"
+            params[:cTypeList] = "__#{libName}_#{name}List"
+            return params
+        end
+        module_function :nameToParams
+
+        private
+        def genExtConf(description)
+            libName = description.config.libname
+            output = Damage::Files.createAndOpen("gen/#{libName}/ruby/", "extconf.rb")
+            arch=`uname -m`.chomp
+            output.printf('
     require \'mkmf\'
     $CFLAGS = $CFLAGS + " -I../include/ " + `xml2-config --cflags`
     arch=`uname -m`.chomp
     $LIBS = $LIBS + " ../obj/#{arch}/lib%s.a " + `xml2-config --libs`
     create_makefile("lib%s_ruby")
     ', libName, libName);
-      output.close()
-    end
-    module_function :genExtConf
+            output.close()
+        end
+        module_function :genExtConf
 
-  end
+    end
 end

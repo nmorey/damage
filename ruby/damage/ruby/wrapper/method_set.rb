@@ -21,8 +21,20 @@ module Damage
                 def write(output, entry, libName, params)
                     entry.fields.each() {|field|
                         next if field.target != :both
-                        setStr="static VALUE #{params[:funcPrefix]}_#{field.name}_set(VALUE self, VALUE val)"
-                        setStrRowip="static VALUE #{params[:funcPrefix]}_#{field.name}_setRowip(VALUE self, VALUE val)"
+                        setStr="
+/*
+ * Set the #{field.name} field of a #{params[:className]}
+ * 
+ * #{field.description}
+ */
+static VALUE #{params[:funcPrefix]}_#{field.name}_set(VALUE self, VALUE val)"
+                        setStrRowip="
+/*
+ * Set the #{field.name} field of a #{params[:className]} in ROWIP
+ * 
+ * #{field.description}
+ */
+static VALUE #{params[:funcPrefix]}_#{field.name}_setRowip(VALUE self, VALUE val)"
                         aliasFunc="#define #{params[:funcPrefix]}_#{field.name}_setRowip #{params[:funcPrefix]}_#{field.name}_set"
                         
                         case field.qty
