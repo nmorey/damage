@@ -69,7 +69,6 @@ module Damage
                         when :sort
                             output.printf("\tptr->s_%s = NULL;\n", field.name)
                             output.printf("\tptr->n_%s = 0UL;\n", field.name)
-                        when :pass
                         else
                             output.printf("\tptr->%s = %s;\n", field.name, field.default_val)
                         end

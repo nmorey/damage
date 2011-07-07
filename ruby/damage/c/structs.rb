@@ -41,8 +41,6 @@ module Damage
                         output.printf("\tstruct ___#{libName}_%s** s_%s __#{libName.upcase}_ALIGN__;\n", field.data_type, field.name)
                         output.printf("\t/** Length of the s_%s array */\n", field.name)
                         output.printf("\tunsigned long n_%s __#{libName.upcase}_ALIGN__;\n", field.name)
-                    when :pass
-                        # Do NADA
                     when :meta,:container,:none
                         case field.category
                         when :simple, :enum, :string

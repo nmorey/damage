@@ -68,9 +68,6 @@ module Damage
                 when "SORT", "sort"
                     @attribute = :sort
                     @target = :mem
-                when "PASS", "pass"
-                    @attribute = :pass
-                    @target = :parser
                 when "CONTAINER", "container"
                     @attribute = :container
                     @target = :both

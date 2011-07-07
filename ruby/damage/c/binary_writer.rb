@@ -124,9 +124,7 @@ uint32_t __#{libName}_#{entry.name}_binary_dump(__#{libName}_#{entry.name}* ptr,
                     entry.fields.each() { |field|
                         next if field.target == :parser
                         if field.target == :mem
-                            if field.attribute == :pass
-                                output.printf("#{indent}val.%s = %s;\n", field.name, field.default_val)
-                            elsif field.attribute == :sort
+                            if field.attribute == :sort
                                 output.printf("#{indent}val.s_%s = NULL;\n", field.name)
                                 output.printf("#{indent}val.n_%s = 0;\n", field.name)
                             elsif field.attribute == :meta && field.category == :intern
