@@ -30,7 +30,7 @@ static VALUE #{params[:funcPrefixList]}_arrayGet(VALUE self, VALUE idx){
     assert(ptr);
     index = NUM2INT(idx);
 
-    for(elnt = ptr->first, count=1; elnt && count != index; elnt = elnt->next, count++){}
+    for(elnt = ptr->first, count=0; elnt && count != index; elnt = elnt->next, count++){}
     if(elnt)
         return (VALUE)elnt->_private;
 
@@ -46,7 +46,7 @@ static VALUE #{params[:funcPrefixList]}_arrayGetRowip(VALUE self, VALUE idx){
     assert(ptr);
     index = NUM2INT(idx);
 
-    for(elnt = ptr->first, count=1; elnt && count != index; elnt = __#{libName.upcase}_ROWIP_PTR(elnt, next), count++){}
+    for(elnt = ptr->first, count=0; elnt && count != index; elnt = __#{libName.upcase}_ROWIP_PTR(elnt, next), count++){}
     if(elnt)
         return (VALUE)elnt->_private;
 
@@ -128,7 +128,7 @@ static VALUE #{params[:funcPrefixList]}_arrayLengthRowip(VALUE self){
     assert(ptr);
 
 
-    for(elnt = ptr->first, count=1; elnt; elnt = __#{libName.upcase}_ROWIP_PTR(elnt, next), count++){}
+    for(elnt = ptr->first, count=0; elnt; elnt = __#{libName.upcase}_ROWIP_PTR(elnt, next), count++){}
     return ULONG2NUM(count);
 
 }
