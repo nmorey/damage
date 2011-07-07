@@ -21,8 +21,20 @@ module Damage
 
                 def write(output, entry, libName, params)
                     entry.fields.each() {|field|
-                        getStr="static VALUE #{params[:funcPrefix]}_#{field.name}_get(VALUE self)"
-                        getStrRowip="static VALUE #{params[:funcPrefix]}_#{field.name}_getRowip(VALUE self)"
+                        getStr="
+/*
+ * Get the #{field.name} field of a #{params[:className]}
+ * 
+ * #{field.description}
+ */
+static VALUE #{params[:funcPrefix]}_#{field.name}_get(VALUE self)"
+                        getStrRowip="
+/*
+ * Get the #{field.name} field of a #{params[:className]} in ROWIP
+ * 
+ * #{field.description}
+ */
+static VALUE #{params[:funcPrefix]}_#{field.name}_getRowip(VALUE self)"
                         aliasFunc="#define #{params[:funcPrefix]}_#{field.name}_getRowip #{params[:funcPrefix]}_#{field.name}_get"
                         next if field.target != :both
 

@@ -83,7 +83,7 @@ VALUE indentToString(VALUE string, int indent, int listable, int first);
 #include <#{libName}.h>
 #include \"ruby_#{libName}.h\"
 
-VALUE #{libName};
+VALUE #{moduleName};
 
 VALUE indentToString(VALUE string, int indent, int listable, int first){
     char str[256], *ptr;
@@ -105,8 +105,16 @@ VALUE indentToString(VALUE string, int indent, int listable, int first){
     }
     return _str;
 }
+/*
+ * #{moduleName}  DAMAGE Module
+ * 
+ * #{description.config.description}
+ */
+static void Init_#{moduleName}(void){
+    #{moduleName} = rb_define_module(\"#{moduleName}\");
+}
 void Init_lib#{libName}_ruby(){
-    #{libName} = rb_define_module(\"#{moduleName}\");
+    Init_#{moduleName}();
 
 ");
         description.entries.each(){ |name, entry|

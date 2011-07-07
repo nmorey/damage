@@ -28,12 +28,13 @@ module Damage
 #include <assert.h>
 #include \"ruby_#{libName}.h\"
 
+extern VALUE #{params[:moduleName]};
+
+
 /** Global class type for the file */
 VALUE #{params[:classValue]};
 
 VALUE #{params[:classValueRowip]};
-
-extern VALUE #{libName};
 
 ");
           if entry.attribute == :listable
