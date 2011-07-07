@@ -197,11 +197,11 @@ module Damage
                 libName = description.config.libname
 
                 output.printf("#ifndef __#{libName}_compare_h__\n")
-                output.printf("#define __#{libName}_compare_h__\n")
+                output.printf("#define __#{libName}_compare_h__\n\n")
 
-                output.printf("// We define comparison functions even for elements which are not comparable.\n")
-                output.printf("// We need to define parameters as unused to remove warning but its needs\n")
-                output.printf("// a little trick to work correctly with doxygen.\n")
+                output.printf("/**\n * We define comparison functions even for elements which are not comparable.\n")
+                output.printf(" * We need to define parameters as unused to remove warning but its needs\n")
+                output.printf(" * a little trick to work correctly with doxygen.\n */\n")
                 output.printf("#define __#{libName.upcase}_UNUSED__ __attribute__((unused))\n\n")
 
                 output.puts("
