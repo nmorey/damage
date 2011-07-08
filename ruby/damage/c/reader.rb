@@ -223,13 +223,13 @@ module Damage
                                     field.enum.each() {|str, enum|
                                         output.printf("\t\t\t\tcase %d:\n", subCaseCount);
                                         output.printf("\t\t\t\t\t/* %s */\n", str);
-                                        output.printf("\t\t\t\t\tptr->%s = __#{libName.upcase}_#{entry.name.upcase}_#{field.name.upcase}_#{enum};\n", field.name) ;
+                                        output.printf("\t\t\t\t\tptr->%s = #{field.enumPrefix}_#{enum};\n", field.name) ;
                                         output.printf("\t\t\t\t\tbreak;\n");
                                         subCaseCount+=1
                                     }
                                     output.printf("\t\t\t\tdefault:\n");
                                     output.printf("\t\t\t\t\t/* N/A or something else*/\n");
-                                    output.printf("\t\t\t\t\tptr->%s = __#{libName.upcase}_#{entry.name.upcase}_#{field.name.upcase}_N_A;\n", field.name) ;
+                                    output.printf("\t\t\t\t\tptr->%s = #{field.enumPrefix}_N_A;\n", field.name) ;
                                     output.printf("\t\t\t\t\tbreak;\n");
 
                                     output.printf("\t\t\t}\n");

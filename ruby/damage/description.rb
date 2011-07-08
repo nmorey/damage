@@ -68,6 +68,8 @@ module Damage
             attr_accessor :enum
             # Possible values  of the field  if category is :enum in DTD form
             attr_accessor :enumList
+            # Prefix for enum name
+            attr_accessor :enumPrefix
             # Field description for documentation
             attr_accessor :description
             # Wheter this field is comparable
@@ -88,7 +90,7 @@ module Damage
             attr_accessor :sort_key
 
             # Build a new Field from a parsed YAML tree
-            def initialize(field)
+            def initialize(libName, entry, field)
 
                 raise ("Field #{field} has no name!") if field["name"] == nil
                 @name = field["name"]
@@ -102,6 +104,7 @@ module Damage
                 @sort_key = field["sort_key"]
                 @description = field["description"]
                 @printf = nil
+                @enumPrefix = nil
 
                 @required = false
                 @required = true if field["required"] != nil
@@ -147,7 +150,7 @@ module Damage
                     @data_type = "char*"
                     @category = :string
                     @is_attribute = true if @qty == :single
-                    @default_val = "NULL"
+                    @default_val = "NULL" if @default_val == nil
                 when "UL"
                     @data_type="unsigned long"
                     @category = :simple
@@ -161,9 +164,9 @@ module Damage
                         @printf="u"
                         @val2ruby = "UINT2NUM"
                         @ruby2val = "NUM2UINT"
-                        @default_val = "0";
                     end
-                    @default_val = "0UL"
+
+                        @default_val = "0" if @default_val == nil
                 when "SL"
                     @data_type="signed long"
                     @category = :simple
@@ -176,14 +179,13 @@ module Damage
                         @printf="d"
                         @val2ruby = "INT2NUM"
                         @ruby2val = "NUM2INT"
-                        @default_val = "0";
                     end
-                    @default_val = "0L"
+                    @default_val = "0L" if @default_val == nil
                 when "DL"
                     @data_type="double"
                     @category = :simple
                     @is_attribute = true if @qty == :single
-                    @default_val = "0.0"
+                    @default_val = "0.0"  if @default_val == nil
                     @printf="lf"
                     @val2ruby = "rb_float_new"
                     @ruby2val = "NUM2DBL"
@@ -194,7 +196,7 @@ module Damage
                     @printf="u"
                     @val2ruby = "UINT2NUM"
                     @ruby2val = "NUM2UINT"
-                    @default_val = "0";
+                    @default_val = "0"  if @default_val == nil
                 when "SI"
                     @data_type = "int32_t"
                     @category = :simple
@@ -202,21 +204,26 @@ module Damage
                     @printf="d"
                     @val2ruby = "INT2NUM"
                     @ruby2val = "NUM2INT"
-                    @default_val = "0";
+                    @default_val = "0" if @default_val == nil
                 when /ENUM\(([^)]*)\)/
                     @data_type = "uint32_t"
                     @category = :enum
+                    @enumPrefix="__#{libName.upcase}_#{entry.name.upcase}_#{@name.upcase}"
                     raise("Enums cannot be used as containers or list") if @qty != :single
                     @is_attribute = true if @qty == :single
                     @printf="u"
                     @val2ruby = "UINT2NUM"
                     @ruby2val = "NUM2UINT"
-                    @default_val = "0";
                     @enumList="(#{$1})"
                     @enum={}
                     $1.split('|').each() {|e|
                         @enum[e] = e.sub(/[^[:alnum:]]/, "_").upcase
                     }
+                    if @default_val == nil then 
+                        @default_val = "0"  
+                    else
+                        @default_val = "#{@enumPrefix}_#{@default_val.sub(/[^[:alnum:]]/, "_").upcase}"  
+                    end
 
                 when /T\(([\w+ ]*)\)/
                     @data_type = $1
@@ -225,25 +232,25 @@ module Damage
                 when /(S|STRUCT)\(([\w+ ]*)\)/
                     @data_type = $2
                     @category = :intern
-                    @default_val = "NULL"
+                    @default_val = "NULL"  if @default_val == nil
                     puts "This format is not DTD compatible (Field #{@name} has type #{@data_type})" if ((@data_type != @name) && (@target != :mem) && (@attribute != :container))
                 when /(A|ARRAY)\(([\w+ ]*)\)/
                     @data_type = "#{$2}*"
                     @category = :intern
-                    @default_val = "NULL"
+                    @default_val = "NULL"  if @default_val == nil
                 when "ID"
                     @category = :id
-                    @default_val = "0UL"
+                    @default_val = "0UL"  if @default_val == nil
                     @is_attribute = true
                 when /IDREF\(([\w+ ]*)\)/
                     @data_type = $1
                     @category = :idref
-                    @default_val = "0UL"
+                    @default_val = "0UL" if @default_val == nil
                     @is_attribute = true
                 when nil
                     @data_type = @name
                     @category = :intern
-                    @default_val = "NULL"
+                    @default_val = "NULL" if @default_val == nil
                     puts "This format is not DTD compatible (Field #{@name} has type #{@data_type})" if ((@data_type != @name) && (@target != :mem) && (@attribute != :container))
 
                 else
@@ -283,7 +290,7 @@ module Damage
 
             # Build an entry from a parsed YAML tree
 
-            def initialize(entry)
+            def initialize(libName, entry)
                 @name = entry["name"]
                 @attribute = :none
                 @cleanup = entry["cleanup"]
@@ -317,7 +324,7 @@ module Damage
                 end
 
                 entry["fields"].each() { |field|
-                    _field =  Field.new(field)
+                    _field =  Field.new(libName, self, field)
                     
                     # Top cannot have attributes
                     _field.is_attribute = false if @attribute == :top && _field.is_attribute == true
@@ -336,7 +343,7 @@ module Damage
                         field["attribute"] = "SORT"
                         field["sort_field"] = field["name"]
                         field["quantity"] = "SINGLE"
-                        _field2 = Field.new(field)
+                        _field2 = Field.new(libName, self, field)
                         @fields << _field2
                         @sort << _field2
 
@@ -399,7 +406,7 @@ module Damage
 
                 #Iterate one each entry and eventually store it as top or store its containers as needed
                 tree["entries"].each() { |entry|
-                    _entry = Entry.new(entry)
+                    _entry = Entry.new(config.libname, entry)
                     @top_entry = _entry if (_entry.attribute == :top)
                     _entry.containers.each() { |name, data_type|
                         raise("At least two containers with name '#{name}' are defined and used differents types (#{@containers[name]} and #{data_type}).") if (@containers[name] != nil && @containers[name] != data_type)

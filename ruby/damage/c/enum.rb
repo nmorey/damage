@@ -40,17 +40,16 @@ module Damage
 
                 entry.fields.each() {|field|
                     if field.category == :enum then
-                        enumPrefix="__#{libName.upcase}_#{entry.name.upcase}_#{field.name.upcase}"
                         output.puts("
 /** Enum for the #{field.name} field of a #__#{libName}_#{entry.name} structure */");
                         output.printf("typedef enum {\n");
-                        output.printf("\t#{enumPrefix}_N_A /** Undefined */= 0")
+                        output.printf("\t#{field.enumPrefix}_N_A /** Undefined */= 0")
                         count = 1;
                         field.enum.each() { |str, val|
-                            output.printf(",\n\t#{enumPrefix}_#{val} /** #{field.name} = \"#{str}\"*/ = #{count}")
+                            output.printf(",\n\t#{field.enumPrefix}_#{val} /** #{field.name} = \"#{str}\"*/ = #{count}")
                             count+=1
                         }
-                        output.printf("\n} #{enumPrefix};\n");
+                        output.printf("\n} #{field.enumPrefix};\n");
                         output.puts("
 /** Array containing the string for each enum entry */");
                         output.printf("extern const char*__#{libName}_#{entry.name}_#{field.name}_strings[#{field.enum.length+1}];\n\n");
