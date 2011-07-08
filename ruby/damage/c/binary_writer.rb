@@ -257,7 +257,7 @@ uint32_t __#{libName}_#{entry.name}_binary_dump(__#{libName}_#{entry.name}* ptr,
                     output.printf("\t__#{libName}_fwrite(&ret, sizeof(ret), 1, output);\n");
                     output.printf("\tfclose(output);\n")
                     output.printf("\tif(unlock)\n");
-                    output.printf("\t\t__#{libName}_release_flock();\n");
+                    output.printf("\t\t__#{libName}_release_flock(file);\n");
                     output.printf("\treturn (unsigned long)ret;\n");
                     output.printf("}\n");
                 }

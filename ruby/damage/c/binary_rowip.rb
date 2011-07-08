@@ -197,7 +197,7 @@ static inline void __#{libName}_rowip_header_free(__#{libName}_rowip_header* ptr
                     output.printf("\t\t__#{libName}_error(\"Failed to unmap output file %%s\", errno, header->filename);\n");
 
                     output.printf("\tif(unlock)\n");
-                    output.printf("\t\t__#{libName}_release_flock();\n");
+                    output.printf("\t\t__#{libName}_release_flock(header->filename);\n");
                     output.printf("\tret = header->len;\n")
 
                     output.printf("\tif(unlock)\n");
@@ -275,7 +275,7 @@ static inline void __#{libName}_rowip_header_free(__#{libName}_rowip_header* ptr
 
                     output.printf("\theader->file = NULL;\n");
                     output.printf("\tif (rdonly) {\n");
-                    output.printf("\t__#{libName}_release_flock();\n");
+                    output.printf("\t__#{libName}_release_flock(file);\n");
                     output.printf("\t}\n");
 
                     output.printf("\tptr = (__#{libName}_%s*)(mapped + sizeof(uint32_t));\n", entry.name)

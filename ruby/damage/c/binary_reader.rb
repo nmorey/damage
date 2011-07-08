@@ -248,7 +248,7 @@ __#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load(FILE* file, u
                     output.printf("\tptr = __#{libName}_%s_binary_load(output, sizeof(uint32_t));\n", entry.name)
                     output.printf("\tfclose(output);\n")
                     output.printf("\tif (rdonly) {\n");
-                    output.printf("\t__#{libName}_release_flock();\n");
+                    output.printf("\t__#{libName}_release_flock(file);\n");
                     output.printf("\t}\n");
 
                     output.printf("\treturn ptr;\n");

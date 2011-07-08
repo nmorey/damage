@@ -225,7 +225,7 @@ module Damage
                     output.printf("\tret = xmlSaveFormatFileEnc(file, doc, \"us-ascii\", 1);\n");
                     output.printf("\txmlFreeDoc(doc);\n\n");
                     output.printf("\tif(unlock)\n");
-                    output.printf("\t\t__#{libName}_release_flock();\n");
+                    output.printf("\t\t__#{libName}_release_flock(file);\n");
                     output.printf("\treturn ret;\n");
                     output.printf("}\n");
                 }      

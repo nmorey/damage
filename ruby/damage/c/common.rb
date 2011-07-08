@@ -45,6 +45,8 @@ module Damage
 #include <setjmp.h>
 #include <libxml/xmlreader.h>
 
+#define __#{libName.upcase}_MAX_OPENED_FILES 10
+
 void *__#{libName}_malloc(unsigned long size);
 void *__#{libName}_realloc(void *ptr, unsigned long size);
 void __#{libName}_free(void *ptr);
@@ -59,7 +61,7 @@ unsigned long __#{libName}_read_value_ulong_attr(xmlAttrPtr reader);
 signed long __#{libName}_read_value_slong_attr(xmlAttrPtr reader);
 double __#{libName}_read_value_double_attr(xmlAttrPtr reader);
 int __#{libName}_acquire_flock(const char* filename, int rdonly);
-int __#{libName}_release_flock();
+int __#{libName}_release_flock(const char* filename);
 void __#{libName}_fread(void* buf, size_t elSize, int nbElem, FILE* input);
 void __#{libName}_fwrite(void* buf, size_t elSize, int nbElem, FILE* input);
 void __#{libName}_fseek(FILE *stream, long offset, int whence);
@@ -289,17 +291,34 @@ double __#{libName}_read_value_double_attr(xmlAttrPtr node)
 	return val;
 }
 
-static struct flock lock;
-static FILE* __#{libName}_filelock = NULL;
+
+static FILE* __#{libName}_filelocks[__#{libName.upcase}_MAX_OPENED_FILES];
+static char * __#{libName}_filelocks_name[__#{libName.upcase}_MAX_OPENED_FILES];
 
 
 int __#{libName}_acquire_flock(const char* filename, int rdonly){
 	char* lock_file;
-	
-	if(__#{libName}_filelock != NULL){
+	int i, slot=-1;
+    struct flock lock;
+
+    for(i = 0; i < __#{libName.upcase}_MAX_OPENED_FILES; i++){
+        if(__#{libName}_filelocks_name[i]){
+            if(!strcmp(filename, __#{libName}_filelocks_name[i]))
+                break;
+        } else if(slot == -1) {
+            slot = i;
+        }
+    }
+	if(__#{libName.upcase}_MAX_OPENED_FILES != i){
 		/* We already have the lock */
 		return 0;
 	}
+    if(slot == -1){
+        /* No free slot found... */
+        fprintf(stderr, \"Maximum opened #{libName} databses reached\\n\");
+        return 1;
+    }
+     __#{libName}_filelocks_name[slot] = strdup(filename);
 	lock_file = malloc(strlen(filename) + 10);
 	sprintf(lock_file, \"%s.lock\", filename);
 	lock.l_whence = SEEK_SET;
@@ -311,25 +330,45 @@ int __#{libName}_acquire_flock(const char* filename, int rdonly){
     } else {
         lock.l_type = F_WRLCK;
     }
-	__#{libName}_filelock = fopen(lock_file, \"w+\");
+	__#{libName}_filelocks[slot] = fopen(lock_file, \"w+\");
 	free(lock_file);
-	if(__#{libName}_filelock == NULL){
+	if(__#{libName}_filelocks[slot] == NULL){
 		return 1;
 	}
-	while(fcntl(fileno(__#{libName}_filelock), F_SETLKW, &lock))
+
+	while(fcntl(fileno(__#{libName}_filelocks[slot]), F_SETLKW, &lock))
 		if(errno != EINTR)
 			return 1;
 
 	return 0;
 }
 
-int __#{libName}_release_flock(){
+int __#{libName}_release_flock(const char* filename){
+    struct flock lock;
+	int i;
+    for(i = 0; i < __#{libName.upcase}_MAX_OPENED_FILES; i++){
+        if(__#{libName}_filelocks_name[i]){
+            if(!strcmp(filename, __#{libName}_filelocks_name[i]))
+                break;
+        }
+    }
+
+	if(__#{libName.upcase}_MAX_OPENED_FILES == i){
+		/* We don't own this lock !  */
+		return 1;
+	}
+	lock.l_whence = SEEK_SET;
+	lock.l_start = 0;
+	lock.l_len = 0;
+	lock.l_pid = getpid();
 	lock.l_type = F_UNLCK;
-	while(fcntl(fileno(__#{libName}_filelock), F_SETLKW, &lock))
+	while(fcntl(fileno(__#{libName}_filelocks[i]), F_SETLKW, &lock))
 		if(errno != EINTR)
 			return 1;
-	fclose(__#{libName}_filelock);
-	__#{libName}_filelock = NULL;
+	fclose(__#{libName}_filelocks[i]);
+    __#{libName}_filelocks[i] = NULL;
+	free(__#{libName}_filelocks_name[i]);
+	__#{libName}_filelocks_name[i] = NULL;
 	return 0;
 }
 

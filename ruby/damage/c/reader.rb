@@ -468,7 +468,7 @@ module Damage
                     output.printf("\t\t\tEINVAL, root->name, root->line);\n");
                     output.printf("\t}\n");
                     output.printf("\tif (rdonly) {\n");
-                    output.printf("\t__#{libName}_release_flock();\n");
+                    output.printf("\t__#{libName}_release_flock(file);\n");
                     output.printf("\t}\n");
                     output.printf("\txmlFreeDoc(document);\n");
                     output.printf("\txmlCleanupParser();\n");
