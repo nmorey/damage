@@ -92,10 +92,15 @@ extern int __#{libName}_line;
 
 jmp_buf __#{libName}_error_happened;
 
+/** Represent a lock of a #{libName} DB file */
 typedef struct ___#{libName}_db_lock{
+    /** Pointer to the open file (used for lock) */
     FILE* file;
+    /** Name of the DB file */
     char* name;
+    /** Name of the DB lock file */
     char* lock;
+    /** Pointer to the next lock */
     struct ___#{libName}_db_lock* next;
 } __#{libName}_db_lock;
 
