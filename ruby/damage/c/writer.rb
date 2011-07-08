@@ -217,8 +217,6 @@ module Damage
                     output.printf("\t\txmlSetDocCompressMode(doc, 9);\n")
                     output.printf("\tnode = __#{libName}_create_%s_xml_node(NULL, ptr);\n", entry.name)
                     output.printf("\txmlDocSetRootElement(doc, node);\n")
-                    addXmlElt(output, "xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance", {:is_attr =>true, :quote =>true})
-                    addXmlElt(output, "xsi:noNamespaceSchemaLocation", "sigmaC.xsd", {:is_attr =>true, :quote =>true})
                     output.printf("\n")
                     output.printf("\tif(__#{libName}_acquire_flock(file, 1))\n");
                     output.printf("\t\t__#{libName}_error(\"Failed to lock output file %%s: %%s\", ENOENT, file, strerror(errno));\n");
