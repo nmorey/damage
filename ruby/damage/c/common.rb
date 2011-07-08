@@ -45,8 +45,6 @@ module Damage
 #include <setjmp.h>
 #include <libxml/xmlreader.h>
 
-#define __#{libName.upcase}_MAX_OPENED_FILES 10
-
 void *__#{libName}_malloc(unsigned long size);
 void *__#{libName}_realloc(void *ptr, unsigned long size);
 void __#{libName}_free(void *ptr);
@@ -93,6 +91,13 @@ extern int __#{libName}_line;
 #include \"_#{libName}/common.h\"
 
 jmp_buf __#{libName}_error_happened;
+
+typedef struct ___#{libName}_db_lock{
+    FILE* file;
+    char* name;
+    char* lock;
+    struct ___#{libName}_db_lock* next;
+} __#{libName}_db_lock;
 
 void *__#{libName}_malloc(unsigned long size)
 {
@@ -291,36 +296,39 @@ double __#{libName}_read_value_double_attr(xmlAttrPtr node)
 	return val;
 }
 
-
-static FILE* __#{libName}_filelocks[__#{libName.upcase}_MAX_OPENED_FILES];
-static char * __#{libName}_filelocks_name[__#{libName.upcase}_MAX_OPENED_FILES];
-
+static __#{libName}_db_lock* lockedDBs = NULL;;
 
 int __#{libName}_acquire_flock(const char* filename, int rdonly){
-	char* lock_file;
-	int i, slot=-1;
+	__#{libName}_db_lock* dbLock;
     struct flock lock;
 
-    for(i = 0; i < __#{libName.upcase}_MAX_OPENED_FILES; i++){
-        if(__#{libName}_filelocks_name[i]){
-            if(!strcmp(filename, __#{libName}_filelocks_name[i]))
+    for(dbLock = lockedDBs; dbLock; dbLock=dbLock->next){
+            if(!strcmp(filename, dbLock->name))
                 break;
-        } else if(slot == -1) {
-            slot = i;
+    }
+    if(!dbLock){
+        dbLock = malloc(sizeof(*dbLock));
+        if(!dbLock)
+            return 1;
+        dbLock->next = lockedDBs;
+        dbLock->name = strdup(filename);
+        dbLock->lock = malloc(strlen(filename) + 10);
+        if(!dbLock->lock){
+            free(dbLock->name);
+            free(dbLock);
+            return 1;
         }
-    }
-	if(__#{libName.upcase}_MAX_OPENED_FILES != i){
-		/* We already have the lock */
-		return 0;
+        sprintf(dbLock->lock, \"%s.lock\", filename);
+        dbLock->file = fopen(dbLock->lock, \"w+\");
+        if(!dbLock->lock){
+            free(dbLock->lock);
+            free(dbLock->name);
+            free(dbLock);
+            return 1;
+        }
+        lockedDBs = dbLock;
 	}
-    if(slot == -1){
-        /* No free slot found... */
-        fprintf(stderr, \"Maximum opened #{libName} databses reached\\n\");
-        return 1;
-    }
-     __#{libName}_filelocks_name[slot] = strdup(filename);
-	lock_file = malloc(strlen(filename) + 10);
-	sprintf(lock_file, \"%s.lock\", filename);
+
 	lock.l_whence = SEEK_SET;
 	lock.l_start = 0;
 	lock.l_len = 0;
@@ -330,13 +338,8 @@ int __#{libName}_acquire_flock(const char* filename, int rdonly){
     } else {
         lock.l_type = F_WRLCK;
     }
-	__#{libName}_filelocks[slot] = fopen(lock_file, \"w+\");
-	free(lock_file);
-	if(__#{libName}_filelocks[slot] == NULL){
-		return 1;
-	}
 
-	while(fcntl(fileno(__#{libName}_filelocks[slot]), F_SETLKW, &lock))
+	while(fcntl(fileno(dbLock->file), F_SETLKW, &lock))
 		if(errno != EINTR)
 			return 1;
 
@@ -344,31 +347,35 @@ int __#{libName}_acquire_flock(const char* filename, int rdonly){
 }
 
 int __#{libName}_release_flock(const char* filename){
+	__#{libName}_db_lock* dbLock;
+	__#{libName}_db_lock** dbPred;
     struct flock lock;
-	int i;
-    for(i = 0; i < __#{libName.upcase}_MAX_OPENED_FILES; i++){
-        if(__#{libName}_filelocks_name[i]){
-            if(!strcmp(filename, __#{libName}_filelocks_name[i]))
-                break;
-        }
-    }
 
-	if(__#{libName.upcase}_MAX_OPENED_FILES == i){
+    for(dbLock = lockedDBs, dbPred=&(lockedDBs); dbLock; dbPred=&(dbLock->next), dbLock=dbLock->next){
+            if(!strcmp(filename, dbLock->name))
+                break;
+    }
+	if(!dbLock){
 		/* We don't own this lock !  */
 		return 1;
 	}
+
+    *dbPred=dbLock->next;
+
 	lock.l_whence = SEEK_SET;
 	lock.l_start = 0;
 	lock.l_len = 0;
 	lock.l_pid = getpid();
 	lock.l_type = F_UNLCK;
-	while(fcntl(fileno(__#{libName}_filelocks[i]), F_SETLKW, &lock))
+
+	while(fcntl(fileno(dbLock->file), F_SETLKW, &lock))
 		if(errno != EINTR)
 			return 1;
-	fclose(__#{libName}_filelocks[i]);
-    __#{libName}_filelocks[i] = NULL;
-	free(__#{libName}_filelocks_name[i]);
-	__#{libName}_filelocks_name[i] = NULL;
+
+	fclose(dbLock->file);
+	free(dbLock->name);
+	free(dbLock->lock);
+	free(dbLock);
 	return 0;
 }
 
