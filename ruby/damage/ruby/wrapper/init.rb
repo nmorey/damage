@@ -18,7 +18,7 @@ module Damage
     module Ruby
         module Wrapper
             module Init
-                def write(output, entry, module_name, params)
+                def write(output, entry, module_name, params, rowip)
                     output.puts("
 
 /*
@@ -55,6 +55,10 @@ void Init_#{params[:className]}(void){
                     }
                     output.puts("
 }
+");
+
+                    if rowip == true
+                        output.puts("
 
 /*
  * Ruby class for #{entry.name} structure in ROWIP (Read or Write In Place)
@@ -69,21 +73,21 @@ void Init_#{params[:classNameRowip]}(void){
     rb_define_method(#{params[:classValueRowip]}, \"to_s\", #{params[:funcPrefix]}_to_sRowip, 0);
 
 ")
-                    entry.fields.each() {|field|
-                        next if field.target != :both
-                        getStr="#{params[:funcPrefix]}_#{field.name}_get"
-                        setStr="#{params[:funcPrefix]}_#{field.name}_set"
+                        entry.fields.each() {|field|
+                            next if field.target != :both
+                            getStr="#{params[:funcPrefix]}_#{field.name}_get"
+                            setStr="#{params[:funcPrefix]}_#{field.name}_set"
 
-                        output.puts("    rb_define_method(#{params[:classValueRowip]}, \"#{field.name}\", #{getStr}Rowip, 0);");
-                        output.puts("    rb_define_method(#{params[:classValueRowip]}, \"#{field.name}=\", #{setStr}Rowip, 1);") if (field.category == :simple and field.data_type != "char*")
-                        if ((field.category == :id) || (field.category == :idref))
-                            output.puts("    rb_define_method(#{params[:classValueRowip]}, \"#{field.name}_str\", #{getStr_str}Rowip, 0);");
-                        end
-                    }
-                    output.puts("
+                            output.puts("    rb_define_method(#{params[:classValueRowip]}, \"#{field.name}\", #{getStr}Rowip, 0);");
+                            output.puts("    rb_define_method(#{params[:classValueRowip]}, \"#{field.name}=\", #{setStr}Rowip, 1);") if (field.category == :simple and field.data_type != "char*")
+                            if ((field.category == :id) || (field.category == :idref))
+                                output.puts("    rb_define_method(#{params[:classValueRowip]}, \"#{field.name}_str\", #{getStr_str}Rowip, 0);");
+                            end
+                        }
+                        output.puts("
 }
 ");
-
+                    end
                     if entry.attribute == :listable
                         output.puts("
 /*
@@ -94,7 +98,6 @@ void Init_#{params[:classNameRowip]}(void){
 static
 void Init_#{params[:classNameList]}(){
     #{params[:classValueList]} = rb_define_class_under(#{params[:moduleName]}, \"#{params[:classNameList]}\", rb_cObject);
-    #{params[:classValueListRowip]} = rb_define_class_under(#{params[:moduleName]}, \"#{params[:classNameListRowip]}\", rb_cObject);
 
     rb_define_alloc_func(#{params[:classValueList]}, #{params[:funcPrefixList]}_alloc);
     rb_define_method(#{params[:classValueList]}, \"initialize\", #{params[:funcPrefixList]}_initialize, -1);
@@ -105,7 +108,9 @@ void Init_#{params[:classNameList]}(){
     rb_define_method(#{params[:classValueList]}, \"length\", #{params[:funcPrefixList]}_arrayLength, 0);
     rb_define_method(#{params[:classValueList]}, \"<<\", #{params[:funcPrefixList]}_arrayAdd, 1);
 }
-
+");
+                        if rowip == true
+                            output.puts("
 /*
  * Ruby class for an enumarable of #{entry.name} structure  in ROWIP (Read or Write In Place)
  *
@@ -120,15 +125,15 @@ void Init_#{params[:classNameListRowip]}(){
     rb_define_method(#{params[:classValueListRowip]}, \"length\", #{params[:funcPrefixList]}_arrayLengthRowip, 0);
 }
 ")
-                    end
-                    output.puts("
-void #{params[:funcPrefix]}_init(void){
-    Init_#{params[:className]}();
-    Init_#{params[:classNameRowip]}();
+                        end
 
-");
+                    end
+                    output.puts("void #{params[:funcPrefix]}_init(void){");
+                    output.puts("    Init_#{params[:className]}();");
+                    output.puts("    Init_#{params[:classNameRowip]}();") if rowip == true
+
                     output.puts "    Init_#{params[:classNameList]}();" if entry.attribute == :listable
-                    output.puts "    Init_#{params[:classNameListRowip]}();" if entry.attribute == :listable
+                    output.puts "    Init_#{params[:classNameListRowip]}();" if entry.attribute == :listable && rowip == true
                     
                     entry.enums.each() {|field|
                         output.puts("

@@ -37,23 +37,23 @@ module Damage
             module_function :generate
 
             private
-            def genWrapperC(output, entry, libName)
+            def genWrapperC(output, entry, libName, rowip)
                 params=Damage::Ruby::nameToParams(libName, entry.name)
-                Header::write(output, entry, libName, params)
-                Mark::write(output, entry, libName, params)
-                Memory::write(output, entry, libName, params)
-                Decorate::write(output, entry, libName, params)
-                ToFile::write(output, entry, libName, params)
-                NewFile::write(output, entry, libName, params)
-                MethodGet::write(output, entry, libName, params)
-                MethodSet::write(output, entry, libName, params)
-                MethodCompare::write(output, entry, libName, params)
+                Header::write(output, entry, libName, params, rowip)
+                Mark::write(output, entry, libName, params, rowip)
+                Memory::write(output, entry, libName, params, rowip)
+                Decorate::write(output, entry, libName, params, rowip)
+                ToFile::write(output, entry, libName, params, rowip)
+                NewFile::write(output, entry, libName, params, rowip)
+                MethodGet::write(output, entry, libName, params, rowip)
+                MethodSet::write(output, entry, libName, params, rowip)
+                MethodCompare::write(output, entry, libName, params, rowip)
                 if(entry.attribute == :listable)
-                    MethodArray::write(output, entry, libName, params)
+                    MethodArray::write(output, entry, libName, params, rowip)
                 end
-                ToS::write(output, entry, libName, params)
-                #        MethodAcc::write(output, entry, params)
-                Init::write(output, entry, libName, params)
+                ToS::write(output, entry, libName, params, rowip)
+                #        MethodAcc::write(output, entry, params, rowip)
+                Init::write(output, entry, libName, params, rowip)
             end
 
             def genWrapperH(output, entry)
@@ -69,7 +69,7 @@ module Damage
                     
                     #          outputH = Damage::Files.createAndOpen(outdir, "ruby_#{entry.name}.h")
                     outputC = Damage::Files.createAndOpen(outdir, "ruby_#{entry.name}.c") 
-                    genWrapperC(outputC, entry, libName);
+                    genWrapperC(outputC, entry, libName, description.config.rowip);
                     #          genWrapperH(outputH, entry);
                     outputC.close()
                     #          outputH.close()

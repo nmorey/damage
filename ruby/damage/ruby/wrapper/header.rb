@@ -18,7 +18,7 @@ module Damage
   module Ruby
     module Wrapper
       module Header
-        def write(output, entry, libName, params)
+        def write(output, entry, libName, params, rowip)
          output.puts("
 #include <ruby.h>
 #include <libxml/xmlreader.h>
@@ -33,18 +33,23 @@ extern VALUE #{params[:moduleName]};
 
 /** Global class type for the file */
 VALUE #{params[:classValue]};
-
-VALUE #{params[:classValueRowip]};
-
 ");
+output.puts("
+/** Global class type for the file in Rowip Mode */
+VALUE #{params[:classValueRowip]};
+") if rowip == true
+
+
           if entry.attribute == :listable
 output.puts("
 /** Global class type List for the file */
 VALUE #{params[:classValueList]};
+");
 
+output.puts("
+/** Global class type List for the file in Rowip Mode */
 VALUE #{params[:classValueListRowip]};
-
-")
+") if rowip == true
           end
 
             entry.enums.each() { |field|

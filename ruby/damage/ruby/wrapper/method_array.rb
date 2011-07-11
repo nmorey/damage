@@ -18,7 +18,7 @@ module Damage
   module Ruby
     module Wrapper
       module MethodArray
-        def write(output, entry, libName, params)
+        def write(output, entry, libName, params, rowip)
           if entry.attribute == :listable
             output.puts("
 static VALUE #{params[:funcPrefixList]}_arrayGet(VALUE self, VALUE idx){
@@ -37,21 +37,6 @@ static VALUE #{params[:funcPrefixList]}_arrayGet(VALUE self, VALUE idx){
     return Qnil;
 }
 
-static VALUE #{params[:funcPrefixList]}_arrayGetRowip(VALUE self, VALUE idx){
-    #{params[:cTypeList]} *ptr;
-    #{params[:cType]} *elnt;
-    unsigned count, index;
-
-    Data_Get_Struct(self, #{params[:cTypeList]}, ptr);
-    assert(ptr);
-    index = NUM2INT(idx);
-
-    for(elnt = ptr->first, count=0; elnt && count != index; elnt = __#{libName.upcase}_ROWIP_PTR(elnt, next), count++){}
-    if(elnt)
-        return (VALUE)elnt->_private;
-
-    return Qnil;
-}
 
 static VALUE #{params[:funcPrefixList]}_arrayAdd(VALUE self, VALUE obj){
     #{params[:cTypeList]} *ptr;
@@ -90,6 +75,36 @@ static VALUE #{params[:funcPrefixList]}_arrayEach(VALUE self){
 
 }
 
+static VALUE #{params[:funcPrefixList]}_arrayLength(VALUE self){
+    #{params[:cTypeList]} *ptr;
+    #{params[:cType]} *elnt;
+    unsigned long count = 0;
+    Data_Get_Struct(self, #{params[:cTypeList]}, ptr);
+    assert(ptr);
+
+
+    for(elnt = ptr->first, count=0; elnt; elnt = elnt->next, count++){}
+    return ULONG2NUM(count);
+
+}
+")
+              output.puts("
+static VALUE #{params[:funcPrefixList]}_arrayGetRowip(VALUE self, VALUE idx){
+    #{params[:cTypeList]} *ptr;
+    #{params[:cType]} *elnt;
+    unsigned count, index;
+
+    Data_Get_Struct(self, #{params[:cTypeList]}, ptr);
+    assert(ptr);
+    index = NUM2INT(idx);
+
+    for(elnt = ptr->first, count=0; elnt && count != index; elnt = __#{libName.upcase}_ROWIP_PTR(elnt, next), count++){}
+    if(elnt)
+        return (VALUE)elnt->_private;
+
+    return Qnil;
+}
+
 static VALUE #{params[:funcPrefixList]}_arrayEachRowip(VALUE self){
     #{params[:cTypeList]} *ptr;
     #{params[:cType]} *elnt, *next;
@@ -107,19 +122,6 @@ static VALUE #{params[:funcPrefixList]}_arrayEachRowip(VALUE self){
 
 }
 
-static VALUE #{params[:funcPrefixList]}_arrayLength(VALUE self){
-    #{params[:cTypeList]} *ptr;
-    #{params[:cType]} *elnt;
-    unsigned long count = 0;
-    Data_Get_Struct(self, #{params[:cTypeList]}, ptr);
-    assert(ptr);
-
-
-    for(elnt = ptr->first, count=0; elnt; elnt = elnt->next, count++){}
-    return ULONG2NUM(count);
-
-}
-
 static VALUE #{params[:funcPrefixList]}_arrayLengthRowip(VALUE self){
     #{params[:cTypeList]} *ptr;
     #{params[:cType]} *elnt;
@@ -132,7 +134,7 @@ static VALUE #{params[:funcPrefixList]}_arrayLengthRowip(VALUE self){
     return ULONG2NUM(count);
 
 }
-")
+") if rowip == true
           end
         end
         module_function :write

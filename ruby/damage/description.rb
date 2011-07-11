@@ -368,6 +368,8 @@ module Damage
             attr_accessor :version
             # Description of the library for documentation
             attr_accessor :description
+            # Should ROWIP be generated or not
+            attr_accessor :rowip
 
             # Build a new config from a parsed YAML tree
             def initialize(config)
@@ -381,6 +383,8 @@ module Damage
                     @hfiles=[]
                 end
                 @version = config["version"] if config["version"] != nil
+                @rowip = true
+                @rowip = false if config["norowip"] != nil
             end
         end
 

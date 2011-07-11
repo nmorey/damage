@@ -18,9 +18,9 @@ module Damage
   module Ruby
     module Wrapper
       module Memory
-        def write(output, entry, libName, params)
-          free(output, entry, params)
-          wrapper(output, entry, params)
+        def write(output, entry, libName, params, rowip)
+          free(output, entry, params, rowip)
+          wrapper(output, entry, params, rowip)
           allocator(output, entry, params)
           initializer(output, entry, params)
         end
@@ -29,7 +29,7 @@ module Damage
         private
 
 
-        def wrapper(output, entry, params)
+        def wrapper(output, entry, params, rowip)
           output.puts("
 /**  Class Wrapper */
 VALUE #{params[:funcPrefix]}_wrap(#{params[:cType]}* ptr) {
@@ -49,6 +49,9 @@ VALUE #{params[:funcPrefix]}_wrapFirst(#{params[:cType]}* ptr) {
     ptr->_private = (void*)node;
     return node;
 }
+");
+
+output.puts("
 /**  Class Wrapper */
 VALUE #{params[:funcPrefix]}_wrapRowip(#{params[:cType]}* ptr) {
     VALUE node;
@@ -68,7 +71,8 @@ VALUE #{params[:funcPrefix]}_wrapFirstRowip(#{params[:cType]}* ptr) {
     return node;
 }
 
-")
+") if rowip == true
+
           if entry.attribute == :listable
           output.puts("
 /**  Class Wrapper */
@@ -81,7 +85,9 @@ VALUE #{params[:funcPrefixList]}_wrap(#{params[:cTypeList]}* ptr) {
     ptr->_private = node;
     return node;
 }
+");
 
+output.puts("
 /**  Class Wrapper */
 VALUE #{params[:funcPrefixList]}_wrapRowip(#{params[:cTypeList]}* ptr) {
     VALUE node;
@@ -93,13 +99,13 @@ VALUE #{params[:funcPrefixList]}_wrapRowip(#{params[:cTypeList]}* ptr) {
     return node;
 }
 
-")
+") if rowip == true
 
           end
         end
 
 
-        def free(output, entry, params)
+        def free(output, entry, params, rowip)
           output.puts("
 /** Free function */
 void #{params[:funcPrefix]}_free(#{params[:cType]} *ptr) {
@@ -113,7 +119,8 @@ void #{params[:funcPrefix]}_free(#{params[:cType]} *ptr) {
 void #{params[:funcPrefix]}_freeRowip(#{params[:cType]} *ptr) {
     return;
 }
-")          
+") if rowip == true
+
           if entry.attribute == :listable
           output.puts("
 /** Free function */

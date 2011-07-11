@@ -30,7 +30,7 @@ module Damage
 
             private
 
-            def genStruct(output, libName, entry)
+            def genStruct(output, libName, entry, rowip)
 
                 output.printf("/** Structure __#{libName}_%s: #{entry.description} */\n", entry.name)
                 output.printf("typedef struct ___#{libName}_%s {\n", entry.name);
@@ -75,10 +75,13 @@ module Damage
                 end
                 output.printf("\t/** Internal: Pointer to the ruby VALUE when using the ruby wrapper  */\n")
                 output.printf("\tvoid* _private  __#{libName.upcase}_ALIGN__;\n");
-                output.printf("\t/** Internal: Offset in the binary DB */\n")
-                output.printf("\tunsigned long _rowip_pos  __#{libName.upcase}_ALIGN__;\n");
-                output.printf("\t/** Internal: DB infos */\n")
-                output.printf("\tvoid* _rowip  __#{libName.upcase}_ALIGN__;\n");
+
+                if rowip == true
+                    output.printf("\t/** Internal: Offset in the binary DB */\n")
+                    output.printf("\tunsigned long _rowip_pos  __#{libName.upcase}_ALIGN__;\n");
+                    output.printf("\t/** Internal: DB infos */\n")
+                    output.printf("\tvoid* _rowip  __#{libName.upcase}_ALIGN__;\n");
+                end
                 output.printf("} __#{libName}_%s;\n\n", entry.name);
 
             end
@@ -102,21 +105,23 @@ module Damage
                 output.printf("#define __#{libName.upcase}_ALIGN__ __attribute__((aligned(8)))\n\n");
                 
                 description.entries.each() {|name, entry|
-                    genStruct(output, libName, entry)
+                    genStruct(output, libName, entry, description.config.rowip)
 
                 }
                 output.printf("\n\n");
-                output.printf("/** Internal structure for ROWIP maintenant */\n");
-                output.printf("typedef struct ___#{libName}_rowip_header {\n");
-                output.printf("\t/** Source filename */\n");
-                output.printf("\tchar* filename;\n");
-                output.printf("\t/** Source file length */\n");
-                output.printf("\tunsigned long len;\n");
-                output.printf("\t/** Source FILE* */\n");
-                output.printf("\tFILE* file;\n");
-                output.printf("\t/** Base memory address */\n");
-                output.printf("\tvoid* base_adr;\n");
-                output.printf("} __#{libName}_rowip_header;\n\n");
+                if description.config.rowip == true
+                    output.printf("/** Internal structure for ROWIP maintenant */\n");
+                    output.printf("typedef struct ___#{libName}_rowip_header {\n");
+                    output.printf("\t/** Source filename */\n");
+                    output.printf("\tchar* filename;\n");
+                    output.printf("\t/** Source file length */\n");
+                    output.printf("\tunsigned long len;\n");
+                    output.printf("\t/** Source FILE* */\n");
+                    output.printf("\tFILE* file;\n");
+                    output.printf("\t/** Base memory address */\n");
+                    output.printf("\tvoid* base_adr;\n");
+                    output.printf("} __#{libName}_rowip_header;\n\n");
+                end
                 output.puts("
 /** @} */
 /** @} */

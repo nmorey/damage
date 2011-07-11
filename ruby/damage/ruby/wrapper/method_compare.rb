@@ -19,7 +19,7 @@ module Damage
         module Wrapper
             module MethodCompare
 
-                def write(output, entry, libName, params)
+                def write(output, entry, libName, params, rowip)
                     output.puts("static VALUE #{params[:funcPrefix]}_compare_list(VALUE self, VALUE other) {")
                     output.puts("\tint ret;")
                     output.puts("\tif (rb_type(self) != rb_type(other)) {\n")

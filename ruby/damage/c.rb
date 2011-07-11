@@ -44,7 +44,7 @@ module Damage
             Writer::write(description)
             BinaryReader::write(description)
             BinaryWriter::write(description)
-            BinaryRowip::write(description)
+            BinaryRowip::write(description) if description.config.rowip == true
             Makefile::write(description)
             Tests::write(description)
             Doxygen::write(description)

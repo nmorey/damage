@@ -18,7 +18,7 @@ module Damage
   module Ruby
     module Wrapper
       module NewFile
-        def write(output, entry, libName, params)
+        def write(output, entry, libName, params, rowip)
          output.puts("
 /** Load from XML */
 static VALUE #{params[:funcPrefix]}_load_xml(int argc, VALUE *argv, VALUE klass){
@@ -85,7 +85,7 @@ static VALUE #{params[:funcPrefix]}_load_binary_rowip(int argc, VALUE *argv, VAL
         #{params[:funcPrefix]}_cleanupRowip(ptr);
     return #{params[:funcPrefix]}_decorateRowip(#{params[:funcPrefix]}_wrapFirstRowip(ptr));
 }
-")
+") if rowip == true
         end
         module_function :write
         

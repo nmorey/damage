@@ -19,7 +19,7 @@ module Damage
         module Wrapper
             module MethodGet
 
-                def write(output, entry, libName, params)
+                def write(output, entry, libName, params, rowip)
                     entry.fields.each() {|field|
                         getStr="
 /*
@@ -35,6 +35,7 @@ static VALUE #{params[:funcPrefix]}_#{field.name}_get(VALUE self)"
  * #{field.description}
  */
 static VALUE #{params[:funcPrefix]}_#{field.name}_getRowip(VALUE self)"
+
                         aliasFunc="#define #{params[:funcPrefix]}_#{field.name}_getRowip #{params[:funcPrefix]}_#{field.name}_get"
                         next if field.target != :both
 
@@ -45,7 +46,8 @@ static VALUE #{params[:funcPrefix]}_#{field.name}_getRowip(VALUE self)"
                                 raise("Unsupported simple type #{field.data_type}") if field.val2ruby == nil
                                 
                                 output.puts("
-#{aliasFunc}
+#{aliasFunc}") if rowip == true
+                                output.puts("
 #{getStr}{
     #{params[:cType]}* ptr;
     Data_Get_Struct(self, #{params[:cType]}, ptr);
@@ -63,7 +65,8 @@ static VALUE #{params[:funcPrefix]}_#{field.name}_getRowip(VALUE self)"
     if(ptr->#{field.name} == NULL)
         return Qnil;
     return rb_str_new2(ptr->#{field.name});
-}
+}");
+                                output.puts("
 #{getStrRowip}{
     #{params[:cType]}* ptr;
     Data_Get_Struct(self, #{params[:cType]}, ptr);
@@ -72,7 +75,7 @@ static VALUE #{params[:funcPrefix]}_#{field.name}_getRowip(VALUE self)"
         return Qnil;
     return rb_str_new2(__#{libName.upcase}_ROWIP_STR(ptr, #{field.name}));
 }
-")
+") if rowip == true
                             when :id, :idref
                                 getStr_str="static VALUE #{params[:funcPrefix]}_#{field.name}_str_get(VALUE self)"
                                 getStrRowip_str="static VALUE #{params[:funcPrefix]}_#{field.name}_str_getRowip(VALUE self)"
@@ -85,7 +88,8 @@ static VALUE #{params[:funcPrefix]}_#{field.name}_getRowip(VALUE self)"
     if(ptr->#{field.name}_str == NULL)
         return Qnil;
     return rb_str_new2(ptr->#{field.name}_str);
-}
+}");
+                                output.puts("
 #{getStrRowip_str}{
     #{params[:cType]}* ptr;
     Data_Get_Struct(self, #{params[:cType]}, ptr);
@@ -94,9 +98,11 @@ static VALUE #{params[:funcPrefix]}_#{field.name}_getRowip(VALUE self)"
         return Qnil;
     return rb_str_new2(__#{libName.upcase}_ROWIP_STR(ptr, #{field.name}_str));
 }
-")
+") if rowip == true
                                 output.puts("
 #{aliasFunc}
+") if rowip == true
+                                output.puts("
 #{getStr}{
     #{params[:cType]}* ptr;
     Data_Get_Struct(self, #{params[:cType]}, ptr);
@@ -112,7 +118,8 @@ static VALUE #{params[:funcPrefix]}_#{field.name}_getRowip(VALUE self)"
     if(ptr->#{field.name} == NULL)
         return Qnil;
     return (VALUE)ptr->#{field.name}->_private;
-}
+}")
+                                output.puts("
 #{getStrRowip}{
     #{params[:cType]}* ptr;
     Data_Get_Struct(self, #{params[:cType]}, ptr);
@@ -121,10 +128,12 @@ static VALUE #{params[:funcPrefix]}_#{field.name}_getRowip(VALUE self)"
         return Qnil;
     return (VALUE)__#{libName.upcase}_ROWIP_PTR(ptr,#{field.name})->_private;
 }
-")
+") if rowip == true
                             when :enum
                                 output.puts("
 #{aliasFunc}
+") if rowip == true
+                                output.puts("
 #{getStr}{
     #{params[:cType]}* ptr;
     Data_Get_Struct(self, #{params[:cType]}, ptr);
@@ -151,6 +160,8 @@ static VALUE #{params[:funcPrefix]}_#{field.name}_getRowip(VALUE self)"
     }
     return array;
 }
+")
+                                output.puts("
 #{getStrRowip}{
     #{params[:cType]}* ptr;
     VALUE array;
@@ -163,7 +174,7 @@ static VALUE #{params[:funcPrefix]}_#{field.name}_getRowip(VALUE self)"
     }
     return array;
 }
-");
+") if rowip == true
 
                             when :simple
                                 raise("Unsupported simple type #{field.data_type}") if field.val2ruby == nil
@@ -180,6 +191,8 @@ static VALUE #{params[:funcPrefix]}_#{field.name}_getRowip(VALUE self)"
     }
     return array;
 }
+")
+                                output.puts("
 #{getStrRowip}{
     #{params[:cType]}* ptr;
     VALUE array;
@@ -192,7 +205,7 @@ static VALUE #{params[:funcPrefix]}_#{field.name}_getRowip(VALUE self)"
     }
     return array;
 }
-");
+") if rowip == true
                             when :intern
                                 tParams=Damage::Ruby::nameToParams(libName, field.data_type)
                                 output.puts("
@@ -215,7 +228,8 @@ static VALUE #{params[:funcPrefix]}_#{field.name}_getRowip(VALUE self)"
     }
     return #{tParams[:funcPrefixList]}_wrap(list);
 }
-
+")
+                                output.puts("
 #{getStrRowip}{
     #{params[:cType]} *ptr;
     #{tParams[:cTypeList]}* list;
@@ -235,7 +249,7 @@ static VALUE #{params[:funcPrefix]}_#{field.name}_getRowip(VALUE self)"
     }
     return #{tParams[:funcPrefixList]}_wrapRowip(list);
 }
-");
+") if rowip == true
                             else
                                 raise("Unsupported data category for #{entry.name}.#{field.name}");
 

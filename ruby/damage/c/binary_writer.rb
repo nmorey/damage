@@ -215,9 +215,12 @@ uint32_t __#{libName}_#{entry.name}_binary_dump(__#{libName}_#{entry.name}* ptr,
 
                     
                     output.printf("#{indent}if(el->next != NULL) {val.next = (void*)(unsigned long)child_offset;}\n") if entry.attribute == :listable 
-                    output.printf("#{indent}val._rowip_pos = offset;\n")
+                    if description.config.rowip == true
+                        output.printf("#{indent}val._rowip_pos = offset;\n")
+                        output.printf("#{indent}val._rowip = NULL;\n")
+                    end
                     output.printf("#{indent}val._private = NULL;\n")
-                    output.printf("#{indent}val._rowip = NULL;\n")
+
 
                     output.printf("#{indent}__#{libName}_fseek(file, offset, SEEK_SET);\n")
                     output.printf("#{indent}__#{libName}_fwrite(&val, sizeof(val), 1, file);\n")

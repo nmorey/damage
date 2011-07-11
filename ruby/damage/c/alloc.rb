@@ -78,7 +78,7 @@ module Damage
 
                     output.printf("\tptr->next = NULL;\n")         if entry.attribute == :listable
                     output.printf("\tptr->_private = NULL;\n")
-                    output.printf("\tptr->_rowip = NULL;\n")
+                    output.printf("\tptr->_rowip = NULL;\n") if description.config.rowip == true
                     output.printf("\treturn ptr;\n")
                     output.printf("}\n\n")
                     output.printf("void __#{libName}_%s_free(__#{libName}_%s *ptr){\n", 

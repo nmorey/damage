@@ -68,7 +68,7 @@ module Damage
                             output.puts("#include <#{libName}/xml_writer.h>")
                             output.puts("#include <#{libName}/binary_reader.h>")
                             output.puts("#include <#{libName}/binary_writer.h>")
-                            output.puts("#include <#{libName}/binary_rowip.h>")
+                            output.puts("#include <#{libName}/binary_rowip.h>") if description.config.rowip == true
                             output.puts("#include <#{libName}/compare.h>")
                             description.config.hfiles.each() {|hfile|
                                 output.puts("#include <#{libName}/#{hfile}>");

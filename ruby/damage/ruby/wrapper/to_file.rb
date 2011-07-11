@@ -18,7 +18,7 @@ module Damage
     module Ruby
         module Wrapper
             module ToFile
-                def write(output, entry, libName, params)
+                def write(output, entry, libName, params, rowip)
                     output.puts("
 static VALUE #{params[:funcPrefix]}_to_xml(VALUE self, VALUE filePath){
     int ret;
@@ -66,7 +66,7 @@ static VALUE #{params[:funcPrefix]}_to_binary_rowip(VALUE self){
         rb_raise(rb_eArgError, \"Could not write binary file\");
     return self;
 }
-")
+") if rowip == true
                 end
                 module_function :write
                 

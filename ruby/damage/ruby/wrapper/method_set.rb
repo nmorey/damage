@@ -18,7 +18,7 @@ module Damage
     module Ruby
         module Wrapper
             module MethodSet
-                def write(output, entry, libName, params)
+                def write(output, entry, libName, params, rowip)
                     entry.fields.each() {|field|
                         next if field.target != :both
                         setStr="
@@ -44,6 +44,8 @@ static VALUE #{params[:funcPrefix]}_#{field.name}_setRowip(VALUE self, VALUE val
                                 raise("Unsupported simple type #{field.data_type}") if field.ruby2val == nil
                                 output.puts("
 #{aliasFunc}
+") if rowip == true
+                                output.puts("
 #{setStr}{
     #{params[:cType]}* ptr;
     Data_Get_Struct(self, #{params[:cType]}, ptr);
@@ -103,6 +105,8 @@ static VALUE #{params[:funcPrefix]}_#{field.name}_setRowip(VALUE self, VALUE val
                             when :enum
                                 output.puts("
 #{aliasFunc}
+") if rowip == true
+                                output.puts("
 #{setStr}{
     #{params[:cType]}* ptr;
     int i;
@@ -170,6 +174,8 @@ static VALUE #{params[:funcPrefix]}_#{field.name}_setRowip(VALUE self, VALUE val
     }
     return self;
 }
+")
+                                output.puts("
 #{setStrRowip}{
     #{params[:cType]}* ptr;
     Data_Get_Struct(self, #{params[:cType]}, ptr);
@@ -185,7 +191,7 @@ static VALUE #{params[:funcPrefix]}_#{field.name}_setRowip(VALUE self, VALUE val
     }
     return self;
 }
-");                   
+") if rowip == true                 
                             when :intern
                                 output.puts("
 #{setStr}{
