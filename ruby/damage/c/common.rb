@@ -46,6 +46,7 @@ module Damage
 #include <libxml/xmlreader.h>
 
 void *__#{libName}_malloc(unsigned long size);
+char *__#{libName}_strdup(const char* str);
 void *__#{libName}_realloc(void *ptr, unsigned long size);
 void __#{libName}_free(void *ptr);
 int __#{libName}_compare(const char *name, const char *matches[]);
@@ -107,6 +108,15 @@ typedef struct ___#{libName}_db_lock{
 void *__#{libName}_malloc(unsigned long size)
 {
 	void *ptr = calloc(1, size);
+	if (ptr == NULL) {
+		fprintf(stderr, \"Failed to allocate memory: %s\\n\", strerror(errno));
+        exit(1);
+	}
+	return ptr;
+}
+char *__#{libName}_strdup(const char* str)
+{
+	char *ptr = strdup(str);
 	if (ptr == NULL) {
 		fprintf(stderr, \"Failed to allocate memory: %s\\n\", strerror(errno));
         exit(1);

@@ -22,6 +22,7 @@ module Damage
         require File.dirname(__FILE__) + '/c/header'
         require File.dirname(__FILE__) + '/c/common'
         require File.dirname(__FILE__) + '/c/sort'
+        require File.dirname(__FILE__) + '/c/duplicate'
         require File.dirname(__FILE__) + '/c/reader'
         require File.dirname(__FILE__) + '/c/writer'
         require File.dirname(__FILE__) + '/c/binary_reader'
@@ -40,6 +41,7 @@ module Damage
             Header::write(description)
             Common::write(description)
             Sort::write(description)
+            Duplicate::write(description)
             Reader::write(description)
             Writer::write(description)
             BinaryReader::write(description)
