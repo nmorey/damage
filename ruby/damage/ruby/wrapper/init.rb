@@ -31,12 +31,11 @@ void Init_#{params[:className]}(void){
     #{params[:classValue]} = rb_define_class_under(#{params[:moduleName]}, \"#{params[:className]}\", rb_cObject);
     rb_define_alloc_func(#{params[:classValue]}, #{params[:funcPrefix]}_alloc);
     rb_define_method(#{params[:classValue]}, \"initialize\", #{params[:funcPrefix]}_initialize, -1);
-    rb_define_method(#{params[:classValue]}, \"to_binary\", #{params[:funcPrefix]}_to_binary, 1);
-    rb_define_method(#{params[:classValue]}, \"to_xml\", #{params[:funcPrefix]}_to_xml, 1);
+    rb_define_method(#{params[:classValue]}, \"to_binary\", #{params[:funcPrefix]}_to_binary, 2);
+    rb_define_method(#{params[:classValue]}, \"to_xml\", #{params[:funcPrefix]}_to_xml, 2);
     rb_define_method(#{params[:classValue]}, \"==\", #{params[:funcPrefix]}_compare_list, 1);
-    rb_define_method(#{params[:classValue]}, \"to_xmluz\", #{params[:funcPrefix]}_to_xmluz, 1);
-    rb_define_singleton_method(#{params[:classValue]}, \"load_xml\", #{params[:funcPrefix]}_load_xml, -1);
-    rb_define_singleton_method(#{params[:classValue]}, \"load_binary\", #{params[:funcPrefix]}_load_binary, -1);
+    rb_define_singleton_method(#{params[:classValue]}, \"load_xml\", #{params[:funcPrefix]}_load_xml, 2);
+    rb_define_singleton_method(#{params[:classValue]}, \"load_binary\", #{params[:funcPrefix]}_load_binary, 2);
     rb_define_method(#{params[:classValue]}, \"to_s\", #{params[:funcPrefix]}_to_s, 0);
 ")
                     entry.fields.each() {|field|
@@ -68,8 +67,8 @@ void Init_#{params[:className]}(void){
 static
 void Init_#{params[:classNameRowip]}(void){
     #{params[:classValueRowip]} = rb_define_class_under(#{params[:moduleName]}, \"#{params[:classNameRowip]}\", rb_cObject);
-    rb_define_method(#{params[:classValueRowip]}, \"to_binary_rowip\", #{params[:funcPrefix]}_to_binary_rowip, 0);
-    rb_define_singleton_method(#{params[:classValueRowip]}, \"load_binary_rowip\", #{params[:funcPrefix]}_load_binary_rowip, -1);
+    rb_define_method(#{params[:classValueRowip]}, \"to_binary_rowip\", #{params[:funcPrefix]}_to_binary_rowip, 1);
+    rb_define_singleton_method(#{params[:classValueRowip]}, \"load_binary_rowip\", #{params[:funcPrefix]}_load_binary_rowip, 2);
     rb_define_method(#{params[:classValueRowip]}, \"to_s\", #{params[:funcPrefix]}_to_sRowip, 0);
 
 ")

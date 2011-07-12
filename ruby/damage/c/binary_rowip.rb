@@ -57,11 +57,11 @@ module Damage
  * ROWIP (Read Or Write-In-Place) is a fast access mode that mapped the whole file in memory.
  * To write in ROWIP mode, the structure *MUST* have been obtained by using #__#{libName}_#{entry.name}* #__#{libName}_#{entry.name}_binary_load_file_rowip
  * @param[in] ptr Structure to write
- * @param[in] unlock 1 if the lock on the DB should be released after the write or 0 to keep it locked.
+ * @param[in] opts Options to writer (compression, read-only, etc)
  * @return Amount of bytes wrote to file
  * @retval 0 in case of error
  */");
-                    output.printf("unsigned long __#{libName}_%s_binary_dump_file_rowip(__#{libName}_%s *ptr, int unlock);\n", entry.name, entry.name)
+                    output.printf("unsigned long __#{libName}_%s_binary_dump_file_rowip(__#{libName}_%s *ptr, __#{libName}_options opts);\n", entry.name, entry.name)
 
                     output.puts("
 /**
@@ -72,12 +72,12 @@ module Damage
  *     - There can be no pointer or array changes in the structures
  *     - Changes to values (char within string) or numerals are allowed.
  * @param[in] file Filename
- * @param[in] rdonly True if the file is only read. False is the file need to stay lock until it is written back
+ * @param[in] opts Options to parser (compression, read-only, etc)
  * @return Pointer to a #__#{libName}_#{entry.name} structure
  * @retval NULL Failed to read the file
  * @retval !=NULL Valid structure
  */");
-                    output.printf("__#{libName}_%s* __#{libName}_%s_binary_load_file_rowip(const char* file, int rdonly);\n\n", entry.name, entry.name)
+                    output.printf("__#{libName}_%s* __#{libName}_%s_binary_load_file_rowip(const char* file, __#{libName}_options opts);\n\n", entry.name, entry.name)
                 }
 
                 output.puts("
@@ -177,7 +177,7 @@ static inline void __#{libName}_rowip_header_free(__#{libName}_rowip_header* ptr
 ");
                 
                 description.entries.each() { | name, entry|
-                    output.printf("unsigned long __#{libName}_%s_binary_dump_file_rowip(__#{libName}_%s *ptr, int unlock)\n{\n", entry.name, entry.name)
+                    output.printf("unsigned long __#{libName}_%s_binary_dump_file_rowip(__#{libName}_%s *ptr, __#{libName}_options opts)\n{\n", entry.name, entry.name)
                     output.printf("\tunsigned long ret; int r;\n")
                     output.printf("\t__#{libName}_rowip_header *header = (__#{libName}_rowip_header*)ptr->_rowip;\n");
                     output.printf("\n")
@@ -196,12 +196,12 @@ static inline void __#{libName}_rowip_header_free(__#{libName}_rowip_header* ptr
                     output.printf("\tif((r = munmap(header->base_adr, header->len)) != 0)\n", entry.name)
                     output.printf("\t\t__#{libName}_error(\"Failed to unmap output file %%s\", errno, header->filename);\n");
 
-                    output.printf("\tif(unlock)\n");
-                    output.printf("\t\t__#{libName}_release_flock(header->filename);\n");
                     output.printf("\tret = header->len;\n")
 
-                    output.printf("\tif(unlock)\n");
+                    output.printf("\tif(opts & __#{libName.upcase}_OPTION_UNLOCKED){\n");
+                    output.printf("\t\t__#{libName}_release_flock(header->filename);\n");
                     output.printf("\t\t__#{libName}_rowip_header_free(header);\n")
+                    output.printf("\t}\n");
                     output.printf("\treturn ret;\n");
                     output.printf("}\n");
                 }
@@ -239,7 +239,7 @@ static inline void __#{libName}_rowip_header_free(__#{libName}_rowip_header* ptr
 
 
                 description.entries.each() { | name, entry|
-                    output.printf("__#{libName}_%s* __#{libName}_%s_binary_load_file_rowip(const char* file, int rdonly)\n{\n", entry.name, entry.name)
+                    output.printf("__#{libName}_%s* __#{libName}_%s_binary_load_file_rowip(const char* file, __#{libName}_options opts)\n{\n", entry.name, entry.name)
                     output.printf("\tint ret;\n")
                     output.printf("\t__#{libName}_rowip_header *header = NULL;\n");
                     output.printf("\t__#{libName}_%s *ptr = NULL;\n", entry.name);
@@ -258,7 +258,7 @@ static inline void __#{libName}_rowip_header_free(__#{libName}_rowip_header* ptr
 
                     output.printf("\theader = __#{libName}_rowip_header_alloc();\n\n");
                     output.printf("\theader->filename = strdup(file);\n");
-                    output.printf("\tif(__#{libName}_acquire_flock(file, rdonly))\n");
+                    output.printf("\tif(__#{libName}_acquire_flock(file, (opts & __#{libName.upcase}_OPTION_READONLY))\n");
                     output.printf("\t\t__#{libName}_error(\"Failed to lock output file %%s: %%s\", ENOENT, header->filename, strerror(errno));\n");
                     output.printf("\tif((output = fopen(header->filename, \"r+\")) == NULL)\n");
                     output.printf("\t\t__#{libName}_error(\"Failed to open %%s\", errno, header->filename);\n");
@@ -274,7 +274,7 @@ static inline void __#{libName}_rowip_header_free(__#{libName}_rowip_header* ptr
                     output.printf("\tfclose(header->file);\n")
 
                     output.printf("\theader->file = NULL;\n");
-                    output.printf("\tif (rdonly) {\n");
+                    output.printf("\tif ((opts & __#{libName.upcase}_OPTION_READONLY)) {\n");
                     output.printf("\t__#{libName}_release_flock(file);\n");
                     output.printf("\t}\n");
 

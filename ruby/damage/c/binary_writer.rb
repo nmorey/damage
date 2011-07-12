@@ -63,11 +63,11 @@ module Damage
  * Write a complete #__#{libName}_#{entry.name} structure and its children in binary form to a file
  * @param[in] file Filename
  * @param[in] ptr Structure to write
- * @param[in] unlock 1 if the lock on the DB should be released after the write or 0 to keep it locked.
+ * @param[in] opts Options to writer (compression, read-only, etc)
  * @return Amount of bytes wrote to file
  * @retval 0 in case of error
  */");
-                    output.printf("unsigned long __#{libName}_%s_binary_dump_file(const char* file, __#{libName}_%s *ptr, int unlock);\n\n", entry.name, entry.name)
+                    output.printf("unsigned long __#{libName}_%s_binary_dump_file(const char* file, __#{libName}_%s *ptr, __#{libName}_options opts);\n\n", entry.name, entry.name)
 
                 }
                 output.printf("\n\n");
@@ -238,7 +238,7 @@ uint32_t __#{libName}_#{entry.name}_binary_dump(__#{libName}_#{entry.name}* ptr,
                 }
 
                 description.entries.each() { | name, entry|
-                    output.printf("unsigned long __#{libName}_%s_binary_dump_file(const char* file, __#{libName}_%s *ptr, int unlock)\n{\n", entry.name, entry.name)
+                    output.printf("unsigned long __#{libName}_%s_binary_dump_file(const char* file, __#{libName}_%s *ptr, __#{libName}_options opts)\n{\n", entry.name, entry.name)
                     output.printf("\tuint32_t ret;\n")
                     output.printf("\tFILE* output;\n")
                     output.printf("\n")
@@ -259,7 +259,7 @@ uint32_t __#{libName}_#{entry.name}_binary_dump(__#{libName}_#{entry.name}* ptr,
                     output.printf("\t__#{libName}_fseek(output, 0, SEEK_SET);\n")
                     output.printf("\t__#{libName}_fwrite(&ret, sizeof(ret), 1, output);\n");
                     output.printf("\tfclose(output);\n")
-                    output.printf("\tif(unlock)\n");
+                    output.printf("\tif(opts & __#{libName.upcase}_OPTION_UNLOCKED)\n");
                     output.printf("\t\t__#{libName}_release_flock(file);\n");
                     output.printf("\treturn (unsigned long)ret;\n");
                     output.printf("}\n");

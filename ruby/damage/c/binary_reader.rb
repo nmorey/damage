@@ -61,12 +61,12 @@ module Damage
 /**
  * Read a complete #__#{libName}_#{entry.name} structure and its children in binary form from a file
  * @param[in] file Filename
- * @param[in] rdonly True if the file is only read. False is the file need to stay lock until it is written back
+ * @param[in] opts Options to parser (compression, read-only, etc)
  * @return Pointer to a #__#{libName}_#{entry.name} structure
  * @retval NULL Failed to read the file
  * @retval !=NULL Valid structure
  */");
-                    output.printf("__#{libName}_%s* __#{libName}_%s_binary_load_file(const char* file, int rdonly);\n\n", entry.name, entry.name)
+                    output.printf("__#{libName}_%s* __#{libName}_%s_binary_load_file(const char* file, __#{libName}_options opts);\n\n", entry.name, entry.name)
                 }
                 output.printf("\n\n");
 
@@ -226,7 +226,7 @@ __#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load(FILE* file, u
                 }
 
                 description.entries.each() { | name, entry|
-                    output.printf("__#{libName}_%s* __#{libName}_%s_binary_load_file(const char* file, int rdonly)\n{\n", entry.name, entry.name)
+                    output.printf("__#{libName}_%s* __#{libName}_%s_binary_load_file(const char* file, __#{libName}_options opts)\n{\n", entry.name, entry.name)
                     output.printf("\tint ret;\n")
                     output.printf("\t__#{libName}_%s *ptr = NULL;\n", entry.name);
                     output.printf("\tFILE* output;\n")
@@ -239,15 +239,15 @@ __#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load(FILE* file, u
                     output.printf("\t\terrno = ret;\n");
                     output.printf("\t\treturn NULL;\n");
                     output.printf("\t}\n\n");
-
-                    output.printf("\tif(__#{libName}_acquire_flock(file, rdonly))\n");
+                    
+                    output.printf("\tif(__#{libName}_acquire_flock(file, opts & __#{libName.upcase}_OPTION_READONLY))\n");
                     output.printf("\t\t__#{libName}_error(\"Failed to lock output file %%s: %%s\", ENOENT, file, strerror(errno));\n");
                     output.printf("\tif((output = fopen(file, \"r\")) == NULL)\n");
                     output.printf("\t\t__#{libName}_error(\"Failed to open output file %%s\", errno, file);\n");
 
                     output.printf("\tptr = __#{libName}_%s_binary_load(output, sizeof(uint32_t));\n", entry.name)
                     output.printf("\tfclose(output);\n")
-                    output.printf("\tif (rdonly) {\n");
+                    output.printf("\tif (opts & __#{libName.upcase}_OPTION_READONLY ) {\n");
                     output.printf("\t__#{libName}_release_flock(file);\n");
                     output.printf("\t}\n");
 

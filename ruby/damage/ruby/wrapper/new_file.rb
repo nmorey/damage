@@ -25,15 +25,13 @@ static VALUE #{params[:funcPrefix]}_load_xml(int argc, VALUE *argv, VALUE klass)
 
     VALUE filePath;
     VALUE mode;
-    int _mode = 0;
+    __#{libName}_options opts;
     #{params[:cType]}* ptr;
     rb_scan_args(argc, argv, \"11\", &filePath, &mode);
     Check_Type(filePath, T_STRING);
-    if(!NIL_P(mode)){
-        Check_Type(mode, T_FIXNUM);
-        _mode = FIX2INT(mode);
-    }
-    ptr = __#{libName}_#{entry.name}_xml_load_file(StringValuePtr(filePath), _mode);
+    opts = __#{libName}_get_options(mode);
+
+    ptr = __#{libName}_#{entry.name}_xml_load_file(StringValuePtr(filePath), opts);
 
     if(ptr == NULL)
         rb_raise(rb_eArgError, \"Failed to load XML file\");
@@ -46,15 +44,13 @@ static VALUE #{params[:funcPrefix]}_load_binary(int argc, VALUE *argv, VALUE kla
 
     VALUE filePath;
      VALUE mode;
-    int _mode = 0;
+    __#{libName}_options opts;
     #{params[:cType]}* ptr;
     rb_scan_args(argc, argv, \"11\", &filePath, &mode);
     Check_Type(filePath, T_STRING);
-    if(!NIL_P(mode)){
-        Check_Type(mode, T_FIXNUM);
-        _mode = FIX2INT(mode);
-    }
-    ptr = __#{libName}_#{entry.name}_binary_load_file(StringValuePtr(filePath), _mode);
+    opts = __#{libName}_get_options(mode);
+
+    ptr = __#{libName}_#{entry.name}_binary_load_file(StringValuePtr(filePath), opts);
 
     if(ptr == NULL)
         rb_raise(rb_eArgError, \"Failed to load XML file\");
@@ -69,15 +65,13 @@ static VALUE #{params[:funcPrefix]}_load_binary_rowip(int argc, VALUE *argv, VAL
 
     VALUE filePath;
      VALUE mode;
-    int _mode = 0;
+     __#{libName}_options opts;
     #{params[:cType]}* ptr;
     rb_scan_args(argc, argv, \"11\", &filePath, &mode);
     Check_Type(filePath, T_STRING);
-    if(!NIL_P(mode)){
-        Check_Type(mode, T_FIXNUM);
-        _mode = FIX2INT(mode);
-    }
-    ptr = __#{libName}_#{entry.name}_binary_load_file_rowip(StringValuePtr(filePath), _mode);
+    opts = __#{libName}_get_options(mode);
+
+    ptr = __#{libName}_#{entry.name}_binary_load_file_rowip(StringValuePtr(filePath), opts);
 
     if(ptr == NULL)
         rb_raise(rb_eArgError, \"Failed to load XML file\");

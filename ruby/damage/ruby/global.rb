@@ -70,6 +70,7 @@ VALUE #{params[:funcPrefixList]}_decorate(VALUE self);
         }
         output.puts("
 VALUE indentToString(VALUE string, int indent, int listable, int first);
+__#{libName}_options __#{libName}_get_options(VALUE hash);
 ");
       end
 
@@ -104,6 +105,28 @@ VALUE indentToString(VALUE string, int indent, int listable, int first){
         }
     }
     return _str;
+}
+
+__#{libName}_options __#{libName}_get_options(VALUE hash){
+    VALUE val;
+    __#{libName}_options opts = 0;
+    if(NIL_P(hash))
+        return opts;
+    Check_Type(hash, T_HASH);
+
+    val = rb_hash_aref(hash, ID2SYM(rb_intern(\"readonly\")));
+    if(val == Qtrue)
+        opts |= __#{libName.upcase}_OPTION_READONLY;
+
+    val = rb_hash_aref(hash, ID2SYM(rb_intern(\"unlocked\")));
+    if(val == Qtrue)
+        opts |= __#{libName.upcase}_OPTION_UNLOCKED;
+
+    val = rb_hash_aref(hash, ID2SYM(rb_intern(\"gzipped\")));
+    if(val == Qtrue)
+        opts |= __#{libName.upcase}_OPTION_GZIPPED;
+
+    return opts;
 }
 /*
  * #{moduleName}  DAMAGE Module

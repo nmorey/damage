@@ -76,12 +76,11 @@ module Damage
  * Write a complete #__#{libName}_#{entry.name} structure and its children in XML form to a file
  * @param[in] file Filename
  * @param[in] ptr Structure to write
- * @param[in] zipped 1 if the XML should be gzipped. 0 if not.
- * @param[in] unlock 1 if the lock on the DB should be released after the write or 0 to keep it locked.
+ * @param[in] opts Options to writer (compression, read-only, etc)
  * @return Amount of bytes wrote to file
  * @retval -1 in case of error
  */");
-                    output.printf("int __#{libName}_%s_xml_dump_file(const char* file, __#{libName}_%s *ptr, int zipped, int unlock);\n\n", entry.name, entry.name)
+                    output.printf("int __#{libName}_%s_xml_dump_file(const char* file, __#{libName}_%s *ptr, __#{libName}_options opts);\n\n", entry.name, entry.name)
                 }
                 output.printf("\n\n");
 
@@ -207,13 +206,13 @@ module Damage
                 }
 
                 description.entries.each() { | name, entry|
-                    output.printf("int __#{libName}_%s_xml_dump_file(const char* file, __#{libName}_%s *ptr, int zipped, int unlock)\n{\n", entry.name, entry.name)
+                    output.printf("int __#{libName}_%s_xml_dump_file(const char* file, __#{libName}_%s *ptr, __#{libName}_options opts)\n{\n", entry.name, entry.name)
                     output.printf("\txmlDocPtr doc = NULL;\n")
                     output.printf("\txmlNodePtr node = NULL;\n")
                     output.printf("\tint ret;\n")
                     output.printf("\n")
                     output.printf("\tdoc = xmlNewDoc(BAD_CAST \"1.0\");\n")
-                    output.printf("\tif(zipped)\n")
+                    output.printf("\tif(opts & __#{libName.upcase}_OPTION_GZIPPED)\n")
                     output.printf("\t\txmlSetDocCompressMode(doc, 9);\n")
                     output.printf("\tnode = __#{libName}_create_%s_xml_node(NULL, ptr);\n", entry.name)
                     output.printf("\txmlDocSetRootElement(doc, node);\n")
@@ -222,7 +221,7 @@ module Damage
                     output.printf("\t\t__#{libName}_error(\"Failed to lock output file %%s: %%s\", ENOENT, file, strerror(errno));\n");
                     output.printf("\tret = xmlSaveFormatFileEnc(file, doc, \"us-ascii\", 1);\n");
                     output.printf("\txmlFreeDoc(doc);\n\n");
-                    output.printf("\tif(unlock)\n");
+                    output.printf("\tif(opts & __#{libName.upcase}_OPTION_UNLOCKED)\n");
                     output.printf("\t\t__#{libName}_release_flock(file);\n");
                     output.printf("\treturn ret;\n");
                     output.printf("}\n");

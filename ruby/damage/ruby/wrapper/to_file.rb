@@ -20,49 +20,49 @@ module Damage
             module ToFile
                 def write(output, entry, libName, params, rowip)
                     output.puts("
-static VALUE #{params[:funcPrefix]}_to_xml(VALUE self, VALUE filePath){
+static VALUE #{params[:funcPrefix]}_to_xml(VALUE self, VALUE filePath, VALUE mode){
     int ret;
-    Check_Type(filePath, T_STRING);
+     __#{libName}_options opts;
 
-    ret = __#{libName}_#{entry.name}_xml_dump_file(StringValuePtr(filePath), DATA_PTR(self), 1, 1);
+    Check_Type(filePath, T_STRING);
+    opts = __#{libName}_get_options(mode);
+
+    ret = __#{libName}_#{entry.name}_xml_dump_file(StringValuePtr(filePath), DATA_PTR(self), opts);
 
     if(ret < 0)
         rb_raise(rb_eArgError, \"Could not write XML file\");
     return self;
 }
 ")        
+
                     output.puts("
-static VALUE #{params[:funcPrefix]}_to_xmluz(VALUE self, VALUE filePath){
+static VALUE #{params[:funcPrefix]}_to_binary(VALUE self, VALUE filePath, VALUE mode){
     int ret;
+     __#{libName}_options opts;
+
     Check_Type(filePath, T_STRING);
+    opts = __#{libName}_get_options(mode);
 
-    ret = __#{libName}_#{entry.name}_xml_dump_file(StringValuePtr(filePath), DATA_PTR(self), 0, 1);
+    ret = __#{libName}_#{entry.name}_binary_dump_file(StringValuePtr(filePath), DATA_PTR(self), opts);
 
-    if(ret < 0)
-        rb_raise(rb_eArgError, \"Could not write XML file\");
-    return self;
-}
-")
-                    output.puts("
-static VALUE #{params[:funcPrefix]}_to_binary(VALUE self, VALUE filePath){
-    int ret;
-    Check_Type(filePath, T_STRING);
-
-    ret = __#{libName}_#{entry.name}_binary_dump_file(StringValuePtr(filePath), DATA_PTR(self), 1);
-
-    if(ret < 0)
+    if(ret <= 0)
         rb_raise(rb_eArgError, \"Could not write binary file\");
     return self;
 }
 ")
 
                     output.puts("
-static VALUE #{params[:funcPrefix]}_to_binary_rowip(VALUE self){
+static VALUE #{params[:funcPrefix]}_to_binary_rowip(int argc, VALUE *argv, VALUE self){
     int ret;
+    VALUE mode;
+    __#{libName}_options opts;
 
-    ret = __#{libName}_#{entry.name}_binary_dump_file_rowip( DATA_PTR(self), 1);
+    rb_scan_args(argc, argv, \"01\", &mode);
+    opts = __#{libName}_get_options(mode);
 
-    if(ret < 0)
+    ret = __#{libName}_#{entry.name}_binary_dump_file_rowip( DATA_PTR(self), opts);
+
+    if(ret <= 0)
         rb_raise(rb_eArgError, \"Could not write binary file\");
     return self;
 }
