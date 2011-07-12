@@ -198,7 +198,7 @@ static inline void __#{libName}_rowip_header_free(__#{libName}_rowip_header* ptr
 
                     output.printf("\tret = header->len;\n")
 
-                    output.printf("\tif(opts & __#{libName.upcase}_OPTION_UNLOCKED){\n");
+                    output.printf("\tif((opts & __#{libName.upcase}_OPTION_KEEPLOCKED) == 0){\n");
                     output.printf("\t\t__#{libName}_release_flock(header->filename);\n");
                     output.printf("\t\t__#{libName}_rowip_header_free(header);\n")
                     output.printf("\t}\n");
@@ -258,7 +258,7 @@ static inline void __#{libName}_rowip_header_free(__#{libName}_rowip_header* ptr
 
                     output.printf("\theader = __#{libName}_rowip_header_alloc();\n\n");
                     output.printf("\theader->filename = strdup(file);\n");
-                    output.printf("\tif(__#{libName}_acquire_flock(file, (opts & __#{libName.upcase}_OPTION_READONLY))\n");
+                    output.printf("\tif(__#{libName}_acquire_flock(file, (opts & __#{libName.upcase}_OPTION_READONLY)))\n");
                     output.printf("\t\t__#{libName}_error(\"Failed to lock output file %%s: %%s\", ENOENT, header->filename, strerror(errno));\n");
                     output.printf("\tif((output = fopen(header->filename, \"r+\")) == NULL)\n");
                     output.printf("\t\t__#{libName}_error(\"Failed to open %%s\", errno, header->filename);\n");
