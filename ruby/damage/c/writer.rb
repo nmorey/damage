@@ -221,7 +221,7 @@ module Damage
                     output.printf("\t\t__#{libName}_error(\"Failed to lock output file %%s: %%s\", ENOENT, file, strerror(errno));\n");
                     output.printf("\tret = xmlSaveFormatFileEnc(file, doc, \"us-ascii\", 1);\n");
                     output.printf("\txmlFreeDoc(doc);\n\n");
-                    output.printf("\tif(opts & __#{libName.upcase}_OPTION_UNLOCKED)\n");
+                    output.printf("\tif((opts & __#{libName.upcase}_OPTION_KEEPLOCKED) == 0)\n");
                     output.printf("\t\t__#{libName}_release_flock(file);\n");
                     output.printf("\treturn ret;\n");
                     output.printf("}\n");

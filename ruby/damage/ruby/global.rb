@@ -118,9 +118,9 @@ __#{libName}_options __#{libName}_get_options(VALUE hash){
     if(val == Qtrue)
         opts |= __#{libName.upcase}_OPTION_READONLY;
 
-    val = rb_hash_aref(hash, ID2SYM(rb_intern(\"unlocked\")));
+    val = rb_hash_aref(hash, ID2SYM(rb_intern(\"keeplocked\")));
     if(val == Qtrue)
-        opts |= __#{libName.upcase}_OPTION_UNLOCKED;
+        opts |= __#{libName.upcase}_OPTION_KEEPLOCKED;
 
     val = rb_hash_aref(hash, ID2SYM(rb_intern(\"gzipped\")));
     if(val == Qtrue)

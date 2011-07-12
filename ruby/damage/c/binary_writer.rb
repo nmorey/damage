@@ -259,7 +259,7 @@ uint32_t __#{libName}_#{entry.name}_binary_dump(__#{libName}_#{entry.name}* ptr,
                     output.printf("\t__#{libName}_fseek(output, 0, SEEK_SET);\n")
                     output.printf("\t__#{libName}_fwrite(&ret, sizeof(ret), 1, output);\n");
                     output.printf("\tfclose(output);\n")
-                    output.printf("\tif(opts & __#{libName.upcase}_OPTION_UNLOCKED)\n");
+                    output.printf("\tif((opts & __#{libName.upcase}_OPTION_KEEPLOCKED) == 0)\n");
                     output.printf("\t\t__#{libName}_release_flock(file);\n");
                     output.printf("\treturn (unsigned long)ret;\n");
                     output.printf("}\n");
