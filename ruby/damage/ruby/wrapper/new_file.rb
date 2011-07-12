@@ -21,13 +21,11 @@ module Damage
         def write(output, entry, libName, params, rowip)
          output.puts("
 /** Load from XML */
-static VALUE #{params[:funcPrefix]}_load_xml(int argc, VALUE *argv, VALUE klass){
+static VALUE #{params[:funcPrefix]}_load_xml(VALUE klass, VALUE filePath, VALUE mode){
 
-    VALUE filePath;
-    VALUE mode;
     __#{libName}_options opts;
     #{params[:cType]}* ptr;
-    rb_scan_args(argc, argv, \"11\", &filePath, &mode);
+
     Check_Type(filePath, T_STRING);
     opts = __#{libName}_get_options(mode);
 
@@ -40,13 +38,11 @@ static VALUE #{params[:funcPrefix]}_load_xml(int argc, VALUE *argv, VALUE klass)
 ")
          output.puts("
 /** Load from Binary */
-static VALUE #{params[:funcPrefix]}_load_binary(int argc, VALUE *argv, VALUE klass){
+static VALUE #{params[:funcPrefix]}_load_binary(VALUE klass, VALUE filePath, VALUE mode){
 
-    VALUE filePath;
-     VALUE mode;
     __#{libName}_options opts;
     #{params[:cType]}* ptr;
-    rb_scan_args(argc, argv, \"11\", &filePath, &mode);
+
     Check_Type(filePath, T_STRING);
     opts = __#{libName}_get_options(mode);
 
@@ -61,13 +57,11 @@ static VALUE #{params[:funcPrefix]}_load_binary(int argc, VALUE *argv, VALUE kla
 ")
          output.puts("
 /** Load from Binary ROWIP*/
-static VALUE #{params[:funcPrefix]}_load_binary_rowip(int argc, VALUE *argv, VALUE klass){
+static VALUE #{params[:funcPrefix]}_load_binary_rowip(VALUE klass, VALUE filePath, VALUE mode){
 
-    VALUE filePath;
-     VALUE mode;
      __#{libName}_options opts;
     #{params[:cType]}* ptr;
-    rb_scan_args(argc, argv, \"11\", &filePath, &mode);
+
     Check_Type(filePath, T_STRING);
     opts = __#{libName}_get_options(mode);
 
