@@ -145,6 +145,16 @@ module Damage
                     output.printf("\tvoid* base_adr;\n");
                     output.printf("} __#{libName}_rowip_header;\n\n");
                 end
+
+                output.printf("
+/** Option for reader and writer*/
+typedef enum {
+\t__#{libName.upcase}_OPTION_NONE = 0x0,
+\t__#{libName.upcase}_OPTION_READONLY = 0x1,
+\t__#{libName.upcase}_OPTION_UNLOCKED = 0x2,
+\t__#{libName.upcase}_OPTION_GZIPPED = 0x4
+} __#{libName}_options;
+");
                 output.puts("
 /** @} */
 /** @} */
