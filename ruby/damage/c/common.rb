@@ -271,7 +271,7 @@ const char *__#{libName}_read_value_str_attr_nocopy(xmlAttrPtr node)
 {
 	char *val = NULL;
 	if (node->children && node->children->content)
-		val = strdup((char *)node->children->content);
+		val = ((char *)node->children->content);
 	return val;
 }
 
@@ -316,7 +316,9 @@ static __#{libName}_db_lock* lockedDBs = NULL;;
 int __#{libName}_acquire_flock(const char* filename, int rdonly){
 	__#{libName}_db_lock* dbLock;
     struct flock lock;
-
+    if(filename == NULL){
+        return 1;
+    }
     for(dbLock = lockedDBs; dbLock; dbLock=dbLock->next){
             if(!strcmp(filename, dbLock->name))
                 break;
