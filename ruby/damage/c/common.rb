@@ -337,7 +337,7 @@ int __#{libName}_acquire_flock(const char* filename, int rdonly){
         }
         sprintf(dbLock->lock, \"%s.lock\", filename);
         dbLock->file = fopen(dbLock->lock, \"w+\");
-        if(!dbLock->lock){
+        if(!dbLock->file){
             free(dbLock->lock);
             free(dbLock->name);
             free(dbLock);
