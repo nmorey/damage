@@ -58,9 +58,12 @@ module Damage
 ");
                 
                 description.entries.each() { |name, entry|
-                    output.printf("__#{libName}_%s* __#{libName}_%s_duplicate(__#{libName}_%s *ptr){\n", 
+                    hasNext=""
+                    hasNext=", int next" if entry.attribute == :listable 
+
+                    output.printf("__#{libName}_%s* __#{libName}_%s_duplicate(__#{libName}_%s *ptr#{hasNext}){\n", 
                                   entry.name, entry.name, entry.name)
-                    output.printf("\t__#{libName}_%s *first;\n", entry.name);
+                    output.printf("\t__#{libName}_%s *first = NULL;\n", entry.name);
                     source="ptr"
                     dest="first"
                     indent="\t"
@@ -124,7 +127,7 @@ module Damage
                                     output.printf("#{indent}}\n")
                                 when :intern
                                     output.printf("#{indent}if(#{source}->%s)\n", field.name)
-                                    output.printf("#{indent}\t#{dest}->#{field.name} = __#{libName}_#{field.data_type}_duplicate(#{source}->#{field.name});\n")
+                                    output.printf("#{indent}\t#{dest}->#{field.name} = __#{libName}_#{field.data_type}_duplicate(#{source}->#{field.name}, 1);\n")
 
                                 else
                                     raise("Unsupported data category for #{entry.name}.#{field.name}");
@@ -132,9 +135,10 @@ module Damage
                             end
                         end
                     }
-
-                    output.printf("\t}\n") if entry.attribute == :listable 
-
+                    if entry.attribute == :listable 
+                        output.printf("\t\tif(next == 0){\n\t\t\treturn first;\n\t\t}\n")
+                        output.printf("\t}\n") 
+                    end
                     output.printf("\treturn first;\n")
                     output.printf("}\n\n")
                 }
@@ -163,10 +167,13 @@ module Damage
                     output.puts("
 /**
  * Duplicate a #__#{libName}_#{entry.name} 
- * @param[in] ptr Tree to duplicate
- * @return A valid pointer to a #__#{libName}_#{entry.name}. Exit with an error message if duplicate failed.
+ * @param[in] ptr Tree to duplicate");
+output.puts(" * @param[in] next Copy siblings")                     if entry.attribute == :listable 
+output.puts(" * @return A valid pointer to a #__#{libName}_#{entry.name}. Exit with an error message if duplicate failed.
 */")
-                    output.printf("__#{libName}_%s *__#{libName}_%s_duplicate(__#{libName}_%s *ptr);\n", entry.name, entry.name, entry.name)
+                    hasNext=""
+                    hasNext=", int next" if entry.attribute == :listable 
+                    output.printf("__#{libName}_%s *__#{libName}_%s_duplicate(__#{libName}_%s *ptr#{hasNext});\n", entry.name, entry.name, entry.name)
                 }
                 output.puts("
 /** @} */
