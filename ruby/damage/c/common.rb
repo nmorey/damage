@@ -390,6 +390,7 @@ int __#{libName}_release_flock(const char* filename){
 			return 1;
 
 	fclose(dbLock->file);
+    unlink(dbLock->lock);
 	free(dbLock->name);
 	free(dbLock->lock);
 	free(dbLock);
