@@ -152,34 +152,20 @@ module Damage
                     @is_attribute = true if @qty == :single
                     @default_val = "NULL" if @default_val == nil
                 when "UL"
-                    @data_type="unsigned long"
+                    @data_type="unsigned long long"
                     @category = :simple
-                    @printf = "lu"
-                    @val2ruby = "ULONG2NUM"
-                    @ruby2val = "NUM2ULONG"
+                    @printf = "llu"
+                    @val2ruby = "ULL2NUM"
+                    @ruby2val = "NUM2ULL"
                     @is_attribute = true if @qty == :single
-                    
-                    if @qty == :list
-                        @data_type="uint32_t" 
-                        @printf="u"
-                        @val2ruby = "UINT2NUM"
-                        @ruby2val = "NUM2UINT"
-                    end
-
-                        @default_val = "0" if @default_val == nil
+                    @default_val = "0" if @default_val == nil
                 when "SL"
-                    @data_type="signed long"
+                    @data_type="signed long long"
                     @category = :simple
-                    @printf="ld"
-                    @val2ruby = "LONG2NUM"
-                    @ruby2val = "NUM2LONG"
+                    @printf="lld"
+                    @val2ruby = "LL2NUM"
+                    @ruby2val = "NUM2LL"
                     @is_attribute = true if @qty == :singl
-                    if @qty == :liste
-                        @data_type="int32_t" 
-                        @printf="d"
-                        @val2ruby = "INT2NUM"
-                        @ruby2val = "NUM2INT"
-                    end
                     @default_val = "0L" if @default_val == nil
                 when "DL"
                     @data_type="double"
@@ -190,7 +176,7 @@ module Damage
                     @val2ruby = "rb_float_new"
                     @ruby2val = "NUM2DBL"
                 when "UI"
-                    @data_type = "uint32_t"
+                    @data_type = "unsigned int"
                     @category = :simple
                     @is_attribute = true if @qty == :single
                     @printf="u"
@@ -198,7 +184,7 @@ module Damage
                     @ruby2val = "NUM2UINT"
                     @default_val = "0"  if @default_val == nil
                 when "SI"
-                    @data_type = "int32_t"
+                    @data_type = "signed int"
                     @category = :simple
                     @is_attribute = true if @qty == :single
                     @printf="d"
@@ -206,7 +192,7 @@ module Damage
                     @ruby2val = "NUM2INT"
                     @default_val = "0" if @default_val == nil
                 when /ENUM\(([^)]*)\)/
-                    @data_type = "uint32_t"
+                    @data_type = "unsigned int"
                     @category = :enum
                     @enumPrefix="__#{libName.upcase}_#{entry.name.upcase}_#{@name.upcase}"
                     raise("Enums cannot be used as containers or list") if @qty != :single

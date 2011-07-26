@@ -52,12 +52,16 @@ void __#{libName}_free(void *ptr);
 int __#{libName}_compare(const char *name, const char *matches[]);
 char *__#{libName}_read_value_str(xmlNodePtr reader);
 unsigned long __#{libName}_read_value_ulong(xmlNodePtr reader);
+unsigned long long __#{libName}_read_value_ullong(xmlNodePtr reader);
 signed long __#{libName}_read_value_slong(xmlNodePtr reader);
+signed long long __#{libName}_read_value_sllong(xmlNodePtr reader);
 double __#{libName}_read_value_double(xmlNodePtr reader);
 char *__#{libName}_read_value_str_attr(xmlAttrPtr reader);
 const char *__#{libName}_read_value_str_attr_nocopy(xmlAttrPtr reader);
 unsigned long __#{libName}_read_value_ulong_attr(xmlAttrPtr reader);
 signed long __#{libName}_read_value_slong_attr(xmlAttrPtr reader);
+unsigned long long __#{libName}_read_value_ullong_attr(xmlAttrPtr reader);
+signed long long __#{libName}_read_value_sllong_attr(xmlAttrPtr reader);
 double __#{libName}_read_value_double_attr(xmlAttrPtr reader);
 int __#{libName}_acquire_flock(const char* filename, int rdonly);
 int __#{libName}_release_flock(const char* filename);
@@ -232,6 +236,29 @@ signed long __#{libName}_read_value_slong(xmlNodePtr node)
 	val = strtol((char *)node->children->content, NULL, 10);
 	return val;
 }
+/**
+ * Get the value of the current XML node as an unsigned long long
+ * @param[in] reader XML Reader
+ * @return Value of the current node
+ */
+unsigned long long __#{libName}_read_value_ullong(xmlNodePtr node)
+{
+	unsigned long long val;
+	val = strtoull((char *)node->children->content, NULL, 10);
+	return val;
+}
+
+/**
+ * Get the value of the current XML node as an signed long long
+ * @param[in] reader XML Reader
+ * @return Value of the current node
+ */
+signed long long  __#{libName}_read_value_sllong(xmlNodePtr node)
+{
+	signed long long val;
+	val = strtoll((char *)node->children->content, NULL, 10);
+	return val;
+}
 
 /**
  * Get the value of the current XML node as a double
@@ -288,7 +315,7 @@ unsigned long __#{libName}_read_value_ulong_attr(xmlAttrPtr node)
 }
 
 /**
- * Get the value of the current XML node as an unsigned long
+ * Get the value of the current XML node as a signed long
  * @param[in] reader XML Reader
  * @return Value of the current node
  */
@@ -296,6 +323,29 @@ signed long __#{libName}_read_value_slong_attr(xmlAttrPtr node)
 {
 	signed long val;
 	val = strtol((char *)node->children->content, NULL, 10);
+	return val;
+}
+/**
+ * Get the value of the current XML node as an unsigned long long
+ * @param[in] reader XML Reader
+ * @return Value of the current node
+ */
+unsigned long long __#{libName}_read_value_ullong_attr(xmlAttrPtr node)
+{
+	unsigned long long val;
+	val = strtoull((char *)node->children->content, NULL, 10);
+	return val;
+}
+
+/**
+ * Get the value of the current XML node as a signed long long
+ * @param[in] reader XML Reader
+ * @return Value of the current node
+ */
+signed long long __#{libName}_read_value_sllong_attr(xmlAttrPtr node)
+{
+	signed long long val;
+	val = strtoll((char *)node->children->content, NULL, 10);
 	return val;
 }
 
