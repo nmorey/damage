@@ -27,4 +27,8 @@ require 'damage/doc'
 
 #Ruby bindings (require C library)
 require 'damage/ruby'
+
+# Java library
+require 'damage/java'
+
 end

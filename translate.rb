@@ -23,6 +23,13 @@ require 'damage'
 f = File.open(ARGV[0])
 tree = YAML::load(f)
 desc = Damage::Description::Description.new(tree)
-Damage::Doc::generate(desc)
-Damage::C::generate(desc)
-Damage::Ruby::generate(desc)
+
+if ARGV[1] == nil then 
+    Damage::Doc::generate(desc)
+    Damage::C::generate(desc)
+    Damage::Ruby::generate(desc)
+else
+    input = File.open(ARGV[1])
+    pahole = Damage::Description::Pahole.new(desc.config.libname, input)
+    Damage::Java::generate(desc, pahole)
+end

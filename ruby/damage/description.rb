@@ -28,6 +28,8 @@ module Damage
             attr_accessor :name
             # C data type
             attr_accessor :data_type
+            # Java data type
+            attr_accessor :java_type
             # Default value set after allocation
             attr_accessor :default_val
 
@@ -148,11 +150,13 @@ module Damage
                 case field["type"]
                 when "String"
                     @data_type = "char*"
+                    @java_type = "String"
                     @category = :string
                     @is_attribute = true if @qty == :single
                     @default_val = "NULL" if @default_val == nil
                 when "UL"
                     @data_type="unsigned long long"
+                    @java_type = "long"
                     @category = :simple
                     @printf = "llu"
                     @val2ruby = "ULL2NUM"
@@ -161,6 +165,7 @@ module Damage
                     @default_val = "0" if @default_val == nil
                 when "SL"
                     @data_type="signed long long"
+                    @java_type = "long"
                     @category = :simple
                     @printf="lld"
                     @val2ruby = "LL2NUM"
@@ -169,6 +174,7 @@ module Damage
                     @default_val = "0L" if @default_val == nil
                 when "DL"
                     @data_type="double"
+                    @java_type = "double"
                     @category = :simple
                     @is_attribute = true if @qty == :single
                     @default_val = "0.0"  if @default_val == nil
@@ -177,6 +183,7 @@ module Damage
                     @ruby2val = "NUM2DBL"
                 when "UI"
                     @data_type = "unsigned int"
+                    @java_type = "int"
                     @category = :simple
                     @is_attribute = true if @qty == :single
                     @printf="u"
@@ -185,6 +192,7 @@ module Damage
                     @default_val = "0"  if @default_val == nil
                 when "SI"
                     @data_type = "signed int"
+                    @java_type = "int"
                     @category = :simple
                     @is_attribute = true if @qty == :single
                     @printf="d"
@@ -193,6 +201,7 @@ module Damage
                     @default_val = "0" if @default_val == nil
                 when /ENUM\(([^)]*)\)/
                     @data_type = "unsigned int"
+                    @java_type = "enum "+ @name.slice(0,1).upcase + @name.slice(1..-1)
                     @category = :enum
                     @enumPrefix="__#{libName.upcase}_#{entry.name.upcase}_#{@name.upcase}"
                     raise("Enums cannot be used as containers or list") if @qty != :single
@@ -211,12 +220,9 @@ module Damage
                         @default_val = "#{@enumPrefix}_#{@default_val.sub(/[^[:alnum:]]/, "_").upcase}"  
                     end
 
-                when /T\(([\w+ ]*)\)/
-                    @data_type = $1
-                    @category = :simple
-                    @is_attribute = true if @qty == :single
                 when /(S|STRUCT)\(([\w+ ]*)\)/
                     @data_type = $2
+                    @java_type = @data_type.slice(0,1).upcase + @data_type.slice(1..-1)
                     @category = :intern
                     @default_val = "NULL"  if @default_val == nil
                     puts "This format is not DTD compatible (Field #{@name} has type #{@data_type})" if ((@data_type != @name) && (@target != :mem) && (@attribute != :container))
@@ -235,6 +241,8 @@ module Damage
                     @is_attribute = true
                 when nil
                     @data_type = @name
+                    @java_type = @data_type.slice(0,1).upcase + @data_type.slice(1..-1)
+
                     @category = :intern
                     @default_val = "NULL" if @default_val == nil
                     puts "This format is not DTD compatible (Field #{@name} has type #{@data_type})" if ((@data_type != @name) && (@target != :mem) && (@attribute != :container))
@@ -404,6 +412,49 @@ module Damage
 
                     }
                     @entries[_entry.name] = _entry
+                }
+            end
+        end
+
+        class Pahole
+            attr_accessor :entries
+            def to_s
+                str=""
+                entries.each(){ |name, vals|
+                    str+= "Struct: #{name} - Size: #{vals[:size]}\n"
+                    vals.each(){|field, params|
+                        next if field == :size
+                        str += "\tField: #{field} - Offset/Size: #{params[:offset]}/#{params[:size]}\n"
+                    }
+                    
+                }
+                return str
+            end
+            def initialize(prefix, input)
+                inStruct = false
+                @entries={}
+                input.lines.each() { |line|
+                    if inStruct == false then
+                        next if line !~ /^struct ___#{prefix}_(.*)\s+\{\s*$/
+                        inStruct = $1
+                        @entries[inStruct] = {}
+                    else
+                        if line =~ /^\};\s*$/ then
+                            inStruct = false
+                            next
+                        elsif line =~ /^(.*)\s(\S+);\s+\/\*\s+([0-9]+)\s+([0-9]+)\s+\*\/\s*$/
+                            field=$2
+                            offset=$3
+                            size=$4
+                            @entries[inStruct][field]={}
+                            @entries[inStruct][field][:offset] = offset
+                            @entries[inStruct][field][:size] = size
+                        elsif line =~ /^\s*\/\*\s+size:\s+([0-9]+), .*\*\/\s*$/
+                            @entries[inStruct][:size] = $1
+                        else
+                            #Ignore line
+                        end
+                    end
                 }
             end
         end
