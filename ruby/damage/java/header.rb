@@ -37,12 +37,30 @@ public class #{params[:class]} {
                     when :simple, :enum, :string
                         case field.qty
                         when :single
+                            if field.category == :enum then
+                                output.puts("\t/** Enum for the #{field.name} field of a #{params[:class]} class */");
+                                output.printf("\tpublic #{field.java_type} {\n");
+                                output.printf("\t\tN_A /** Undefined */= 0")
+                                count = 1;
+                                field.enum.each() { |str, val|
+                                    output.printf(",\n\t\t#{val} /** #{field.name} = \"#{str}\"*/ = #{count}")
+                                    count+=1
+                                }
+                                output.printf("\n\t}\n\n");
+                                output.puts("\t/** Array containing the string for each enum entry */");
+                                output.printf("\tstatic const String[] _#{field.name}_strings[#{field.enum.length+1}]= {\n");
+                                output.printf("\t\t\"N/A\"")
+                                field.enum.each() { |str, val|
+                                    output.printf(",\n\t\t\"#{str}\"")
+                                } 
+                                output.printf("\n\t};\n");
+                            end
                             output.printf("\t/** #{field.description} */\n") if field.description != nil
                             output.printf("\t/** Field is an enum of type #{field.name.slice(0,1).upcase}#{field.name.slice(1..-1)}*/\n") if field.category == :enum
                             output.printf("\t%s %s;\n", field.java_type, field.name)
                         when :list
                             output.printf("\t/** Array of elements #{field.description} */\n")
-                            output.printf("\t#{field.data_type}[] #{field.name};\n")
+                            output.printf("\t#{field.data_type} #{field.name};\n\n")
                             output.printf("\t/** Number of elements in the %s array */\n", field.name)
                             output.printf("\tint %sLen ;\n", field.name)
                         end

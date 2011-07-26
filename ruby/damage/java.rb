@@ -25,6 +25,7 @@ module Damage
                 output = Damage::Files.createAndOpen(outdir, "#{entry.name}.java") 
                 params = nameToParams(libName, name)
                 Header::write(output, libName, entry, pahole.entries[name], params)
+                output.puts("\n}\n\n")
                 output.close()
             }
         end
