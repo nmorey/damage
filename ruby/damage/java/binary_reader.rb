@@ -58,6 +58,10 @@ module Damage
 
 
             def write(output, libName, entry, pahole, params)
+                    output.puts("
+/**
+ * Internal: Read a complete ##{params[:class]} class and its children in binary form from an open file.
+ */");
                 output.printf("\tpublic static #{params[:class]} loadFromBinary(FileChannel fc, int offset) throws IOException {\n")
                 output.printf("\t\t#{params[:class]} obj;\n")
                 output.printf("\t\tByteBuffer in;\n");
@@ -176,6 +180,11 @@ module Damage
                     output.printf("\t\treturn obj;\n")
                 end
                 output.printf("\t}\n\n")
+                output.puts("
+/**
+ * Read a complete ##{params[:class]} class and its children in binary form from a file.
+ */");
+
                 output.printf("\tpublic static #{params[:class]} createFromBinary(String filename, boolean readOnly) throws IOException {\n")
                 output.printf("\t\tRandomAccessFile file = new RandomAccessFile( new java.io.File(filename), \"r\");\n")
                 output.printf("\t\tjava.io.File fileLock = new java.io.File(filename + \".lock\");\n")
