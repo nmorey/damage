@@ -17,6 +17,7 @@
 module Damage
     module Java
         require File.dirname(__FILE__) + '/java/header'
+        require File.dirname(__FILE__) + '/java/enum'
         require File.dirname(__FILE__) + '/java/alloc'
         require File.dirname(__FILE__) + '/java/binary_reader'
         
@@ -27,6 +28,7 @@ module Damage
                 params = nameToParams(description, name)
                 output = Damage::Files.createAndOpen(outdir, "#{params[:class]}.java") 
                 Header::write(output, libName, entry, pahole.entries[name], params)
+                Enum::write(output, libName, entry, pahole.entries[name], params)
                 Alloc::write(output, libName, entry, pahole.entries[name], params)
                 BinaryReader::write(output, libName, entry, pahole.entries[name], params)
                 output.puts("\n}\n\n")
