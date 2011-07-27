@@ -31,6 +31,8 @@ module Damage
             attr_accessor :data_type
             # Java data type
             attr_accessor :java_type
+            # Type size on file (of rsimple types only)
+            attr_accessor :type_size
             # Default value set after allocation
             attr_accessor :default_val
             # Java Default value set after allocation
@@ -170,10 +172,11 @@ module Damage
                     @printf = "llu"
                     @val2ruby = "ULL2NUM"
                     @ruby2val = "NUM2ULL"
+                    @type_size = 8
                     @is_attribute = true if @qty == :single
                     if @default_val == nil then
                         @default_val = "0ULL" 
-                        @ava_default_val = "0L" 
+                        @java_default_val = "0L" 
                     end
                 when "SL"
                     @data_type="signed long long"
@@ -182,6 +185,7 @@ module Damage
                     @printf="lld"
                     @val2ruby = "LL2NUM"
                     @ruby2val = "NUM2LL"
+                    @type_size = 8
                     @is_attribute = true if @qty == :singl
                     if @default_val == nil then
                         @default_val = "0LL" 
@@ -191,6 +195,7 @@ module Damage
                     @data_type="double"
                     @java_type = "double"
                     @category = :simple
+                    @type_size = 8
                     @is_attribute = true if @qty == :single
                     if @default_val == nil then
                         @default_val = "0.0"
@@ -202,6 +207,7 @@ module Damage
                 when "UI"
                     @data_type = "unsigned int"
                     @java_type = "int"
+                    @type_size = 4
                     @category = :simple
                     @is_attribute = true if @qty == :single
                     @printf="u"
@@ -213,6 +219,7 @@ module Damage
                 when "SI"
                     @data_type = "signed int"
                     @java_type = "int"
+                    @type_size = 4
                     @category = :simple
                     @is_attribute = true if @qty == :single
                     @printf="d"
@@ -223,8 +230,9 @@ module Damage
                     end
                 when /ENUM\(([^)]*)\)/
                     @data_type = "unsigned int"
-                    @java_type = "enum "+ @name.slice(0,1).upcase + @name.slice(1..-1)
+                    @java_type = @name.slice(0,1).upcase + @name.slice(1..-1)
                     @category = :enum
+                    @type_size = 4
                     @enumPrefix="__#{libName.upcase}_#{entry.name.upcase}_#{@name.upcase}"
                     raise("Enums cannot be used as containers or list") if @qty != :single
                     @is_attribute = true if @qty == :single
@@ -238,20 +246,24 @@ module Damage
                     }
                     if @default_val == nil then 
                         @default_val = "0"  
-                        @java_default_val = "N_A"
+                        @java_default_val = "#{@java_type}.N_A"
                     else
+                        @java_default_val = "#{@java_type}.#{@default_val.sub(/[^[:alnum:]]/, "_").upcase}"
                         @default_val = "#{@enumPrefix}_#{@default_val.sub(/[^[:alnum:]]/, "_").upcase}"  
-                        @java_default_val = "#{@default_val.sub(/[^[:alnum:]]/, "_").upcase}"
                     end
 
                 when /(S|STRUCT)\(([\w+ ]*)\)/
                     @data_type = $2
                     @java_type = @data_type.slice(0,1).upcase + @data_type.slice(1..-1)
                     @category = :intern
-                    @default_val = "NULL"  if @default_val == nil
+                    if @default_val == nil then 
+                        @default_val = "NULL"
+                        @java_default_val = "null"
+                    end
                     puts "This format is not DTD compatible (Field #{@name} has type #{@data_type})" if ((@data_type != @name) && (@target != :mem) && (@attribute != :container))
                 when /(A|ARRAY)\(([\w+ ]*)\)/
                     @data_type = "#{$2}*"
+                    @java_type = $2.slice(0,1).upcase + $2.slice(1..-1) +"[]"
                     @category = :intern
                     if @default_val == nil then
                         @default_val = "NULL"  
@@ -280,7 +292,7 @@ module Damage
                 else
                     raise("Field #{@name} has no data type...")
                 end
-                
+                @java_default_val = "null" if @qty == :list && @category == :simple
             end
         end
 

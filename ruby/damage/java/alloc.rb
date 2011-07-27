@@ -19,24 +19,24 @@ module Damage
         module Alloc
             
             def write(output, libName, entry, pahole, params)
-                output.printf("\t/** Default constructor */")
+                output.printf("\t/** Default constructor */\n")
                 output.printf("\tpublic #{params[:class]}(){\n")
 
                 entry.fields.each() { |field|
                     case field.attribute
                     when :sort
                         next #FIXME
-                        output.printf("\t\tptr->s_%s = NULL;\n", field.name)
-                        output.printf("\t\tptr->n_%s = 0UL;\n", field.name)
+                        output.printf("\t\ts_%s = NULL;\n", field.name)
+                        output.printf("\t\tn_%s = 0UL;\n", field.name)
                     else
-                        output.printf("\t\t%s = %s;\n", field.name, field.java_default_val)
+                        output.printf("\t\t_%s = %s;\n", field.name, field.java_default_val)
                     end
                     if ((field.qty == :list) && (field.category == :simple || field.category == :enum))
-                        output.printf("\t\tptr->%sLen = 0;\n", field.name) 
+                        output.printf("\t\t_%sLen = 0;\n", field.name) 
                     end
                 }
 
-                output.printf("\t\tnext = null;\n")         if entry.attribute == :listable
+                output.printf("\t\t_next = null;\n")         if entry.attribute == :listable
                 output.printf("\t}\n\n")
             end
 

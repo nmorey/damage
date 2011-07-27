@@ -21,6 +21,12 @@ module Damage
          output.puts("
 package #{params[:package]};
 
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.channels.*;
+import java.nio.charset.*;
+
 public class #{params[:class]} {
 
 ")
@@ -39,16 +45,16 @@ public class #{params[:class]} {
                         when :single
                             if field.category == :enum then
                                 output.puts("\t/** Enum for the #{field.name} field of a #{params[:class]} class */");
-                                output.printf("\tpublic #{field.java_type} {\n");
-                                output.printf("\t\tN_A /** Undefined */= 0")
+                                output.printf("\tpublic enum #{field.java_type} {\n");
+                                output.printf("\t\tN_A /** Undefined */")
                                 count = 1;
                                 field.enum.each() { |str, val|
-                                    output.printf(",\n\t\t#{val} /** #{field.name} = \"#{str}\"*/ = #{count}")
+                                    output.printf(",\n\t\t#{val} /** #{field.name} = \"#{str}\"*/")
                                     count+=1
                                 }
                                 output.printf("\n\t}\n\n");
                                 output.puts("\t/** Array containing the string for each enum entry */");
-                                output.printf("\tpublic static const String #{field.name}_strings[#{field.enum.length+1}]= {\n");
+                                output.printf("\tpublic static final String _#{field.name}_strings[]= {\n");
                                 output.printf("\t\t\"N/A\"")
                                 field.enum.each() { |str, val|
                                     output.printf(",\n\t\t\"#{str}\"")
@@ -57,16 +63,16 @@ public class #{params[:class]} {
                             end
                             output.printf("\t/** #{field.description} */\n") if field.description != nil
                             output.printf("\t/** Field is an enum of type #{field.name.slice(0,1).upcase}#{field.name.slice(1..-1)}*/\n") if field.category == :enum
-                            output.printf("\tpublic %s %s;\n", field.java_type, field.name)
+                            output.printf("\tpublic %s _%s;\n", field.java_type, field.name)
                         when :list
                             output.printf("\t/** Array of elements #{field.description} */\n")
-                            output.printf("\tpublic #{field.data_type} #{field.name};\n\n")
+                            output.printf("\tpublic #{field.java_type}[] _#{field.name};\n\n")
                             output.printf("\t/** Number of elements in the %s array */\n", field.name)
-                            output.printf("\tpublic int %sLen ;\n", field.name)
+                            output.printf("\tpublic int _%sLen ;\n", field.name)
                         end
                     when :intern
                         output.printf("\t/** #{field.description} */\n") if field.description != nil
-                        output.printf("\t#{field.java_type} #{field.name};\n")
+                        output.printf("\tpublic #{field.java_type} _#{field.name};\n")
                     else
                         raise("Unsupported data category for #{entry.name}.#{field.name}");
                     end
@@ -76,7 +82,7 @@ public class #{params[:class]} {
             } 
             if entry.attribute == :listable then
                 output.printf("\t/** Pointer to the next element in the list */\n")
-                output.printf("\tpublic #{params[:class]} next;\n", entry.name) 
+                output.printf("\tpublic #{params[:class]} _next;\n", entry.name) 
             end
                 
             output.puts("\n\n");
