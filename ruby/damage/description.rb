@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Copyright (C) 2011  Nicolas Morey-Chaisemartin <nicolas@morey-chaisemartin.com>
 #
 # This program is free software; you can redistribute it and/or
@@ -32,6 +33,8 @@ module Damage
             attr_accessor :java_type
             # Default value set after allocation
             attr_accessor :default_val
+            # Java Default value set after allocation
+            attr_accessor :java_default_val
 
             # Category of data
             # * :simple for straight forward C types
@@ -98,6 +101,9 @@ module Damage
                 @name = field["name"]
                 
                 @default_val = field["default"]
+                @java_default_val = field["default_java"]
+                @java_default_val = default_val if @java_default_val == nil
+
                 @attribute = :none
                 @qty = :single
                 @target = :both
@@ -153,7 +159,10 @@ module Damage
                     @java_type = "String"
                     @category = :string
                     @is_attribute = true if @qty == :single
-                    @default_val = "NULL" if @default_val == nil
+                    if @default_val == nil then
+                        @default_val = "NULL"
+                        @java_default_val="null"
+                    end
                 when "UL"
                     @data_type="unsigned long long"
                     @java_type = "long"
@@ -162,7 +171,10 @@ module Damage
                     @val2ruby = "ULL2NUM"
                     @ruby2val = "NUM2ULL"
                     @is_attribute = true if @qty == :single
-                    @default_val = "0" if @default_val == nil
+                    if @default_val == nil then
+                        @default_val = "0ULL" 
+                        @ava_default_val = "0L" 
+                    end
                 when "SL"
                     @data_type="signed long long"
                     @java_type = "long"
@@ -171,13 +183,19 @@ module Damage
                     @val2ruby = "LL2NUM"
                     @ruby2val = "NUM2LL"
                     @is_attribute = true if @qty == :singl
-                    @default_val = "0L" if @default_val == nil
+                    if @default_val == nil then
+                        @default_val = "0LL" 
+                        @java_default_val = "0LL" 
+                    end
                 when "DL"
                     @data_type="double"
                     @java_type = "double"
                     @category = :simple
                     @is_attribute = true if @qty == :single
-                    @default_val = "0.0"  if @default_val == nil
+                    if @default_val == nil then
+                        @default_val = "0.0"
+                        @java_default_val = "0.0d"
+                    end
                     @printf="lf"
                     @val2ruby = "rb_float_new"
                     @ruby2val = "NUM2DBL"
@@ -189,7 +207,9 @@ module Damage
                     @printf="u"
                     @val2ruby = "UINT2NUM"
                     @ruby2val = "NUM2UINT"
-                    @default_val = "0"  if @default_val == nil
+                    if @default_val == nil then
+                        @java_default_val = @default_val = "0"
+                    end
                 when "SI"
                     @data_type = "signed int"
                     @java_type = "int"
@@ -198,7 +218,9 @@ module Damage
                     @printf="d"
                     @val2ruby = "INT2NUM"
                     @ruby2val = "NUM2INT"
-                    @default_val = "0" if @default_val == nil
+                    if @default_val == nil then
+                        @java_default_val = @default_val = "0"
+                    end
                 when /ENUM\(([^)]*)\)/
                     @data_type = "unsigned int"
                     @java_type = "enum "+ @name.slice(0,1).upcase + @name.slice(1..-1)
@@ -216,8 +238,10 @@ module Damage
                     }
                     if @default_val == nil then 
                         @default_val = "0"  
+                        @java_default_val = "N_A"
                     else
                         @default_val = "#{@enumPrefix}_#{@default_val.sub(/[^[:alnum:]]/, "_").upcase}"  
+                        @java_default_val = "#{@default_val.sub(/[^[:alnum:]]/, "_").upcase}"
                     end
 
                 when /(S|STRUCT)\(([\w+ ]*)\)/
@@ -229,7 +253,10 @@ module Damage
                 when /(A|ARRAY)\(([\w+ ]*)\)/
                     @data_type = "#{$2}*"
                     @category = :intern
-                    @default_val = "NULL"  if @default_val == nil
+                    if @default_val == nil then
+                        @default_val = "NULL"  
+                        @java_default_val = "null"
+                    end
                 when "ID"
                     @category = :id
                     @default_val = "0UL"  if @default_val == nil
@@ -244,7 +271,10 @@ module Damage
                     @java_type = @data_type.slice(0,1).upcase + @data_type.slice(1..-1)
 
                     @category = :intern
-                    @default_val = "NULL" if @default_val == nil
+                    if @default_val == nil then 
+                        @default_val = "NULL" 
+                        @java_default_val = "null"
+                    end
                     puts "This format is not DTD compatible (Field #{@name} has type #{@data_type})" if ((@data_type != @name) && (@target != :mem) && (@attribute != :container))
 
                 else
@@ -364,6 +394,8 @@ module Damage
             attr_accessor :description
             # Should ROWIP be generated or not
             attr_accessor :rowip
+            # Java package prefix
+            attr_accessor :package
 
             # Build a new config from a parsed YAML tree
             def initialize(config)
@@ -371,6 +403,7 @@ module Damage
                 raise("Missing a library name") if @libname == nil
                 @description = config["description"]
                 @version="N/A"
+                @package=config["package"]
                 if config["hfiles"] != nil
                     @hfiles = config["hfiles"].split 
                 else
