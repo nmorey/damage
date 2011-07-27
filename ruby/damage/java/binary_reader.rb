@@ -122,14 +122,14 @@ module Damage
                             output.printf("#{indent}\tByteBuffer array;\n")
                             ByteBuffer(output, "array", "#{indent}\t", "obj._#{field.name}Len * #{field.type_size}", "arPos")
 
-                            output.printf("#{indent}\tfor(int i = 0; i < obj._#{field.name}Len * #{field.type_size}; i+= #{field.type_size}){\n")
+                            output.printf("#{indent}\tfor(int i = 0; i < obj._#{field.name}Len; i++){\n")
                             case field.java_type
                                 when "int"
-                                output.printf("#{indent}\t\tobj._#{field.name}[i] = array.getInt(i);\n")
+                                output.printf("#{indent}\t\tobj._#{field.name}[i] = array.getInt(i * #{field.type_size});\n")
                                 when "long"
-                                output.printf("#{indent}\t\tobj._#{field.name}[i] = array.getLong(i);\n")
+                                output.printf("#{indent}\t\tobj._#{field.name}[i] = array.getLong(i * #{field.type_size});\n")
                                 when "double"
-                                output.printf("#{indent}\t\tobj._#{field.name}[i] = array.getDouble(i);\n")
+                                output.printf("#{indent}\t\tobj._#{field.name}[i] = array.getDouble(i * #{field.type_size});\n")
                             end
                             output.printf("#{indent}\t}\n")
                             output.printf("#{indent}} else {\n")
