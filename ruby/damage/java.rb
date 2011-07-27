@@ -17,23 +17,25 @@
 module Damage
     module Java
         require File.dirname(__FILE__) + '/java/header'
+        require File.dirname(__FILE__) + '/java/alloc'
         
         def generate(description, pahole)
             libName = description.config.libname
             outdir = "gen/#{libName}/java/"
             description.entries.each(){ |name, entry|
-                output = Damage::Files.createAndOpen(outdir, "#{entry.name}.java") 
-                params = nameToParams(libName, name)
+                params = nameToParams(description, name)
+                output = Damage::Files.createAndOpen(outdir, "#{params[:class]}.java") 
                 Header::write(output, libName, entry, pahole.entries[name], params)
+                Alloc::write(output, libName, entry, pahole.entries[name], params)
                 output.puts("\n}\n\n")
                 output.close()
             }
         end
         module_function :generate
 
-        def nameToParams(libName, name)
+        def nameToParams(description, name)
             params={}
-            params[:package] = libName.slice(0,1).upcase + libName.slice(1..-1)
+            params[:package] = description.config.package + "." + description.config.libname
             params[:class] = name.slice(0,1).upcase + name.slice(1..-1)
             return params
         end
