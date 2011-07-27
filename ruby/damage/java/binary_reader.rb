@@ -176,15 +176,26 @@ module Damage
                     output.printf("\t\treturn obj;\n")
                 end
                 output.printf("\t}\n\n")
-                output.printf("\tpublic static #{params[:class]} createFromBinary(String filename) throws IOException {\n")
+                output.printf("\tpublic static #{params[:class]} createFromBinary(String filename, boolean readOnly) throws IOException {\n")
                 output.printf("\t\tRandomAccessFile file = new RandomAccessFile( new java.io.File(filename), \"r\");\n")
-                output.printf("\t\treturn loadFromBinary(file.getChannel(), 4) ;\n")
+                output.printf("\t\tjava.io.File fileLock = new java.io.File(filename + \".lock\");\n")
+                output.printf("\t\tFileChannel fChan = file.getChannel();\n");
+                output.printf("\t\tFileChannel fChanLock = new RandomAccessFile( fileLock, \"rws\").getChannel();\n");
+                output.printf("\t\t#{params[:class]} obj = null;\n\n")
+
+                output.printf("\t\tfChanLock.lock(0, Long.MAX_VALUE, readOnly);\n");
+                output.printf("\t\tobj= loadFromBinary(fChan, 4) ;\n")
+                output.printf("\t\tif(readOnly){\n");
+                output.printf("\t\t\tfChanLock.close();\n");
+                output.printf("\t\t\tfileLock.delete();\n");
+                output.printf("\t\t}\n")
+                output.printf("\t\treturn obj;\n")
                 output.printf("\t}\n\n")
 
                 output.printf("
 \tpublic static void main(String[] args){ 
 \t\ttry { 
-\t\t\t#{params[:class]} obj = createFromBinary(args[0]);
+\t\t\t#{params[:class]} obj = createFromBinary(args[0], true);
 \t\t\tobj.dump();
 \t\t} catch (IOException x) {
 \t\t\tSystem.out.println(\"I/O Exception: \");
