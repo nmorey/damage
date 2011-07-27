@@ -40,11 +40,15 @@ module Damage
                 output.printf("#{indent}\t\tByteBuffer str;\n")
                 ByteBuffer(output, "str", "#{indent}\t\t", "4", "strPos")
                 output.printf("#{indent}\t\tstrLen = str.getInt(0);\n")
-                output.printf("#{indent}\t\tstrCopy = new byte[strLen];\n")
-                ByteBuffer(output, "str", "#{indent}\t\t", "strLen", "strPos+4")
-                output.printf("#{indent}\t\tstr.position(0);\n")
-                output.printf("#{indent}\t\tstr.get(strCopy);\n")
-                output.printf("#{indent}\t\t#{dest} = new String(strCopy, Charset.forName(\"UTF-8\"));\n")
+                output.printf("#{indent}\t\tif(strLen > 1){\n")
+                output.printf("#{indent}\t\t\tstrCopy = new byte[strLen - 1];\n")
+                ByteBuffer(output, "str", "#{indent}\t\t\t", "strLen", "strPos+4")
+                output.printf("#{indent}\t\t\tstr.position(0);\n")
+                output.printf("#{indent}\t\t\tstr.get(strCopy);\n")
+                output.printf("#{indent}\t\t\t#{dest} = new String(strCopy, Charset.forName(\"UTF-8\"));\n")
+                output.printf("#{indent}\t\t} else {\n")
+                output.printf("#{indent}\t\t\t#{dest} = new String(\"\");\n")
+                output.printf("#{indent}\t\t}\n")
                 output.printf("#{indent}\t} else {\n")
                 output.printf("#{indent}\t\t#{dest} = null;\n")
                 output.printf("#{indent}\t}\n")
@@ -180,7 +184,8 @@ module Damage
                 output.printf("
 \tpublic static void main(String[] args){ 
 \t\ttry { 
-\t\t\tcreateFromBinary(args[0]);
+\t\t\t#{params[:class]} obj = createFromBinary(args[0]);
+\t\t\tobj.dump();
 \t\t} catch (IOException x) {
 \t\t\tSystem.out.println(\"I/O Exception: \");
 \t\t\tx.printStackTrace();

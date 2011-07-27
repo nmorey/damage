@@ -20,6 +20,7 @@ module Damage
         require File.dirname(__FILE__) + '/java/enum'
         require File.dirname(__FILE__) + '/java/alloc'
         require File.dirname(__FILE__) + '/java/binary_reader'
+        require File.dirname(__FILE__) + '/java/dump'
         
         def generate(description, pahole)
             libName = description.config.libname
@@ -31,6 +32,7 @@ module Damage
                 Enum::write(output, libName, entry, pahole.entries[name], params)
                 Alloc::write(output, libName, entry, pahole.entries[name], params)
                 BinaryReader::write(output, libName, entry, pahole.entries[name], params)
+                Dump::write(output, libName, entry, pahole.entries[name], params)
                 output.puts("\n}\n\n")
                 output.close()
             }
