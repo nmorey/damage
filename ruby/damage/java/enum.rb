@@ -20,7 +20,11 @@ module Damage
         def write(output, libName, entry, pahole, params)
             entry.fields.each() {|field|
                 next if field.category != :enum
-
+                output.printf("
+\t/**
+\t * Match an int (C equivalent) ##{field.java_type} value 
+\t */
+")
                 output.printf("\tpublic static #{field.java_type} idTo#{field.java_type}(int value) "+
                               "throws IndexOutOfBoundsException{\n");
                 output.printf("\t\tswitch(value){\n")
@@ -34,6 +38,11 @@ module Damage
                 output.printf("\t\t}\n");
                 output.printf("\t}\n\n");
 
+                output.printf("
+\t/**
+\t * Match a ##{field.java_type} value to an int (C equivalent) 
+\t */
+")
                 output.printf("\tpublic static int "+
                               "#{field.java_type.slice(0,1).downcase + field.java_type.slice(1..-1)}ToId(#{field.java_type} value) "+
                               "throws IndexOutOfBoundsException{\n");

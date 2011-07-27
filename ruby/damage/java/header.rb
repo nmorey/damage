@@ -28,6 +28,7 @@ import java.nio.ByteOrder;
 import java.nio.channels.*;
 import java.nio.charset.*;
 
+/** Class #{params[:class]}: #{entry.description} */
 public class #{params[:class]} {
 
 ")
