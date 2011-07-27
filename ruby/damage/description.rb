@@ -433,7 +433,7 @@ module Damage
             def initialize(prefix, input)
                 inStruct = false
                 @entries={}
-                input.lines.each() { |line|
+                input.each_line() { |line|
                     if inStruct == false then
                         next if line !~ /^struct ___#{prefix}_(.*)\s+\{\s*$/
                         inStruct = $1
