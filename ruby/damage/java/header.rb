@@ -48,7 +48,7 @@ public class #{params[:class]} {
                                 }
                                 output.printf("\n\t}\n\n");
                                 output.puts("\t/** Array containing the string for each enum entry */");
-                                output.printf("\tstatic const String[] _#{field.name}_strings[#{field.enum.length+1}]= {\n");
+                                output.printf("\tpublic static const String #{field.name}_strings[#{field.enum.length+1}]= {\n");
                                 output.printf("\t\t\"N/A\"")
                                 field.enum.each() { |str, val|
                                     output.printf(",\n\t\t\"#{str}\"")
@@ -57,12 +57,12 @@ public class #{params[:class]} {
                             end
                             output.printf("\t/** #{field.description} */\n") if field.description != nil
                             output.printf("\t/** Field is an enum of type #{field.name.slice(0,1).upcase}#{field.name.slice(1..-1)}*/\n") if field.category == :enum
-                            output.printf("\t%s %s;\n", field.java_type, field.name)
+                            output.printf("\tpublic %s %s;\n", field.java_type, field.name)
                         when :list
                             output.printf("\t/** Array of elements #{field.description} */\n")
-                            output.printf("\t#{field.data_type} #{field.name};\n\n")
+                            output.printf("\tpublic #{field.data_type} #{field.name};\n\n")
                             output.printf("\t/** Number of elements in the %s array */\n", field.name)
-                            output.printf("\tint %sLen ;\n", field.name)
+                            output.printf("\tpublic int %sLen ;\n", field.name)
                         end
                     when :intern
                         output.printf("\t/** #{field.description} */\n") if field.description != nil
@@ -74,7 +74,12 @@ public class #{params[:class]} {
                     raise("Unsupported data attribute for #{entry.name}.#{field.name}");
                 end
             } 
-    
+            if entry.attribute == :listable then
+                output.printf("\t/** Pointer to the next element in the list */\n")
+                output.printf("\tpublic #{params[:class]} next;\n", entry.name) 
+            end
+                
+            output.puts("\n\n");
         end
         module_function :write
         
