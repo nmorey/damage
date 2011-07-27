@@ -83,6 +83,11 @@ module Damage
                                 output.printf("#{indent}obj._#{field.name} = in.getDouble(#{pahole[field.name][:offset]});\n")
                             end
                         when :enum
+                            output.printf("#{indent}{\n")
+                            output.printf("#{indent}\tint _val = in.getInt(#{pahole[field.name][:offset]});\n")
+                            output.printf("#{indent}\tobj._#{field.name} = idTo#{field.java_type}(_val);\n")
+                            output.printf("#{indent}}\n")
+
                         when :string
                             ParseString(output, indent, "in", pahole[field.name][:offset], "obj._#{field.name}")
                         when :intern
@@ -117,7 +122,6 @@ module Damage
                             output.printf("#{indent}}\n")
 
 
-                        when :enum
                         when :string
                             output.printf("#{indent}obj._#{field.name}Len = in.getInt(#{pahole[field.name + "Len"][:offset]});\n")
                             output.printf("#{indent}obj._#{field.name} = new #{field.java_type}[obj._#{field.name}Len];\n")
