@@ -33,7 +33,6 @@ module Damage
                     end
                 }
 
-                output.printf("\t\t_next = null;\n")         if entry.attribute == :listable
                 output.printf("\t}\n\n")
             end
 

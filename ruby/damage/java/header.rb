@@ -72,7 +72,11 @@ public class #{params[:class]} {
                         end
                     when :intern
                         output.printf("\t/** #{field.description} */\n") if field.description != nil
-                        output.printf("\tpublic #{field.java_type} _#{field.name};\n")
+                        if field.qty == :single
+                            output.printf("\tpublic #{field.java_type} _#{field.name};\n")
+                        else
+                            output.printf("\tpublic java.util.List<#{field.java_type}> _#{field.name};\n")
+                        end
                     else
                         raise("Unsupported data category for #{entry.name}.#{field.name}");
                     end
@@ -80,10 +84,6 @@ public class #{params[:class]} {
                     raise("Unsupported data attribute for #{entry.name}.#{field.name}");
                 end
             } 
-            if entry.attribute == :listable then
-                output.printf("\t/** Pointer to the next element in the list */\n")
-                output.printf("\tpublic #{params[:class]} _next;\n", entry.name) 
-            end
                 
             output.puts("\n\n");
         end

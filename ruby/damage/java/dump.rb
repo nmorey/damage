@@ -104,7 +104,7 @@ module Damage
                             output.printf("\t\t\tindentToString(indent, listable, first);\n")
                             output.printf("\t\t\tfirst = false;\n")
                             output.printf("\t\t\tSystem.out.println(\"#{field.name}:\");\n");
-                            output.printf("\t\t\tfor(#{field.java_type} el = this._#{field.name}; el != null; el = el._next){\n");
+                            output.printf("\t\t\tfor(#{field.java_type} el :  this._#{field.name}){\n");
                             output.printf("\t\t\t\tel.dumpWithIndent(indent+1);\n");
                             output.printf("\t\t\t}\n");
                             output.printf("\t\t}\n");

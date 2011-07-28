@@ -58,11 +58,15 @@ module Damage
 
 
             def write(output, libName, entry, pahole, params)
-                    output.puts("
+                retType=params[:class]
+                retType="java.util.List<#{retType}>" if entry.attribute == :listable 
+
+                output.puts("
 /**
- * Internal: Read a complete ##{params[:class]} class and its children in binary form from an open file.
+ * Internal: Read a complete ##{retType} class and its children in binary form from an open file.
  */");
-                output.printf("\tpublic static #{params[:class]} loadFromBinary(FileChannel fc, int offset) throws IOException {\n")
+                output.printf("\tpublic static #{retType} loadFromBinary(FileChannel fc, int offset) throws IOException {\n")
+
                 output.printf("\t\t#{params[:class]} obj;\n")
                 output.printf("\t\tByteBuffer in;\n");
                 output.printf("\t\tint nbytes;\n");
@@ -70,14 +74,12 @@ module Damage
                 indent="\t\t"
                 target="obj"
                 if (entry.attribute == :listable) then
-                    output.printf("\t\t#{params[:class]} first=null, prev=null;\n\n")
+                    output.printf("\t\tjava.util.List<#{params[:class]}> list = new java.util.ArrayList<#{params[:class]}>();\n")
                     output.printf("\t\tdo {\n")
                     indent="\t\t\t"
                 end
 #                output.printf("System.out.println(\"Parsing a #{params[:class]} @ \" + offset);\n");
                 output.printf("#{indent}obj = new #{params[:class]}();\n")
-
-                output.printf("\t\t\tif(prev != null){\n\t\t\t\tprev._next = obj;\n\t\t\t} else {\n\t\t\t\tfirst = obj;\n\t\t\t}\n") if entry.attribute == :listable
 
                 ByteBuffer(output, "in", indent, pahole[:size], "offset")
 
@@ -162,8 +164,11 @@ module Damage
                         when :intern
                             output.printf("#{indent}{\n")
                             output.printf("#{indent}\tint _offset = in.getInt(#{pahole[field.name][:offset]});\n")
-                            output.printf("#{indent}\tif(_offset != 0)\n")
+                            output.printf("#{indent}\tif(_offset != 0){\n")
                             output.printf("#{indent}\t\tobj._#{field.name} = #{field.java_type}.loadFromBinary(fc, _offset);\n")
+                            output.printf("#{indent}\t} else {\n")
+                            output.printf("#{indent}\t\tobj._#{field.name} = new java.util.ArrayList<#{field.java_type}>();\n")
+                            output.printf("#{indent}\t}\n")
                             output.printf("#{indent}}\n")
                         else
                             raise("Unsupported data category for #{entry.name}.#{field.name}");
@@ -174,27 +179,26 @@ module Damage
                 }
 
                 if entry.attribute == :listable
-                    output.printf("#{indent}obj._next = null;\n")
-                    output.printf("#{indent}prev = obj;\n") 
+                    output.printf("#{indent}list.add(obj);\n") 
                     output.printf("#{indent}offset = in.getInt(#{pahole["next"][:offset]});\n");
                     output.printf("\t\t} while (offset != 0);\n") 
                     
-                    output.printf("\t\treturn first;\n")
+                    output.printf("\t\treturn list;\n")
                 else
                     output.printf("\t\treturn obj;\n")
                 end
                 output.printf("\t}\n\n")
                 output.puts("
 /**
- * Read a complete ##{params[:class]} class and its children in binary form from a file.
+ * Read a complete ##{retType} class and its children in binary form from a file.
  */");
 
-                output.printf("\tpublic static #{params[:class]} createFromBinary(String filename, boolean readOnly) throws IOException {\n")
+                output.printf("\tpublic static #{retType} createFromBinary(String filename, boolean readOnly) throws IOException {\n")
                 output.printf("\t\tRandomAccessFile file = new RandomAccessFile( new java.io.File(filename), \"r\");\n")
                 output.printf("\t\tjava.io.File fileLock = new java.io.File(filename + \".lock\");\n")
                 output.printf("\t\tFileChannel fChan = file.getChannel();\n");
                 output.printf("\t\tFileChannel fChanLock = new RandomAccessFile( fileLock, \"rws\").getChannel();\n");
-                output.printf("\t\t#{params[:class]} obj = null;\n\n")
+                output.printf("\t\t#{retType} obj = null;\n\n")
 
                 output.printf("\t\tfChanLock.lock(0, Long.MAX_VALUE, readOnly);\n");
                 output.printf("\t\tobj= loadFromBinary(fChan, 4) ;\n")
@@ -208,8 +212,15 @@ module Damage
                 output.printf("
 \tpublic static void main(String[] args){ 
 \t\ttry { 
-\t\t\t#{params[:class]} obj = createFromBinary(args[0], true);
-\t\t\tobj.dump();
+\t\t\t#{retType} obj = createFromBinary(args[0], true);
+");
+                if entry.attribute == :listable
+                    output.printf("\t\t\tfor(#{params[:class]} el :  obj)\n");
+                    output.printf("\t\t\t\tel.dump();\n");
+                else
+                    output.printf("\t\t\tobj.dump();\n");
+                end
+output.printf("
 \t\t} catch (IOException x) {
 \t\t\tSystem.out.println(\"I/O Exception: \");
 \t\t\tx.printStackTrace();
