@@ -119,40 +119,44 @@ module Damage
                     when :list, :container
                         case field.category
                         when :simple
-                            output.printf("#{indent}obj._#{field.name}Len = in.getInt(#{pahole[field.name + "Len"][:offset]});\n")
-                            output.printf("#{indent}if(obj._#{field.name}Len != 0){\n")
-                            output.printf("#{indent}\tobj._#{field.name} = new #{field.java_type}[obj._#{field.name}Len];\n")
-                            output.printf("#{indent}\tint arPos = in.getInt(#{pahole[field.name][:offset]});\n")
-                            output.printf("#{indent}\tByteBuffer array;\n")
-                            ByteBuffer(output, "array", "#{indent}\t", "obj._#{field.name}Len * #{field.type_size}", "arPos")
+                            output.printf("#{indent}{\n")
+                            output.printf("#{indent}\tint _len = in.getInt(#{pahole[field.name + "Len"][:offset]});\n")
+                            output.printf("#{indent}\tif(_len != 0){\n")
+                            output.printf("#{indent}\t\tobj._#{field.name} = new #{field.java_type}[_len];\n")
+                            output.printf("#{indent}\t\tint arPos = in.getInt(#{pahole[field.name][:offset]});\n")
+                            output.printf("#{indent}\t\tByteBuffer array;\n")
+                            ByteBuffer(output, "array", "#{indent}\t\t", "_len * #{field.type_size}", "arPos")
 
-                            output.printf("#{indent}\tfor(int i = 0; i < obj._#{field.name}Len; i++){\n")
+                            output.printf("#{indent}\t\tfor(int i = 0; i < _len; i++){\n")
                             case field.java_type
                                 when "int"
-                                output.printf("#{indent}\t\tobj._#{field.name}[i] = array.getInt(i * #{field.type_size});\n")
+                                output.printf("#{indent}\t\t\tobj._#{field.name}[i] = array.getInt(i * #{field.type_size});\n")
                                 when "long"
-                                output.printf("#{indent}\t\tobj._#{field.name}[i] = array.getLong(i * #{field.type_size});\n")
+                                output.printf("#{indent}\t\t\tobj._#{field.name}[i] = array.getLong(i * #{field.type_size});\n")
                                 when "double"
-                                output.printf("#{indent}\t\tobj._#{field.name}[i] = array.getDouble(i * #{field.type_size});\n")
+                                output.printf("#{indent}\t\t\tobj._#{field.name}[i] = array.getDouble(i * #{field.type_size});\n")
                             end
+                            output.printf("#{indent}\t\t}\n")
+                            output.printf("#{indent}\t} else {\n")
+                            output.printf("#{indent}\t\tobj._#{field.name} = null;\n")
                             output.printf("#{indent}\t}\n")
-                            output.printf("#{indent}} else {\n")
-                            output.printf("#{indent}\tobj._#{field.name} = new #{field.java_type}[obj._#{field.name}Len];\n")
                             output.printf("#{indent}}\n")
 
 
                         when :string
-                            output.printf("#{indent}obj._#{field.name}Len = in.getInt(#{pahole[field.name + "Len"][:offset]});\n")
-                            output.printf("#{indent}if(obj._#{field.name}Len != 0){\n")
-                            output.printf("#{indent}\tobj._#{field.name} = new #{field.java_type}[obj._#{field.name}Len];\n")
-                            output.printf("#{indent}\tint arPos = in.getInt(#{pahole[field.name][:offset]});\n")
-                            output.printf("#{indent}\tByteBuffer array;\n")
-                            ByteBuffer(output, "array", "#{indent}\t", "obj._#{field.name}Len * 4", "arPos")
-                            output.printf("#{indent}\tfor(int i = 0; i < obj._#{field.name}Len; i++){\n")
-                            ParseString(output, "#{indent}\t\t", "array", "i * 4", "obj._#{field.name}[i]")
+                            output.printf("#{indent}{\n")
+                            output.printf("#{indent}\tint _len = in.getInt(#{pahole[field.name + "Len"][:offset]});\n")
+                            output.printf("#{indent}\tif(_len != 0){\n")
+                            output.printf("#{indent}\t\tobj._#{field.name} = new #{field.java_type}[_len];\n")
+                            output.printf("#{indent}\t\tint arPos = in.getInt(#{pahole[field.name][:offset]});\n")
+                            output.printf("#{indent}\t\tByteBuffer array;\n")
+                            ByteBuffer(output, "array", "#{indent}\t\t", "_len * 4", "arPos")
+                            output.printf("#{indent}\t\tfor(int i = 0; i < _len; i++){\n")
+                            ParseString(output, "#{indent}\t\t\t", "array", "i * 4", "obj._#{field.name}[i]")
+                            output.printf("#{indent}\t\t}\n")
+                            output.printf("#{indent}\t} else {\n")
+                            output.printf("#{indent}\t\tobj._#{field.name} = null;\n")
                             output.printf("#{indent}\t}\n")
-                            output.printf("#{indent}} else {\n")
-                            output.printf("#{indent}\tobj._#{field.name} = null;\n")
                             output.printf("#{indent}}\n")
 
                         when :intern

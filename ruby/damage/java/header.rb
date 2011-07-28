@@ -68,9 +68,7 @@ public class #{params[:class]} {
                             output.printf("\tpublic %s _%s;\n", field.java_type, field.name)
                         when :list
                             output.printf("\t/** Array of elements #{field.description} */\n")
-                            output.printf("\tpublic #{field.java_type}[] _#{field.name};\n\n")
-                            output.printf("\t/** Number of elements in the %s array */\n", field.name)
-                            output.printf("\tpublic int _%sLen ;\n", field.name)
+                            output.printf("\tpublic #{field.java_type}[] _#{field.name};\n")
                         end
                     when :intern
                         output.printf("\t/** #{field.description} */\n") if field.description != nil

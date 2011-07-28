@@ -31,9 +31,6 @@ module Damage
                     else
                         output.printf("\t\t_%s = %s;\n", field.name, field.java_default_val)
                     end
-                    if ((field.qty == :list) && (field.category == :simple || field.category == :enum))
-                        output.printf("\t\t_%sLen = 0;\n", field.name) 
-                    end
                 }
 
                 output.printf("\t\t_next = null;\n")         if entry.attribute == :listable
