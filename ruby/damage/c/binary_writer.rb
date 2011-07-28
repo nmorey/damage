@@ -172,6 +172,7 @@ uint32_t __#{libName}_#{entry.name}_binary_dump(__#{libName}_#{entry.name}* ptr,
                             when :simple
                                 output.printf("#{indent}if(#{source}->%s){\n", field.name)
                                 output.printf("#{indent}\tval.%s = (void*)(unsigned long)child_offset;\n", field.name)
+                                output.printf("#{indent}\t__#{libName}_fseek(file, child_offset, SEEK_SET);\n")
                                 output.printf("#{indent}\t__#{libName}_fwrite(#{source}->%s, sizeof(*#{source}->%s), #{source}->%sLen, file);\n",
                                               field.name, field.name, field.name);
                                 output.printf("#{indent}\tchild_offset += (sizeof(*#{source}->%s) * #{source}->%sLen);\n",
