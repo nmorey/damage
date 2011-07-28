@@ -83,6 +83,7 @@ module Damage
                 output.printf("#include \"#{libName}.h\"\n")
                 output.printf("#include \"_#{libName}/common.h\"\n")
                 output.printf("#include <stdint.h>\n")
+                output.printf("#include <sys/stat.h>\n")
                 output.printf("\n\n") 
 
                 output.puts("
@@ -230,6 +231,8 @@ __#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load(FILE* file, u
                     output.printf("\tint ret;\n")
                     output.printf("\t__#{libName}_%s *ptr = NULL;\n", entry.name);
                     output.printf("\tFILE* output;\n")
+                    output.printf("\t__#{libName}_binary_header header;\n")
+                    output.printf("\tstruct stat fStat;\n")
                     output.printf("\n")
 
                     output.printf("\tret = setjmp(__#{libName}_error_happened);\n");
@@ -243,9 +246,20 @@ __#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load(FILE* file, u
                     output.printf("\tif(__#{libName}_acquire_flock(file, opts & __#{libName.upcase}_OPTION_READONLY))\n");
                     output.printf("\t\t__#{libName}_error(\"Failed to lock output file %%s: %%s\", ENOENT, file, strerror(errno));\n");
                     output.printf("\tif((output = fopen(file, \"r\")) == NULL)\n");
-                    output.printf("\t\t__#{libName}_error(\"Failed to open output file %%s\", errno, file);\n");
+                    output.printf("\t\t__#{libName}_error(\"Failed to open input file %%s\", errno, file);\n\n");
 
-                    output.printf("\tptr = __#{libName}_%s_binary_load(output, sizeof(uint32_t));\n", entry.name)
+                    output.printf("\t\t__#{libName}_fread(&header, sizeof(header), 1, output);\n")
+                    output.printf("\t\tif(header.version != #{description.config.version})\n")
+                    output.printf("\t\t__#{libName}_error(\"Version from file %%s is incompatible.\", EACCES, file);\n\n");
+
+                    output.printf("\t\tret = fstat(fileno(output), &fStat);\n")
+                    output.printf("\t\tif(ret != 0){\n")
+                    output.printf("\t\t\t__#{libName}_error(\"Failed to read from DB.\", errno);\n")
+                    output.printf("\t\t}\n")
+                    output.printf("\t\tif(header.length != fStat.st_size)\n")
+                    output.printf("\t\t__#{libName}_error(\"DB file %%s is corrupted: size does not match header.\", EIO, file);\n\n");
+
+                    output.printf("\tptr = __#{libName}_%s_binary_load(output, sizeof(header));\n", entry.name)
                     output.printf("\tfclose(output);\n")
                     output.printf("\tif (opts & __#{libName.upcase}_OPTION_READONLY ) {\n");
                     output.printf("\t__#{libName}_release_flock(file);\n");

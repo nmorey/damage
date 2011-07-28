@@ -146,6 +146,14 @@ module Damage
                     output.printf("} __#{libName}_rowip_header;\n\n");
                 end
 
+                output.printf("/** Internal structure for DB info */\n");
+                output.printf("typedef struct ___#{libName}_binary_header {\n");
+                output.printf("\t/** DB Version */\n");
+                output.printf("\tuint32_t version;\n");
+                output.printf("\t/** File Length */\n");
+                output.printf("\tint32_t length;\n");
+                output.printf("} __#{libName}_binary_header;\n\n");
+
                 output.printf("
 /** Option for reader and writer*/
 typedef enum {
