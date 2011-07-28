@@ -1,3 +1,4 @@
+# -*- coding: undecided -*-
 # Copyright (C) 2011  Nicolas Morey-Chaisemartin <nicolas@morey-chaisemartin.com>
 #
 # This program is free software; you can redistribute it and/or
@@ -196,12 +197,25 @@ module Damage
                 output.printf("\tpublic static #{retType} createFromBinary(String filename, boolean readOnly) throws IOException {\n")
                 output.printf("\t\tRandomAccessFile file = new RandomAccessFile( new java.io.File(filename), \"r\");\n")
                 output.printf("\t\tjava.io.File fileLock = new java.io.File(filename + \".lock\");\n")
-                output.printf("\t\tFileChannel fChan = file.getChannel();\n");
+                output.printf("\t\tFileChannel fc = file.getChannel();\n");
                 output.printf("\t\tFileChannel fChanLock = new RandomAccessFile( fileLock, \"rws\").getChannel();\n");
-                output.printf("\t\t#{retType} obj = null;\n\n")
+                output.printf("\t\t#{retType} obj = null;\n")
+                output.printf("\t\tByteBuffer in; int nbytes;\n");
+                output.printf("\t\tint val;\n\n");
+                
+                output.printf("\t\tfChanLock.lock(0, Long.MAX_VALUE, readOnly);\n\n");
+                ByteBuffer(output, "in", "\t\t", "2 * 4", "0")
+                output.printf("\n\t\tval = in.getInt(0);\n")
+                output.printf("\t\tif(val  != #{params[:version]})\n");
+                output.printf("\t\t\tthrow new java.io.UnsupportedEncodingException(\"Incompatible sigmacDB format\");\n\n")
 
-                output.printf("\t\tfChanLock.lock(0, Long.MAX_VALUE, readOnly);\n");
-                output.printf("\t\tobj= loadFromBinary(fChan, 4) ;\n")
+                output.printf("\t\tval = in.getInt(4);\n")
+                output.printf("\t\tif(val  != file.length())\n");
+                output.printf("\t\t\tthrow new IOException(\"Corrupted file. Size does not match header\");\n\n")
+
+                output.printf("\t\tobj = loadFromBinary(fc, 8) ;\n")
+                output.printf("\t\tfc.close();\n\n");
+
                 output.printf("\t\tif(readOnly){\n");
                 output.printf("\t\t\tfChanLock.close();\n");
                 output.printf("\t\t\tfileLock.delete();\n");

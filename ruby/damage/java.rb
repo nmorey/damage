@@ -46,6 +46,7 @@ module Damage
         def nameToParams(description, name)
             params={}
             params[:package] = description.config.package + "." + description.config.libname
+            params[:version] = description.config.version
             params[:class] = name.slice(0,1).upcase + name.slice(1..-1)
             return params
         end
