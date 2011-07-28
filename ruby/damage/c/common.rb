@@ -50,12 +50,14 @@ char *__#{libName}_strdup(const char* str);
 void *__#{libName}_realloc(void *ptr, unsigned long size);
 void __#{libName}_free(void *ptr);
 int __#{libName}_compare(const char *name, const char *matches[]);
+
 char *__#{libName}_read_value_str(xmlNodePtr reader);
 unsigned long __#{libName}_read_value_ulong(xmlNodePtr reader);
 unsigned long long __#{libName}_read_value_ullong(xmlNodePtr reader);
 signed long __#{libName}_read_value_slong(xmlNodePtr reader);
 signed long long __#{libName}_read_value_sllong(xmlNodePtr reader);
 double __#{libName}_read_value_double(xmlNodePtr reader);
+
 char *__#{libName}_read_value_str_attr(xmlAttrPtr reader);
 const char *__#{libName}_read_value_str_attr_nocopy(xmlAttrPtr reader);
 unsigned long __#{libName}_read_value_ulong_attr(xmlAttrPtr reader);
@@ -63,11 +65,15 @@ signed long __#{libName}_read_value_slong_attr(xmlAttrPtr reader);
 unsigned long long __#{libName}_read_value_ullong_attr(xmlAttrPtr reader);
 signed long long __#{libName}_read_value_sllong_attr(xmlAttrPtr reader);
 double __#{libName}_read_value_double_attr(xmlAttrPtr reader);
+
 int __#{libName}_acquire_flock(const char* filename, int rdonly);
 int __#{libName}_release_flock(const char* filename);
+
 void __#{libName}_fread(void* buf, size_t elSize, int nbElem, FILE* input);
 void __#{libName}_fwrite(void* buf, size_t elSize, int nbElem, FILE* input);
 void __#{libName}_fseek(FILE *stream, long offset, int whence);
+
+void __#{libName}_paddOutput(FILE* file, int indent, int listable, int first);
 
 #define __#{libName}_error(str, err, arg...) {								\\
 		fprintf(stderr, \"error: #{libName}:\" str \"\\n\", ##arg);			\\
@@ -167,6 +173,20 @@ void __#{libName}_fseek(FILE *stream, long offset, int whence){
     ret = fseek(stream, offset, whence);
     if(ret < 0 ){
         __#{libName}_error(\"Failed to read from DB. Invalid format.\", errno);
+    }
+}
+
+void __#{libName}_paddOutput(FILE* file, int indent, int listable, int first){
+    int i;
+    for(i = 0; i < indent; i++){
+        fprintf(file, \"\\t\");
+    }
+    if(listable){
+        if(first){
+            fprintf(file, \"- \");
+        } else {
+            fprintf(file, \"  \");
+        }
     }
 }
 
