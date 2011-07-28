@@ -1,26 +1,39 @@
 config:
-        libname: sample
+        libname: PB
+        package: com.github
+        version: 0.1
+        description: "Phonebook sample description"
+        norowip: yes
 entries:
-        - name: DB
+        - name: phonebook
           attribute: TOP
           fields:
-                - name: field1
-                  type: T(unsigned long)
-                  default: 0UL
-                  quantity: SINGLE
-                - name: timestamp
-                  type: S(timestamp)
-                  default: 0UL
-                  quantity: SINGLE
-                - name: container
-                  type: S(timestamp)
+                - name: users
+                  description: "List of users"
                   attribute: CONTAINER
-        - name : timestamp
+                  type: S(user)
+
+        - name : user
           attribute: LISTABLE
           fields:
-                - name: tv_sec
-                  type: T(unsigned long)
-                  default: 0UL
-                - name: tv_nsec
-                  type: T(unsigned long)
-                  default: 0UL
+                - name: firstname
+                  type: String
+                  required: 1
+                - name: lastname
+                  type: String
+                - name: phonenumbers
+                  attribute: CONTAINER
+                  type: S(phonenumber)
+                - name: email
+                  type: String
+
+        - name: phonenumber
+          attribute: LISTABLE
+          fields:
+                - name: type
+                  type: ENUM(home|cell|work)
+                  required: 1
+                - name: value
+                  type: String
+                  required: 1
+
