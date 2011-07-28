@@ -484,7 +484,7 @@ module Damage
                         inStruct = $1
                         @entries[inStruct] = {}
                     else
-                        if line =~ /^\};\s*$/ then
+                        if line =~ /^\};.*$/ then
                             inStruct = false
                             next
                         elsif line =~ /^(.*)\s(\S+);\s+\/\*\s+([0-9]+)\s+([0-9]+)\s+\*\/\s*$/
