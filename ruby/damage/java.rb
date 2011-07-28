@@ -24,7 +24,11 @@ module Damage
         
         def generate(description, pahole)
             libName = description.config.libname
-            outdir = "gen/#{libName}/java/"
+            outdir = "gen/#{libName}/java/src/"
+            description.config.package.split(".").each() { |dir|
+                outdir += dir + "/"
+            }
+            outdir += libName + "/"
             description.entries.each(){ |name, entry|
                 params = nameToParams(description, name)
                 output = Damage::Files.createAndOpen(outdir, "#{params[:class]}.java") 
