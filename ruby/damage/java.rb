@@ -30,6 +30,7 @@ module Damage
             }
             outdir += libName + "/"
             description.entries.each(){ |name, entry|
+                raise("Missing size info") if pahole.entries[name] == nil
                 params = nameToParams(description, name)
                 output = Damage::Files.createAndOpen(outdir, "#{params[:class]}.java") 
                 Header::write(output, libName, entry, pahole.entries[name], params)
