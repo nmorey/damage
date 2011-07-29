@@ -82,7 +82,7 @@ doc/doxygen/latex/refman.pdf: doc/doxygen/latex/Makefile
 	
 obj/tests/%: test/%.c $(libs)
 	@if [ ! -d obj/tests/ ]; then mkdir -p obj/tests/; fi
-	$(CC) -o $@ $< $(CFLAGS) $(libdir)/lib#{libName}.a -lxml2
+	$(CC) -o $@ $^ $(CFLAGS) $(libdir)/lib#{libName}.a -lxml2
 
 $(lib): $(objs)
 	rm -f $@

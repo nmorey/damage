@@ -22,18 +22,24 @@ module Damage
             @OUTFILE_C = "compare.c"
 
             def write(description)
-                outputC = Damage::Files.createAndOpen("gen/#{description.config.libname}/src", @OUTFILE_C)
+                description.entries.each() { |name, entry|
+                    outputC = Damage::Files.createAndOpen("gen/#{description.config.libname}/src", "compare__#{name}.c")
+                    self.genC(outputC, description, entry)
+                    outputC.close()
+                    outputC = Damage::Files.createAndOpen("gen/#{description.config.libname}/src", "compare_list__#{name}.c")
+                    self.genCList(outputC, description, entry)
+                    outputC.close()
+                }
+
                 outputH = Damage::Files.createAndOpen("gen/#{description.config.libname}/include/#{description.config.libname}", @OUTFILE_H)
-                self.genC(outputC, description)
                 self.genH(outputH, description)
-                outputC.close()
                 outputH.close()
             end
             module_function :write
 
 
             private
-            def genC(output, description)
+            def genC(output, description, entry)
                 libName = description.config.libname
 
                 output.printf("#include <assert.h>\n")
@@ -56,15 +62,13 @@ module Damage
  * @{
  **/
 ");
-                description.entries.each() { |name, entry|
-                    offset = "\t"
-                    if (entry.comparable == false)
-                        output.printf("int __#{libName}_%s_compare_single(__#{libName}_%s *ptr1 __#{libName.upcase}_UNUSED__, __#{libName}_%s *ptr2 __#{libName.upcase}_UNUSED__) {\n", entry.name, entry.name, entry.name)
-                        output.printf("#{offset}return 1;\n}\n\n")
-                        next
-                    else
-                        output.printf("int __#{libName}_%s_compare_single(__#{libName}_%s *ptr1, __#{libName}_%s *ptr2 ) {\n", entry.name, entry.name, entry.name)
-                    end
+                offset = "\t"
+                if (entry.comparable == false)
+                    output.printf("int __#{libName}_%s_compare_single(__#{libName}_%s *ptr1 __#{libName.upcase}_UNUSED__, __#{libName}_%s *ptr2 __#{libName.upcase}_UNUSED__) {\n", entry.name, entry.name, entry.name)
+                    output.printf("#{offset}return 1;\n}\n\n")
+                else
+                    output.printf("int __#{libName}_%s_compare_single(__#{libName}_%s *ptr1, __#{libName}_%s *ptr2 ) {\n", entry.name, entry.name, entry.name)
+
 
                     output.printf("#{offset}if (ptr1 == ptr2) {\n")
                     output.printf("#{offset}\treturn 1;\n#{offset}}\n")
@@ -82,62 +86,62 @@ module Damage
                         if (field.comparable == true)
                             if field.target == :both then
                                 case field.qty
-                                    when :single
-                                        case field.category
-                                            when :intern
-                                                output.printf("#{offset}if (!__#{libName}_%s_compare_single(ptr1->%s, ptr2->%s)) {\n", field.data_type, field.name, field.name)
-                                                output.printf("#{offset}\treturn 0;\n#{offset}}\n")
-                                            when :string
-                                                output.printf("#{offset}if (ptr1->%s != ptr2->%s) {\n", field.name, field.name)
-                                                output.printf("#{offset}\tif (((ptr1->%s == 0) && (ptr2->%s !=0)) || ((ptr1->%s != 0) && (ptr2->%s == 0))) {\n", field.name, field.name, field.name, field.name)
-                                                output.printf("#{offset}\t\treturn 0;\n#{offset}\t}\n")
-                                                output.printf("#{offset}\telse {\n")
-                                                output.printf("#{offset}\t\tif (strcmp(ptr1->%s, ptr2->%s) != 0) {\n", field.name, field.name)
-                                                output.printf("#{offset}\t\t\treturn 0;\n#{offset}\t\t}\n")
-                                                output.printf("#{offset}\t}\n#{offset}}\n")
-                                            when :simple, :enum, :id, :idref
-                                                output.printf("#{offset}if (ptr1->%s != ptr2->%s) {\n", field.name, field.name)
-                                                output.printf("#{offset}\treturn 0;\n#{offset}}\n")
-                                            else
-                                                raise("Unsupported data category for #{entry.name}.#{field.name}");
+                                when :single
+                                    case field.category
+                                    when :intern
+                                        output.printf("#{offset}if (!__#{libName}_%s_compare_single(ptr1->%s, ptr2->%s)) {\n", field.data_type, field.name, field.name)
+                                        output.printf("#{offset}\treturn 0;\n#{offset}}\n")
+                                    when :string
+                                        output.printf("#{offset}if (ptr1->%s != ptr2->%s) {\n", field.name, field.name)
+                                        output.printf("#{offset}\tif (((ptr1->%s == 0) && (ptr2->%s !=0)) || ((ptr1->%s != 0) && (ptr2->%s == 0))) {\n", field.name, field.name, field.name, field.name)
+                                        output.printf("#{offset}\t\treturn 0;\n#{offset}\t}\n")
+                                        output.printf("#{offset}\telse {\n")
+                                        output.printf("#{offset}\t\tif (strcmp(ptr1->%s, ptr2->%s) != 0) {\n", field.name, field.name)
+                                        output.printf("#{offset}\t\t\treturn 0;\n#{offset}\t\t}\n")
+                                        output.printf("#{offset}\t}\n#{offset}}\n")
+                                    when :simple, :enum, :id, :idref
+                                        output.printf("#{offset}if (ptr1->%s != ptr2->%s) {\n", field.name, field.name)
+                                        output.printf("#{offset}\treturn 0;\n#{offset}}\n")
+                                    else
+                                        raise("Unsupported data category for #{entry.name}.#{field.name}");
+                                    end
+                                when :list, :container
+                                    case field.category
+                                    when :intern
+                                        output.printf("#{offset}if (!__#{libName}_%s_compare_list(ptr1->%s, ptr2->%s)) {\n", field.data_type, field.name, field.name)
+                                        output.printf("#{offset}\treturn 0;\n#{offset}}\n")
+                                    when :string
+                                        output.printf("#{offset}if (ptr1->%sLen != ptr2->%sLen) {\n", field.name, field.name)
+                                        output.printf("#{offset}\treturn 0;\n#{offset}}\n")
+                                        if (!loopVariableDefined)
+                                            loopVariableDefined = true
+                                            output.printf("#{offset}unsigned i = 0;\n")
                                         end
-                                    when :list, :container
-                                        case field.category
-                                            when :intern
-                                                output.printf("#{offset}if (!__#{libName}_%s_compare_list(ptr1->%s, ptr2->%s)) {\n", field.data_type, field.name, field.name)
-                                                output.printf("#{offset}\treturn 0;\n#{offset}}\n")
-                                            when :string
-                                                output.printf("#{offset}if (ptr1->%sLen != ptr2->%sLen) {\n", field.name, field.name)
-                                                output.printf("#{offset}\treturn 0;\n#{offset}}\n")
-                                                if (!loopVariableDefined)
-                                                    loopVariableDefined = true
-                                                    output.printf("#{offset}unsigned i = 0;\n")
-                                                end
-                                                output.printf("#{offset}for (i = 0; i < ptr1->%sLen; ++i) {\n", field.name)
-                                                output.printf("#{offset}\tif (ptr1->%s[i] != ptr2->%s[i]) {\n", field.name, field.name)
-                                                output.printf("#{offset}\t\tif (((ptr1->%s[i] == 0) && (ptr2->%s[i] !=0)) || ((ptr1->%s != 0) && (ptr2->%s == 0))) {\n", field.name, field.name, field.name, field.name)
-                                                output.printf("#{offset}\t\t\treturn 0;\n#{offset}\t\t}\n")
-                                                output.printf("#{offset}\t\telse {\n")
-                                                output.printf("#{offset}\t\t\tif (strcmp(ptr1->%s[i], ptr2->%s[i]) != 0) {\n", field.name, field.name)
-                                                output.printf("#{offset}\t\t\t\treturn 0;\n#{offset}\t\t\t}\n")
-                                                output.printf("#{offset}\t\t}\n#{offset}\t}\n")
-                                                output.printf("#{offset}}\n")
-                                            when :simple, :enum, :id, :idref
-                                                output.printf("#{offset}if (ptr1->%sLen != ptr2->%sLen) {\n", field.name, field.name)
-                                                output.printf("#{offset}\treturn 0;\n#{offset}}\n")
-                                                if (!loopVariableDefined)
-                                                    loopVariableDefined = true
-                                                    output.printf("#{offset}unsigned i = 0;\n")
-                                                end
-                                                output.printf("#{offset}for (i = 0; i < ptr1->%sLen; ++i) {\n", field.name)
-                                                output.printf("#{offset}\tif (ptr1->%s[i] != ptr2->%s[i]) {\n", field.name, field.name)
-                                                output.printf("#{offset}\t\treturn 0;\n#{offset}\t}\n")
-                                                output.printf("#{offset}}\n")
-                                            else
-                                                raise("Unsupported data category for #{entry.name}.#{field.name}");
+                                        output.printf("#{offset}for (i = 0; i < ptr1->%sLen; ++i) {\n", field.name)
+                                        output.printf("#{offset}\tif (ptr1->%s[i] != ptr2->%s[i]) {\n", field.name, field.name)
+                                        output.printf("#{offset}\t\tif (((ptr1->%s[i] == 0) && (ptr2->%s[i] !=0)) || ((ptr1->%s != 0) && (ptr2->%s == 0))) {\n", field.name, field.name, field.name, field.name)
+                                        output.printf("#{offset}\t\t\treturn 0;\n#{offset}\t\t}\n")
+                                        output.printf("#{offset}\t\telse {\n")
+                                        output.printf("#{offset}\t\t\tif (strcmp(ptr1->%s[i], ptr2->%s[i]) != 0) {\n", field.name, field.name)
+                                        output.printf("#{offset}\t\t\t\treturn 0;\n#{offset}\t\t\t}\n")
+                                        output.printf("#{offset}\t\t}\n#{offset}\t}\n")
+                                        output.printf("#{offset}}\n")
+                                    when :simple, :enum, :id, :idref
+                                        output.printf("#{offset}if (ptr1->%sLen != ptr2->%sLen) {\n", field.name, field.name)
+                                        output.printf("#{offset}\treturn 0;\n#{offset}}\n")
+                                        if (!loopVariableDefined)
+                                            loopVariableDefined = true
+                                            output.printf("#{offset}unsigned i = 0;\n")
                                         end
-                                    else 
-                                        raise("Unsupported data quantity for #{entry.name}.#{field.name}");
+                                        output.printf("#{offset}for (i = 0; i < ptr1->%sLen; ++i) {\n", field.name)
+                                        output.printf("#{offset}\tif (ptr1->%s[i] != ptr2->%s[i]) {\n", field.name, field.name)
+                                        output.printf("#{offset}\t\treturn 0;\n#{offset}\t}\n")
+                                        output.printf("#{offset}}\n")
+                                    else
+                                        raise("Unsupported data category for #{entry.name}.#{field.name}");
+                                    end
+                                else 
+                                    raise("Unsupported data quantity for #{entry.name}.#{field.name}");
                                 end
                             end
                         end
@@ -148,18 +152,47 @@ module Damage
                     output.print("\treturn 1;\n")
 
                     output.print("}\n\n")
+                end
+            output.puts("
+/** @} */
+/** @} */
+") 
+            end
 
+            def genCList(output, description, entry)
+                libName = description.config.libname
 
+                output.printf("#include <assert.h>\n")
+                output.printf("#include <errno.h>\n")
+                output.printf("#include <stdlib.h>\n")
+                output.printf("#include <stdio.h>\n")
+                output.printf("#include <string.h>\n")
+                output.printf("#include <setjmp.h>\n")
+                output.printf("#include <libxml/xmlreader.h>\n")
+                output.printf("#include \"#{libName}.h\"\n")
+                output.printf("#include \"_#{libName}/common.h\"\n")
+                output.printf("\n\n") 
+
+                output.puts("
+
+/** \\addtogroup #{libName} DAMAGE #{libName} Library
+ * @{
+**/
+/** \\addtogroup compare Comparison API
+ * @{
+ **/
+");
+
+                
+                offset = "\t"
+
+                if (entry.comparable == false)
+                    output.printf("int __#{libName}_%s_compare_list(__#{libName}_%s *ptr1 __#{libName.upcase}_UNUSED__, __#{libName}_%s *ptr2 __#{libName.upcase}_UNUSED__) {\n", 
+                              entry.name, entry.name, entry.name)
+                    output.printf("#{offset}return 1;\n}\n\n")
+                else
                     output.printf("int __#{libName}_%s_compare_list(__#{libName}_%s *ptr1, __#{libName}_%s *ptr2) {\n", 
-                            entry.name, entry.name, entry.name)
- 
-                    offset = "\t"
-
-                    if (entry.comparable == false)
-                        output.printf("#{offset}return 1;\n}\n\n")
-                        next
-                    end
- 
+                              entry.name, entry.name, entry.name)
                     output.printf("#{offset}__#{libName}_%s *el1, *el2;\n", entry.name)
                     output.printf("#{offset}el1 = ptr1;\n")
                     output.printf("#{offset}el2 = ptr2;\n")
@@ -167,7 +200,7 @@ module Damage
                         output.printf("#{offset}while (el1 && el2) {\n")
                         offset += "\t"
                     end
- 
+                    
                     output.printf("#{offset}if (!__#{libName}_%s_compare_single(el1, el2)) {\n", entry.name)
                     output.printf("#{offset}\treturn 0;\n#{offset}}\n")
 
@@ -185,9 +218,8 @@ module Damage
                         output.print("\treturn 1;\n")
                     end
                     output.print("}\n\n")
-            }
-
-            output.puts("
+                end
+                output.puts("
 /** @} */
 /** @} */
 ") 
@@ -252,7 +284,7 @@ module Damage
 ")
                 output.printf("#endif /* __#{libName}_compare_h__ */\n")
             end
-            module_function :genC, :genH
+            module_function :genC, :genCList, :genH
         end
     end
 end
