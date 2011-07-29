@@ -24,7 +24,10 @@ module Damage
                 outputH = Damage::Files.createAndOpen("gen/#{description.config.libname}/include/#{description.config.libname}", @OUTFILE_H)
                 description.entries.each() { |name, entry|
                     outputC = Damage::Files.createAndOpen("gen/#{description.config.libname}/src", "alloc__#{name}.c")
-                    self.genC(outputC, description, entry)
+                    self.genAlloc(outputC, description, entry)
+                    outputC.close()
+                    outputC = Damage::Files.createAndOpen("gen/#{description.config.libname}/src", "free__#{name}.c")
+                    self.genFree(outputC, description, entry)
                     outputC.close()
                 }
 
@@ -35,7 +38,7 @@ module Damage
 
 
             private
-            def genC(output, description, entry)
+            def genAlloc(output, description, entry)
                 libName = description.config.libname
 
                 output.printf("#include <assert.h>\n")
@@ -82,6 +85,39 @@ module Damage
                 output.printf("\tptr->_rowip = NULL;\n") if description.config.rowip == true
                 output.printf("\treturn ptr;\n")
                 output.printf("}\n\n")
+
+
+                output.puts("
+/** @} */
+/** @} */
+") 
+            end
+
+            def genFree(output, description, entry)
+                libName = description.config.libname
+
+                output.printf("#include <assert.h>\n")
+                output.printf("#include <errno.h>\n")
+                output.printf("#include <stdlib.h>\n")
+                output.printf("#include <stdio.h>\n")
+                output.printf("#include <string.h>\n")
+                output.printf("#include <setjmp.h>\n")
+                output.printf("#include <libxml/xmlreader.h>\n")
+                output.printf("#include \"#{libName}.h\"\n")
+                output.printf("#include \"_#{libName}/common.h\"\n")
+                output.printf("\n\n") 
+
+                output.puts("
+
+/** \\addtogroup #{libName} DAMAGE #{libName} Library
+ * @{
+**/
+/** \\addtogroup alloc Allocation API
+ * @{
+ **/
+");
+                
+
                 output.printf("void __#{libName}_%s_free(__#{libName}_%s *ptr){\n", 
                               entry.name, entry.name)
                 source="ptr"
@@ -200,7 +236,7 @@ module Damage
 ")
                 output.printf("#endif /* __#{libName}_alloc_h__ */\n")
             end
-            module_function :genC, :genH
+            module_function :genAlloc, :genFree, :genH
         end
     end
 end
