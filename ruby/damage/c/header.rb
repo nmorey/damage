@@ -63,6 +63,7 @@ module Damage
                             output.puts("#include <#{libName}/enum.h>")
                             output.puts("#include <#{libName}/structs.h>")
                             output.puts("#include <#{libName}/alloc.h>")
+                            output.puts("#include <#{libName}/parser_options.h>")
                             output.puts("#include <#{libName}/duplicate.h>")
                             output.puts("#include <#{libName}/sort.h>")
                             output.puts("#include <#{libName}/xml_reader.h>")

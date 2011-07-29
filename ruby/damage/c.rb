@@ -33,6 +33,7 @@ module Damage
         require File.dirname(__FILE__) + '/c/doxygen'
         require File.dirname(__FILE__) + '/c/compare'
         require File.dirname(__FILE__) + '/c/dump'
+        require File.dirname(__FILE__) + '/c/parser_options'
 
 
         def generate(description)
@@ -53,6 +54,7 @@ module Damage
             Doxygen::write(description)
             Compare::write(description)
             Dump::write(description)
+            ParserOptions::write(description)
         end
         module_function :generate
     end

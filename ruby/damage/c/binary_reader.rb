@@ -20,14 +20,25 @@ module Damage
 
             def write(description)
                 description.entries.each() {|name, entry|
-                    outputC = Damage::Files.createAndOpen("gen/#{description.config.libname}/src", "binary_reader__#{name}.c")
+                    outputC = Damage::Files.createAndOpen("gen/#{description.config.libname}/src", 
+                                                          "binary_reader__#{name}.c")
                     self.genBinaryReader(outputC, description, entry)
                     outputC.close()
-                    outputC = Damage::Files.createAndOpen("gen/#{description.config.libname}/src", "binary_reader_wrapper__#{name}.c")
+                    outputC = Damage::Files.createAndOpen("gen/#{description.config.libname}/src", 
+                                                          "binary_reader_wrapper__#{name}.c")
                     self.genBinaryReaderWrapper(outputC, description, entry)
                     outputC.close()
+                    outputC = Damage::Files.createAndOpen("gen/#{description.config.libname}/src", 
+                                                          "binary_reader_partial__#{name}.c")
+                    self.genBinaryReaderPartial(outputC, description, entry)
+                    outputC.close()
+                    outputC = Damage::Files.createAndOpen("gen/#{description.config.libname}/src", 
+                                                          "binary_reader_wrapper_partial__#{name}.c")
+                    self.genBinaryReaderWrapperPartial(outputC, description, entry)
+                    outputC.close()
                 }
-                outputH = Damage::Files.createAndOpen("gen/#{description.config.libname}/include/#{description.config.libname}/", "binary_reader.h")
+                outputH = Damage::Files.createAndOpen("gen/#{description.config.libname}/include/#{description.config.libname}/",
+                                                      "binary_reader.h")
                 self.genBinaryReaderH(outputH, description)
                 outputH.close()
 
@@ -50,6 +61,30 @@ module Damage
  **/
 ");
                 description.entries.each() {|name, entry|
+                    output.puts("
+/**
+ * Internal: Read a partial #__#{libName}_#{entry.name} structure and its children in binary form from an open file.
+ * This function uses longjmp to the \"__#{libName}_error_happened\".
+ * Thus it needs to be set up properly before calling this function.
+ * @param[in] file Pointer to the FILE.
+ * @param[in] offset Position of the beginning of the struct within the file.
+ * @param[in] opt Pointer to the partial options that describes the structures to parse.
+ * @return Pointer to a valid #__#{libName}_#{entry.name} structure. If something fails, it executes a longjmp to __#{libName}_error_happened
+ */");
+
+                    output.puts "__#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load_partial(FILE* file, uint32_t offset, __#{libName}_partial_options *opt);\n"
+                    output.puts("
+/**
+ * Read a partial #__#{libName}_#{entry.name} structure and its children in binary form from a file
+ * @param[in] file Filename
+ * @param[in] opts Options to parser (compression, read-only, etc)
+ * @param[in] partial_opts Pointer to the partial options that describes the structures to parse.
+ * @return Pointer to a #__#{libName}_#{entry.name} structure
+ * @retval NULL Failed to read the file
+ * @retval !=NULL Valid structure
+ */");
+                    output.printf("__#{libName}_%s* __#{libName}_%s_binary_load_file_partial(const char* file, __#{libName}_options opts, __#{libName}_partial_options *partial_opts);\n", entry.name, entry.name)
+
                     output.puts("
 /**
  * Internal: Read a complete #__#{libName}_#{entry.name} structure and its children in binary form from an open file.
@@ -81,7 +116,7 @@ module Damage
                 output.puts("#endif /* __#{libName}_binary_reader_h__ */\n")
             end
             module_function :genBinaryReaderH
-            def genBinaryReader(output, description, entry)
+            def genBinaryReaderPartial(output, description, entry)
                 libName = description.config.libname
 
                 output.printf("#include \"#{libName}.h\"\n")
@@ -101,13 +136,16 @@ module Damage
 ");
 
                 output.puts"
-__#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load(FILE* file, uint32_t offset){
+__#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load_partial(FILE* file, uint32_t offset, __#{libName}_partial_options *opt){
 "
                 
                 output.printf("\t__#{libName}_%s *el;\n",entry.name)
-                source="el"
+                output.printf("\t__#{libName}_%s *prev = NULL, *first = NULL;\n",entry.name) if entry.attribute == :listable 
+
+                output.printf("\tif(!opt->#{entry.name})\n");
+                output.printf("\t\treturn NULL;\n\n");
+               source="el"
                 if entry.attribute == :listable then
-                    output.printf("\t__#{libName}_%s *prev = NULL, *first = NULL;\n",entry.name)
                     output.printf "\tdo {\n"
                     indent="\t\t"
                 else
@@ -135,10 +173,10 @@ __#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load(FILE* file, u
                             output.printf("#{indent}\t__#{libName}_fread(#{source}->%s, sizeof(char), len, file);\n", field.name)
                             output.printf("#{indent}}\n")
                         when :intern
-                            output.printf("#{indent}if(#{source}->%s){\n", field.name)
+                            output.printf("#{indent}if((opt->#{field.data_type} != 0) && (#{source}->%s != NULL)){\n", field.name)
                             output.printf("#{indent}\t#{source}->%s = __#{libName}_%s_binary_load(file, (uint32_t)(unsigned long)(#{source}->%s));\n", 
                                           field.name, field.data_type, field.name)
-                            output.printf("#{indent}}\n")
+                            output.printf("#{indent}} else {\n#{indent}\t#{source}->#{field.name} = NULL;\n#{indent}}\n")
                         when :id, :idref
                             output.printf("#{indent}if(#{source}->%s_str){\n", field.name)
                             output.printf("#{indent}\tuint32_t len;\n")
@@ -193,10 +231,10 @@ __#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load(FILE* file, u
                             output.printf("#{indent}free(tmp_array);\n");
                             output.printf("#{indent}}\n")
                         when :intern
-                            output.printf("#{indent}if(#{source}->%s){\n", field.name)
+                            output.printf("#{indent}if((opt->#{field.data_type} != 0) && (#{source}->%s != NULL)){\n", field.name)
                             output.printf("#{indent}\t#{source}->%s = __#{libName}_%s_binary_load(file, (uint32_t)(unsigned long)(#{source}->%s));\n", 
                                           field.name, field.data_type, field.name)
-                            output.printf("#{indent}}\n")
+                            output.printf("#{indent}} else {\n#{indent}\t#{source}->#{field.name} = NULL;\n#{indent}}\n")
                         else
                             raise("Unsupported data category for #{entry.name}.#{field.name}");
                         end
@@ -229,9 +267,42 @@ __#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load(FILE* file, u
 
 
             end
+            module_function :genBinaryReaderPartial
+
+            def genBinaryReader(output, description, entry)
+                libName = description.config.libname
+
+                output.printf("#include \"#{libName}.h\"\n")
+                output.printf("#include \"_#{libName}/common.h\"\n")
+                output.printf("#include <stdint.h>\n")
+                output.printf("#include <sys/stat.h>\n")
+                output.printf("\n\n") 
+
+                output.puts("
+
+/** \\addtogroup #{libName} DAMAGE #{libName} Library
+ * @{
+**/
+/** \\addtogroup binary_reader Binary Reader API
+ * @{
+ **/
+");
+                output.puts "__#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load(FILE* file, uint32_t offset){\n"
+                output.printf("\t__#{libName}_partial_options opt;\n")
+                output.printf("\n")
+
+                output.printf("\t__#{libName}_partial_options_parse_#{entry.name}(&opt);\n");
+                output.printf("\treturn __#{libName}_#{entry.name}_binary_load_partial(file, offset, &opt);\n")
+                output.printf("}\n");
+
+                output.puts("
+/** @} */
+/** @} */
+")
+            end
             module_function :genBinaryReader
 
-            def genBinaryReaderWrapper(output, description, entry)
+            def genBinaryReaderWrapperPartial(output, description, entry)
                 libName = description.config.libname
 
                 output.printf("#include \"#{libName}.h\"\n")
@@ -250,7 +321,7 @@ __#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load(FILE* file, u
  **/
 ");
 
-                output.printf("__#{libName}_%s* __#{libName}_%s_binary_load_file(const char* file, __#{libName}_options opts)\n{\n", entry.name, entry.name)
+                output.printf("__#{libName}_%s* __#{libName}_%s_binary_load_file_partial(const char* file, __#{libName}_options opts, __#{libName}_partial_options *partial_opts)\n{\n", entry.name, entry.name)
                 output.printf("\tint ret;\n")
                 output.printf("\t__#{libName}_%s *ptr = NULL;\n", entry.name);
                 output.printf("\tFILE* output;\n")
@@ -282,7 +353,7 @@ __#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load(FILE* file, u
                 output.printf("\t\tif(header.length != fStat.st_size)\n")
                 output.printf("\t\t__#{libName}_error(\"DB file %%s is corrupted: size does not match header.\", EIO, file);\n\n");
 
-                output.printf("\tptr = __#{libName}_%s_binary_load(output, sizeof(header));\n", entry.name)
+                output.printf("\tptr = __#{libName}_%s_binary_load_partial(output, sizeof(header), partial_opts);\n", entry.name)
                 output.printf("\tfclose(output);\n")
                 output.printf("\tif (opts & __#{libName.upcase}_OPTION_READONLY ) {\n");
                 output.printf("\t__#{libName}_release_flock(file);\n");
@@ -291,6 +362,41 @@ __#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load(FILE* file, u
                 output.printf("\treturn ptr;\n");
                 output.printf("}\n");
 
+                output.puts("
+/** @} */
+/** @} */
+")
+
+
+            end
+            module_function :genBinaryReaderWrapperPartial
+
+            def genBinaryReaderWrapper(output, description, entry)
+                libName = description.config.libname
+
+                output.printf("#include \"#{libName}.h\"\n")
+                output.printf("#include \"_#{libName}/common.h\"\n")
+                output.printf("#include <stdint.h>\n")
+                output.printf("#include <sys/stat.h>\n")
+                output.printf("\n\n") 
+
+                output.puts("
+
+/** \\addtogroup #{libName} DAMAGE #{libName} Library
+ * @{
+**/
+/** \\addtogroup binary_reader Binary Reader API
+ * @{
+ **/
+");
+
+                output.printf("__#{libName}_%s* __#{libName}_%s_binary_load_file(const char* file, __#{libName}_options opts)\n{\n", entry.name, entry.name)
+              output.printf("\t__#{libName}_partial_options opt;\n")
+                output.printf("\n")
+
+                output.printf("\t__#{libName}_partial_options_parse_#{entry.name}(&opt);\n");
+                output.printf("\treturn __#{libName}_#{entry.name}_binary_load_file_partial(file, opts, &opt);\n")
+                output.printf("}\n");
                 output.puts("
 /** @} */
 /** @} */
