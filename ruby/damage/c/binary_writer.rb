@@ -23,7 +23,7 @@ module Damage
                     outputC = Damage::Files.createAndOpen("gen/#{description.config.libname}/src", "binary_writer__#{name}.c")
                     self.genBinaryWriter(outputC, description, entry)
                     outputC.close()
-                    outputC = Damage::Files.createAndOpen("gen/#{description.config.libname}/src", "binary_writer__#{name}.c")
+                    outputC = Damage::Files.createAndOpen("gen/#{description.config.libname}/src", "binary_writer_wrapper__#{name}.c")
                     self.genBinaryWriterWrapper(outputC, description, entry)
                     outputC.close()
                 }
