@@ -195,7 +195,7 @@ uint32_t __#{libName}_#{entry.name}_binary_dump(__#{libName}_#{entry.name}* ptr,
                             output.printf("#{indent}\tval.%s = (char**)(unsigned long)child_offset;\n", field.name)
                             output.printf("#{indent}\t__#{libName}_fwrite(tmp_array, sizeof(*tmp_array), #{source}->%sLen, file);\n",
                                           field.name, field.name);
-                            output.printf("#{indent}\tchild_offset += (sizeof(*#{source}->%s) * #{source}->%sLen);\n",
+                            output.printf("#{indent}\tchild_offset += (sizeof(*tmp_array) * #{source}->%sLen);\n",
                                           field.name, field.name)
                             output.printf("#{indent}\t__#{libName}_free(tmp_array);\n")
 
