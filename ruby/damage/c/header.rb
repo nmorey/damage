@@ -58,31 +58,33 @@ module Damage
 /** Library version */
 #define __#{libName.upcase}_VERSION__ \"#{description.config.version}\"\n")
                 output.puts("#include <stdio.h>")
-                            output.puts("#include <stdint.h>")
-                            output.puts("#include <libxml/tree.h>")
-                            output.puts("#include <#{libName}/enum.h>")
-                            output.puts("#include <#{libName}/structs.h>")
-                            output.puts("#include <#{libName}/alloc.h>")
-                            output.puts("#include <#{libName}/parser_options.h>")
-                            output.puts("#include <#{libName}/duplicate.h>")
-                            output.puts("#include <#{libName}/sort.h>")
-                            output.puts("#include <#{libName}/xml_reader.h>")
-                            output.puts("#include <#{libName}/xml_writer.h>")
-                            output.puts("#include <#{libName}/binary_reader.h>")
-                            output.puts("#include <#{libName}/binary_writer.h>")
-                            output.puts("#include <#{libName}/binary_rowip.h>") if description.config.rowip == true
-                            output.puts("#include <#{libName}/compare.h>")
-                            output.puts("#include <#{libName}/dump.h>")
-                            description.config.hfiles.each() {|hfile|
-                                output.puts("#include <#{libName}/#{hfile}>");
-                            }
-                            output.puts("
+                output.puts("#include <stdint.h>")
+                output.puts("#include <#{libName}/enum.h>")
+                output.puts("#include <#{libName}/structs.h>")
+                output.puts("#include <#{libName}/alloc.h>")
+                output.puts("#include <#{libName}/parser_options.h>")
+                output.puts("#include <#{libName}/duplicate.h>")
+                output.puts("#include <#{libName}/sort.h>")
+                output.puts("#include <#{libName}/binary_reader.h>")
+                output.puts("#include <#{libName}/binary_writer.h>")
+                output.puts("#include <#{libName}/binary_rowip.h>") if description.config.rowip == true
+                output.puts("#include <#{libName}/compare.h>")
+                output.puts("#include <#{libName}/dump.h>")
+                output.puts("\n#ifndef __#{libName.upcase}_NO_XML__");
+                output.puts("#include <libxml/tree.h>")
+                output.puts("#include <#{libName}/xml_reader.h>")
+                output.puts("#include <#{libName}/xml_writer.h>")
+                output.puts("#endif /* __#{libName.upcase}_NO_XML__ */\n");
+                description.config.hfiles.each() {|hfile|
+                    output.puts("#include <#{libName}/#{hfile}>");
+                }
+                output.puts("
 /** @} */
 ")
-                            output.puts("#endif /* __#{libName}_h__ */\n")
-                        end
-        module_function :genHeader
+                output.puts("#endif /* __#{libName}_h__ */\n")
+            end
+            module_function :genHeader
 
+        end
     end
-end
 end
