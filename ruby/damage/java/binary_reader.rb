@@ -62,11 +62,20 @@ module Damage
                 retType=params[:class]
                 retType="java.util.List<#{retType}>" if entry.attribute == :listable 
 
-                output.puts("
+               output.puts("
 /**
  * Internal: Read a complete ##{retType} class and its children in binary form from an open file.
  */");
                 output.printf("\tpublic static #{retType} loadFromBinary(FileChannel fc, int offset) throws IOException {\n")
+                output.printf("\t\tParserOptions pOpts = new ParserOptions(true);\n")
+                output.printf("\t\treturn loadFromBinaryPartial(fc, offset, pOpts);\n")
+                output.printf("\t}\n\n");
+
+                output.puts("
+/**
+ * Internal: Read a partial ##{retType} class and its children in binary form from an open file.
+ */");
+                output.printf("\tpublic static #{retType} loadFromBinaryPartial(FileChannel fc, int offset, ParserOptions pOpts) throws IOException {\n")
 
                 output.printf("\t\t#{params[:class]} obj;\n")
                 output.printf("\t\tByteBuffer in;\n");
@@ -111,11 +120,9 @@ module Damage
                         when :string
                             ParseString(output, indent, "in", pahole[field.name][:offset], "obj._#{field.name}")
                         when :intern
-                            output.printf("#{indent}{\n")
-                            output.printf("#{indent}\tint _offset = in.getInt(#{pahole[field.name][:offset]});\n")
-                            output.printf("#{indent}\tif(_offset != 0)\n")
-                            output.printf("#{indent}\t\tobj._#{field.name} = #{field.java_type}.loadFromBinary(fc, _offset);\n")
-                            output.printf("#{indent}}\n")
+                            output.printf("#{indent}obj._#{field.name}_offset = in.getInt(#{pahole[field.name][:offset]});\n")
+                            output.printf("#{indent}if((pOpts._#{field.data_type} != false) && (obj._#{field.name}_offset != 0))\n")
+                            output.printf("#{indent}\tobj._#{field.name} = #{field.java_type}.loadFromBinaryPartial(fc, obj._#{field.name}_offset, pOpts);\n")
                         else
                             raise("Unsupported data category for #{entry.name}.#{field.name}");
                         end
@@ -163,13 +170,11 @@ module Damage
                             output.printf("#{indent}}\n")
 
                         when :intern
-                            output.printf("#{indent}{\n")
-                            output.printf("#{indent}\tint _offset = in.getInt(#{pahole[field.name][:offset]});\n")
-                            output.printf("#{indent}\tif(_offset != 0){\n")
-                            output.printf("#{indent}\t\tobj._#{field.name} = #{field.java_type}.loadFromBinary(fc, _offset);\n")
-                            output.printf("#{indent}\t} else {\n")
-                            output.printf("#{indent}\t\tobj._#{field.name} = new java.util.ArrayList<#{field.java_type}>();\n")
-                            output.printf("#{indent}\t}\n")
+                            output.printf("#{indent}obj._#{field.name}_offset = in.getInt(#{pahole[field.name][:offset]});\n")
+                            output.printf("#{indent}if((pOpts._#{field.data_type} != false) && (obj._#{field.name}_offset != 0)){\n")
+                            output.printf("#{indent}\tobj._#{field.name} = #{field.java_type}.loadFromBinaryPartial(fc, obj._#{field.name}_offset, pOpts);\n")
+                            output.printf("#{indent}} else {\n")
+                            output.printf("#{indent}\tobj._#{field.name} = new java.util.ArrayList<#{field.java_type}>();\n")
                             output.printf("#{indent}}\n")
                         else
                             raise("Unsupported data category for #{entry.name}.#{field.name}");
@@ -195,6 +200,19 @@ module Damage
  */");
 
                 output.printf("\tpublic static #{retType} createFromBinary(String filename, boolean readOnly) throws IOException {\n")
+                output.printf("\t\tParserOptions pOpts = new ParserOptions(true);\n")
+                output.printf("\t\treturn createFromBinaryPartial(filename, readOnly, pOpts);\n")
+ 
+                output.printf("\t}\n\n")
+
+
+
+                output.puts("
+/**
+ * Read a partial ##{retType} class and its children in binary form from a file.
+ */");
+
+                output.printf("\tpublic static #{retType} createFromBinaryPartial(String filename, boolean readOnly, ParserOptions pOpts) throws IOException {\n")
                 output.printf("\t\tRandomAccessFile file = new RandomAccessFile( new java.io.File(filename), \"r\");\n")
                 output.printf("\t\tjava.io.File fileLock = new java.io.File(filename + \".lock\");\n")
                 output.printf("\t\tFileChannel fc = file.getChannel();\n");
@@ -213,7 +231,7 @@ module Damage
                 output.printf("\t\tif(val  != file.length())\n");
                 output.printf("\t\t\tthrow new IOException(\"Corrupted file. Size does not match header\");\n\n")
 
-                output.printf("\t\tobj = loadFromBinary(fc, 8) ;\n")
+                output.printf("\t\tobj = loadFromBinaryPartial(fc, 8, pOpts) ;\n")
                 output.printf("\t\tfc.close();\n\n");
 
                 output.printf("\t\tif(readOnly){\n");

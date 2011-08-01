@@ -21,6 +21,7 @@ module Damage
         require File.dirname(__FILE__) + '/java/alloc'
         require File.dirname(__FILE__) + '/java/binary_reader'
         require File.dirname(__FILE__) + '/java/dump'
+        require File.dirname(__FILE__) + '/java/parser_options'
         
         def generate(description, pahole)
             libName = description.config.libname
@@ -38,6 +39,8 @@ module Damage
                 Alloc::write(output, libName, entry, pahole.entries[name], params)
                 BinaryReader::write(output, libName, entry, pahole.entries[name], params)
                 Dump::write(output, libName, entry, pahole.entries[name], params)
+
+                ParserOptions::write(description)
                 output.puts("\n}\n\n")
                 output.close()
             }

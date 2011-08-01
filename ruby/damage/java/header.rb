@@ -77,6 +77,8 @@ public class #{params[:class]} {
                         else
                             output.printf("\tpublic java.util.List<#{field.java_type}> _#{field.name};\n")
                         end
+                        output.printf("\t/** Offset of the element in DB file (valid after partial load and _#{field.name} is nil */\n");
+                        output.printf("\tpublic int _#{field.name}_offset;\n");
                     else
                         raise("Unsupported data category for #{entry.name}.#{field.name}");
                     end
