@@ -94,7 +94,7 @@ module Damage
                             output.printf("\t\t\t__#{libName}_paddOutput(file, indent, listable, first);\n")
                             output.printf("\t\t\tfirst = 0;\n")
                             output.printf("\t\t\tfprintf(file, \"#{field.name}: \\n\");\n");
-                            output.printf("\t\t\r__#{libName}_#{field.data_type}_dumpWithIndent(file, ptr->#{field.name}, indent+1);\n");
+                            output.printf("\t\t\t__#{libName}_#{field.data_type}_dumpWithIndent(file, ptr->#{field.name}, indent+1);\n");
                             output.printf("\t\t}\n");
 
                         else
