@@ -174,7 +174,7 @@ __#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load_partial(FILE*
                             output.printf("#{indent}}\n")
                         when :intern
                             output.printf("#{indent}if((opt->#{field.data_type} != 0) && (#{source}->%s != NULL)){\n", field.name)
-                            output.printf("#{indent}\t#{source}->%s = __#{libName}_%s_binary_load(file, (uint32_t)(unsigned long)(#{source}->%s));\n", 
+                            output.printf("#{indent}\t#{source}->%s = __#{libName}_%s_binary_load_partial(file, (uint32_t)(unsigned long)(#{source}->%s), opt);\n", 
                                           field.name, field.data_type, field.name)
                             output.printf("#{indent}} else {\n#{indent}\t#{source}->#{field.name} = NULL;\n#{indent}}\n")
                         when :id, :idref
@@ -232,7 +232,7 @@ __#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load_partial(FILE*
                             output.printf("#{indent}}\n")
                         when :intern
                             output.printf("#{indent}if((opt->#{field.data_type} != 0) && (#{source}->%s != NULL)){\n", field.name)
-                            output.printf("#{indent}\t#{source}->%s = __#{libName}_%s_binary_load(file, (uint32_t)(unsigned long)(#{source}->%s));\n", 
+                            output.printf("#{indent}\t#{source}->%s = __#{libName}_%s_binary_load_partial(file, (uint32_t)(unsigned long)(#{source}->%s), opt);\n", 
                                           field.name, field.data_type, field.name)
                             output.printf("#{indent}} else {\n#{indent}\t#{source}->#{field.name} = NULL;\n#{indent}}\n")
                         else
