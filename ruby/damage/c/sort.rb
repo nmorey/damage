@@ -73,7 +73,7 @@ module Damage
             def genSorter(output, description, entry, field)
                 libName = description.config.libname
                 output.printf("#include \"#{libName}.h\"\n");
-                output.printf("#include \"_#{libName}/common.h\"\n");
+                output.printf("#include \"_#{libName}/_common.h\"\n");
                 output.printf("\n");
                 output.printf("\n\n");
                 output.puts("

@@ -19,9 +19,14 @@ module Damage
         module Common
 
             def write(description)
-                output = Damage::Files.createAndOpen("gen/#{description.config.libname}/include/_#{description.config.libname}/", "common.h")
+                output = Damage::Files.createAndOpen("gen/#{description.config.libname}/include/_#{description.config.libname}/", "_common.h")
                 self.genCommonH(output, description)
                 output.close()
+                output = Damage::Files.createAndOpen("gen/#{description.config.libname}/include/#{description.config.libname}/", "common.h")
+                self.genPublicCommonH(output, description)
+                output.close()
+
+
                 output = Damage::Files.createAndOpen("gen/#{description.config.libname}/src/", "common.c")
                 self.genCommonC(output, description)
                 output.close()
@@ -30,12 +35,45 @@ module Damage
 
 
             private
-
-            def genCommonH(output, description)
+           def genPublicCommonH(output, description)
                 libName = description.config.libname
                 output.puts "
 #ifndef __#{libName}_common_h__
 #define __#{libName}_common_h__
+
+/**
+ * Acquire a lock on a #{libName} file (stalls if lock is not ready) .
+ * This is automatically used by standard readers/writers
+ * and it should not be necessary to call it manually.
+ * Note that acquiring the lock is acquirable if it already belong to the calling process.
+ * @param[in] filename DB file name
+ * @param[in] rdonly Is lock read only?
+ * @return Error code
+ * @retval 0 Success
+ * @retval 1 Error
+ */
+int __#{libName}_acquire_flock(const char* filename, int rdonly);
+
+/**
+ * Release a lock on a #{libName} file acquire by #__#{libName}_acquire_flock.
+ * This should be called when the last required write to the DB was done without unlocking it.
+ * However the DB lock is automatically release when the process exits.
+ * @param[in] filename DB filename
+ * @return Error code
+ * @retval 0 Success
+ * @retval 1 Error
+ */
+int __#{libName}_release_flock(const char* filename);
+
+#endif /* __#{libName}_common_h__ */
+"
+            end
+
+            def genCommonH(output, description)
+                libName = description.config.libname
+                output.puts "
+#ifndef ___#{libName}_common_h__
+#define ___#{libName}_common_h__
 
 #include <assert.h>
 #include <errno.h>
@@ -66,9 +104,6 @@ unsigned long long __#{libName}_read_value_ullong_attr(xmlAttrPtr reader);
 signed long long __#{libName}_read_value_sllong_attr(xmlAttrPtr reader);
 double __#{libName}_read_value_double_attr(xmlAttrPtr reader);
 
-int __#{libName}_acquire_flock(const char* filename, int rdonly);
-int __#{libName}_release_flock(const char* filename);
-
 void __#{libName}_fread(void* buf, size_t elSize, int nbElem, FILE* input);
 void __#{libName}_fwrite(void* buf, size_t elSize, int nbElem, FILE* input);
 void __#{libName}_fseek(FILE *stream, long offset, int whence);
@@ -81,10 +116,10 @@ void __#{libName}_paddOutput(FILE* file, int indent, int listable, int first);
 
 extern jmp_buf __#{libName}_error_happened;
 extern int __#{libName}_line;
-#endif /* __#{libName}_common_h__ */
+#endif /* ___#{libName}_common_h__ */
 "
             end
-            module_function :genCommonH
+            module_function :genCommonH, :genPublicCommonH
 
             def genCommonC(output, description)
                 libName = description.config.libname
@@ -99,7 +134,7 @@ extern int __#{libName}_line;
 #include <fcntl.h>
 #include <libxml/xmlreader.h>
 #include \"#{libName}.h\"
-#include \"_#{libName}/common.h\"
+#include \"_#{libName}/_common.h\"
 
 jmp_buf __#{libName}_error_happened;
 

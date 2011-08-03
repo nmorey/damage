@@ -162,7 +162,7 @@ static inline void __#{libName}_rowip_header_free(__#{libName}_rowip_header* ptr
                 output.printf("#include <sys/mman.h>\n")
 
                 output.printf("#include \"#{libName}.h\"\n")
-                output.printf("#include \"_#{libName}/common.h\"\n")
+                output.printf("#include \"_#{libName}/_common.h\"\n")
                 output.printf("#include \"binary_rowip.h\"\n")
                 output.printf("\n\n") 
 
@@ -223,7 +223,7 @@ static inline void __#{libName}_rowip_header_free(__#{libName}_rowip_header* ptr
                 output.printf("#include <unistd.h>\n")
 
                 output.printf("#include \"#{libName}.h\"\n")
-                output.printf("#include \"_#{libName}/common.h\"\n")
+                output.printf("#include \"_#{libName}/_common.h\"\n")
                 output.printf("#include \"binary_rowip.h\"\n")
                 output.printf("\n\n") 
 

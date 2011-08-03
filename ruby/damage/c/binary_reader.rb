@@ -120,7 +120,7 @@ module Damage
                 libName = description.config.libname
 
                 output.printf("#include \"#{libName}.h\"\n")
-                output.printf("#include \"_#{libName}/common.h\"\n")
+                output.printf("#include \"_#{libName}/_common.h\"\n")
                 output.printf("#include <stdint.h>\n")
                 output.printf("#include <sys/stat.h>\n")
                 output.printf("\n\n") 
@@ -273,7 +273,7 @@ __#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load_partial(FILE*
                 libName = description.config.libname
 
                 output.printf("#include \"#{libName}.h\"\n")
-                output.printf("#include \"_#{libName}/common.h\"\n")
+                output.printf("#include \"_#{libName}/_common.h\"\n")
                 output.printf("#include <stdint.h>\n")
                 output.printf("#include <sys/stat.h>\n")
                 output.printf("\n\n") 
@@ -306,7 +306,7 @@ __#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load_partial(FILE*
                 libName = description.config.libname
 
                 output.printf("#include \"#{libName}.h\"\n")
-                output.printf("#include \"_#{libName}/common.h\"\n")
+                output.printf("#include \"_#{libName}/_common.h\"\n")
                 output.printf("#include <stdint.h>\n")
                 output.printf("#include <sys/stat.h>\n")
                 output.printf("\n\n") 
@@ -375,7 +375,7 @@ __#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load_partial(FILE*
                 libName = description.config.libname
 
                 output.printf("#include \"#{libName}.h\"\n")
-                output.printf("#include \"_#{libName}/common.h\"\n")
+                output.printf("#include \"_#{libName}/_common.h\"\n")
                 output.printf("#include <stdint.h>\n")
                 output.printf("#include <sys/stat.h>\n")
                 output.printf("\n\n") 

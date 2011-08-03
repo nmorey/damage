@@ -48,7 +48,7 @@ module Damage
                 output.printf("#include <setjmp.h>\n")
                 output.printf("#include <libxml/xmlreader.h>\n")
                 output.printf("#include \"#{libName}.h\"\n")
-                output.printf("#include \"_#{libName}/common.h\"\n")
+                output.printf("#include \"_#{libName}/_common.h\"\n")
                 output.printf("\n\n") 
 
                 output.puts("
