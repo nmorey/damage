@@ -138,6 +138,10 @@ module Damage
                         end
                     end
                 }
+                # Autosort generation
+                entry.sort.each() {|field|
+                    output.printf("#{indent}__#{libName}_#{entry.name}_sort_#{field.name}(#{dest});\n")
+                }
                 if entry.attribute == :listable 
                     output.printf("\t\tif(next == 0){\n\t\t\treturn first;\n\t\t}\n")
                     output.printf("\t}\n") 
