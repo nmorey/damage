@@ -90,10 +90,15 @@ module Damage
                 output.printf("\tif (ptr != NULL) {\n");
                 output.printf("\t\tunsigned long count = 0UL;\n");
                 output.printf("\t\t__#{libName}_%s * %s;\n", field.data_type, field.name);
+                output.printf("\t\tif(ptr->s_#{field.name}) {\n")
+                output.printf("\t\t\tfree(ptr->s_#{field.name});\n")
+                output.printf("\t\t\tptr->s_#{field.name} = NULL;\n")
+                output.printf("\t\t}\n");
                 output.printf("\t\tfor(%s = ptr->%s; %s != NULL;%s = %s->next){\n",
                               field.name, field.sort_field, field.name, field.name, field.name);
                 output.printf("\t\t\tcount = (%s->%s >= count) ? (%s->%s+1) : count;\n\t\t\t\t\t}\n\n",
                               field.name, field.sort_key, field.name, field.sort_key);
+                output.printf("\t\t\tptr->n_#{field.name} = count;\n")
                 output.printf("\t\tif(count > 0) {\n")
                 output.printf("\t\t\tptr->s_%s = __#{libName}_malloc(count * sizeof(*(ptr->s_%s)));\n",
                               field.name, field.name);
