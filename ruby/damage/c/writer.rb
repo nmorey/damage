@@ -217,6 +217,7 @@ module Damage
 
                 output.printf("#include \"#{libName}.h\"\n")
                 output.printf("#include \"_#{libName}/_common.h\"\n")
+                output.printf("#include <libxml/xmlsave.h>\n")
                 output.printf("\n")
                 output.printf("\n\n")
                 output.puts("
@@ -231,7 +232,8 @@ module Damage
                 output.printf("int __#{libName}_%s_xml_dump_file(const char* file, __#{libName}_%s *ptr, __#{libName}_options opts)\n{\n", entry.name, entry.name)
                 output.printf("\txmlDocPtr doc = NULL;\n")
                 output.printf("\txmlNodePtr node = NULL;\n")
-                output.printf("\tint ret;\n")
+                output.printf("\txmlSaveCtxtPtr ctx = NULL;\n")
+                output.printf("\tFILE *output;\n")
                 output.printf("\n")
                 output.printf("\tdoc = xmlNewDoc(BAD_CAST \"1.0\");\n")
                 output.printf("\tif(opts & __#{libName.upcase}_OPTION_GZIPPED)\n")
@@ -239,13 +241,17 @@ module Damage
                 output.printf("\tnode = __#{libName}_create_%s_xml_node(NULL, ptr);\n", entry.name)
                 output.printf("\txmlDocSetRootElement(doc, node);\n")
                 output.printf("\n")
-                output.printf("\tif(__#{libName}_acquire_flock(file, 1))\n");
-                output.printf("\t\t__#{libName}_error(\"Failed to lock output file %%s: %%s\", ENOENT, file, strerror(errno));\n");
-                output.printf("\tret = xmlSaveFormatFileEnc(file, doc, \"us-ascii\", 1);\n");
+                output.printf("\tif((output = __#{libName}_acquire_flock(file, 0)) == NULL)\n");
+                output.printf("\t\t__#{libName}_error(\"Failed to lock output file %%s: %%s\", ENOENT, file, strerror(errno));\n\n");
+                output.printf("\tif((ctx = xmlSaveToFd(fileno(output), NULL, 0)) == NULL)\n");
+                output.printf("\t\t__#{libName}_error(\"Failed to write to output file %%s: %%s\", ENOENT, file, strerror(errno));\n\n");
+                output.printf("\txmlSaveDoc(ctx, doc);\n");
+                output.printf("\txmlSaveFlush(ctx);\n\n");
+                output.printf("\txmlSaveClose(ctx);\n");
                 output.printf("\txmlFreeDoc(doc);\n\n");
                 output.printf("\tif((opts & __#{libName.upcase}_OPTION_KEEPLOCKED) == 0)\n");
                 output.printf("\t\t__#{libName}_release_flock(file);\n");
-                output.printf("\treturn ret;\n");
+                output.printf("\treturn 0;\n");
                 output.printf("}\n");
 
                 output.puts("

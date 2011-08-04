@@ -337,11 +337,8 @@ __#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load_partial(FILE*
                 output.printf("\t\treturn NULL;\n");
                 output.printf("\t}\n\n");
                 
-                output.printf("\tif(__#{libName}_acquire_flock(file, opts & __#{libName.upcase}_OPTION_READONLY))\n");
+                output.printf("\tif((output = __#{libName}_acquire_flock(file, opts & __#{libName.upcase}_OPTION_READONLY)) == NULL)\n");
                 output.printf("\t\t__#{libName}_error(\"Failed to lock output file %%s: %%s\", ENOENT, file, strerror(errno));\n");
-                output.printf("\tif((output = fopen(file, \"r\")) == NULL)\n");
-                output.printf("\t\t__#{libName}_error(\"Failed to open input file %%s\", errno, file);\n\n");
-
                 output.printf("\t\t__#{libName}_fread(&header, sizeof(header), 1, output);\n")
                 output.printf("\t\tif(header.version != #{description.config.version})\n")
                 output.printf("\t\t__#{libName}_error(\"Version from file %%s is incompatible.\", EACCES, file);\n\n");
@@ -353,8 +350,8 @@ __#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load_partial(FILE*
                 output.printf("\t\tif(header.length != fStat.st_size)\n")
                 output.printf("\t\t__#{libName}_error(\"DB file %%s is corrupted: size does not match header.\", EIO, file);\n\n");
 
-                output.printf("\tptr = __#{libName}_%s_binary_load_partial(output, sizeof(header), partial_opts);\n", entry.name)
-                output.printf("\tfclose(output);\n")
+                output.printf("\tptr = __#{libName}_%s_binary_load_partial(output, sizeof(header), partial_opts);\n\n", entry.name)
+
                 output.printf("\tif (opts & __#{libName.upcase}_OPTION_READONLY ) {\n");
                 output.printf("\t__#{libName}_release_flock(file);\n");
                 output.printf("\t}\n");

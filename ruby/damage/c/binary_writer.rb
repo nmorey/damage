@@ -250,6 +250,7 @@ uint32_t __#{libName}_#{entry.name}_binary_dump(__#{libName}_#{entry.name}* ptr,
                 output.printf("#include \"#{libName}.h\"\n")
                 output.printf("#include \"_#{libName}/_common.h\"\n")
                 output.printf("#include <stdint.h>\n")
+                output.printf("#include <unistd.h>\n")
                 output.printf("\n\n") 
                 output.puts("
 
@@ -277,16 +278,13 @@ uint32_t __#{libName}_#{entry.name}_binary_dump(__#{libName}_#{entry.name}* ptr,
                 output.printf("\t\treturn 0UL;\n");
                 output.printf("\t}\n\n");
 
-                output.printf("\tif(__#{libName}_acquire_flock(file, 1))\n");
+                output.printf("\tif((output = __#{libName}_acquire_flock(file, 0)) == NULL)\n");
                 output.printf("\t\t__#{libName}_error(\"Failed to lock output file %%s: %%s\", ENOENT, file, strerror(errno));\n");
-
-                output.printf("\tif((output = fopen(file, \"w+\")) == NULL)\n");
-                output.printf("\t\t__#{libName}_error(\"Failed to open output file %%s\", errno, file);\n");
-
+                output.printf("\tftruncate(fileno(output), 0);\n");
                 output.printf("\theader.length = __#{libName}_%s_binary_dump(ptr, output, sizeof(header));\n", entry.name)
                 output.printf("\t__#{libName}_fseek(output, 0, SEEK_SET);\n")
-                output.printf("\t__#{libName}_fwrite(&header, sizeof(header), 1, output);\n");
-                output.printf("\tfclose(output);\n")
+                output.printf("\t__#{libName}_fwrite(&header, sizeof(header), 1, output);\n\n");
+
                 output.printf("\tif((opts & __#{libName.upcase}_OPTION_KEEPLOCKED) == 0)\n");
                 output.printf("\t\t__#{libName}_release_flock(file);\n");
                 output.printf("\treturn (unsigned long)header.length;\n");
