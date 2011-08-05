@@ -72,12 +72,12 @@ all: $(libs)
 
 tests: $(tests)
 
-doc:doc/doxygen/latex/Makefile 
+doc:doc/doxygen/man/man3/#{libName}.3
 
-doc/doxygen/latex/Makefile: $(headers) doc/Doxyfile
+doc/doxygen/man/man3/#{libName}.3: $(headers) doc/Doxyfile
 	doxygen doc/Doxyfile > obj/doxygen.log
 
-doc/doxygen/latex/refman.pdf: doc/doxygen/latex/Makefile
+doc/doxygen/latex/refman.pdf:doc/doxygen/man/man3/#{libName}.3
 	make -C doc/doxygen/latex
 	
 obj/tests/%: test/%.c $(libs)
