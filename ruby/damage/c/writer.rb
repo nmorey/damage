@@ -217,6 +217,7 @@ module Damage
 
                 output.printf("#include \"#{libName}.h\"\n")
                 output.printf("#include \"_#{libName}/_common.h\"\n")
+                output.printf("#include <unistd.h>\n")
                 output.printf("#include <libxml/xmlsave.h>\n")
                 output.printf("\n")
                 output.printf("\n\n")
@@ -243,6 +244,9 @@ module Damage
                 output.printf("\n")
                 output.printf("\tif((output = __#{libName}_acquire_flock(file, 0)) == NULL)\n");
                 output.printf("\t\t__#{libName}_error(\"Failed to lock output file %%s: %%s\", ENOENT, file, strerror(errno));\n\n");
+                output.printf("\tif(ftruncate(fileno(output), 0) != 0)\n");
+                output.printf("\t\t__#{libName}_error(\"Failed to truncate output file %%s: %%s\", ENOENT, file, strerror(errno));\n\n");
+
                 output.printf("\tif((ctx = xmlSaveToFd(fileno(output), NULL, 0)) == NULL)\n");
                 output.printf("\t\t__#{libName}_error(\"Failed to write to output file %%s: %%s\", ENOENT, file, strerror(errno));\n\n");
                 output.printf("\txmlSaveDoc(ctx, doc);\n");

@@ -279,8 +279,11 @@ uint32_t __#{libName}_#{entry.name}_binary_dump(__#{libName}_#{entry.name}* ptr,
                 output.printf("\t}\n\n");
 
                 output.printf("\tif((output = __#{libName}_acquire_flock(file, 0)) == NULL)\n");
-                output.printf("\t\t__#{libName}_error(\"Failed to lock output file %%s: %%s\", ENOENT, file, strerror(errno));\n");
-                output.printf("\tftruncate(fileno(output), 0);\n");
+                output.printf("\t\t__#{libName}_error(\"Failed to lock output file %%s: %%s\", ENOENT, file, strerror(errno));\n\n");
+
+                output.printf("\tif(ftruncate(fileno(output), 0) != 0)\n");
+                output.printf("\t\t__#{libName}_error(\"Failed to truncate output file %%s: %%s\", ENOENT, file, strerror(errno));\n\n");
+
                 output.printf("\theader.length = __#{libName}_%s_binary_dump(ptr, output, sizeof(header));\n", entry.name)
                 output.printf("\t__#{libName}_fseek(output, 0, SEEK_SET);\n")
                 output.printf("\t__#{libName}_fwrite(&header, sizeof(header), 1, output);\n\n");
