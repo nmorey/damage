@@ -247,7 +247,7 @@ module Damage
                 output.printf("\tif(ftruncate(fileno(output), 0) != 0)\n");
                 output.printf("\t\t__#{libName}_error(\"Failed to truncate output file %%s: %%s\", ENOENT, file, strerror(errno));\n\n");
 
-                output.printf("\tif((ctx = xmlSaveToFd(fileno(output), NULL, 0)) == NULL)\n");
+                output.printf("\tif((ctx = xmlSaveToFd(fileno(output), NULL, XML_SAVE_FORMAT)) == NULL)\n");
                 output.printf("\t\t__#{libName}_error(\"Failed to write to output file %%s: %%s\", ENOENT, file, strerror(errno));\n\n");
                 output.printf("\txmlSaveDoc(ctx, doc);\n");
                 output.printf("\txmlSaveFlush(ctx);\n\n");
