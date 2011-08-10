@@ -82,7 +82,8 @@ module Damage
  * @param[in] file Filename
  * @param[in] ptr Structure to write
  * @param[in] opts Options to writer (compression, read-only, etc)
- * @return Amount of bytes wrote to file
+ * @return Status
+ * @retval 0 Success
  * @retval -1 in case of error
  */");
                     output.printf("int __#{libName}_%s_xml_dump_file(const char* file, __#{libName}_%s *ptr, __#{libName}_options opts);\n\n", entry.name, entry.name)
@@ -234,9 +235,16 @@ module Damage
                 output.printf("\txmlDocPtr doc = NULL;\n")
                 output.printf("\txmlNodePtr node = NULL;\n")
                 output.printf("\txmlSaveCtxtPtr ctx = NULL;\n")
+                output.printf("\tuint32_t ret;\n")
                 output.printf("\tFILE *output;\n")
                 output.printf("\n")
-                output.printf("\tdoc = xmlNewDoc(BAD_CAST \"1.0\");\n")
+                output.printf("\tret = setjmp(__#{libName}_error_happened);\n");
+                output.printf("\tif (ret != 0) {\n");
+                output.printf("\t\terrno = ret;\n");
+                output.printf("\t\treturn -1;\n");
+                output.printf("\t}\n\n");
+
+               output.printf("\tdoc = xmlNewDoc(BAD_CAST \"1.0\");\n")
                 output.printf("\tif(opts & __#{libName.upcase}_OPTION_GZIPPED)\n")
                 output.printf("\t\txmlSetDocCompressMode(doc, 9);\n")
                 output.printf("\tnode = __#{libName}_create_%s_xml_node(NULL, ptr);\n", entry.name)
