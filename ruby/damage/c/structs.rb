@@ -48,7 +48,7 @@ module Damage
                             case field.qty
                             when :single
                                 output.printf("\t/** #{field.description} */\n") if field.description != nil
-                                output.printf("\t/** Field is an enum of type #__#{libName.upcase}_#{entry.name.upcase}_#{field.name.upcase} #{field.enumList}*/\n") if field.category == :enum
+                                output.printf("\t/** Field is an enum of type #__#{libName}_#{entry.name}_#{field.name} #{field.enumList}*/\n") if field.category == :enum
                                 if field.data_type == "unsigned long" || field.data_type == "signed long" then
                                     output.printf("\t%s %s __#{libName.upcase}_ALIGN__;\n", field.data_type, field.name)
                                     output.printf("#if __WORDSIZE == 32\n");

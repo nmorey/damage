@@ -49,7 +49,7 @@ module Damage
                             output.printf(",\n\t#{field.enumPrefix}_#{val} /** #{field.name} = \"#{str}\"*/ = #{count}")
                             count+=1
                         }
-                        output.printf("\n} #{field.enumPrefix};\n");
+                        output.printf("\n} __#{libName}_#{entry.name}_#{field.name};\n");
                         output.puts("
 /** Array containing the string for each enum entry */");
                         output.printf("extern const char*__#{libName}_#{entry.name}_#{field.name}_strings[#{field.enum.length+1}];\n\n");
