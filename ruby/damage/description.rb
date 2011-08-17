@@ -197,7 +197,8 @@ module Damage
                     @category = :simple
                     @type_size = 8
                     if @qty == :single then
-                        @is_attribute = true 
+                        @is_attribute = true
+                    else 
                         @default_val = "NULL"
                     end
                     if @default_val == nil then
