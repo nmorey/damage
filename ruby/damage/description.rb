@@ -196,7 +196,11 @@ module Damage
                     @java_type = "double"
                     @category = :simple
                     @type_size = 8
-                    @is_attribute = true if @qty == :single
+                    if @qty == :single then
+                        @is_attribute = true
+                    else 
+                        @default_val = "NULL"
+                    end
                     if @default_val == nil then
                         @default_val = "0.0"
                         @java_default_val = "0.0d"

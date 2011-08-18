@@ -85,7 +85,7 @@ module Damage
                             output.printf("\t\t\tfirst = false;\n")
                             output.printf("\t\t\tSystem.out.println(\"#{field.name}:\");\n");
                             output.printf("\t\t\tfor(int i = 0; i < this._#{field.name}.length; i++){\n");
-                            output.printf("\t\t\t\tindentToString(indent, listable, first);\n")
+                            output.printf("\t\t\t\tindentToString(indent + 1, true, true);\n")
                             output.printf("\t\t\t\tSystem.out.println(this._#{field.name}[i]);\n");
                             output.printf("\t\t\t}\n");
                             output.printf("\t\t}\n");
@@ -95,7 +95,7 @@ module Damage
                             output.printf("\t\t\tfirst = false;\n")
                             output.printf("\t\t\tSystem.out.println(\"#{field.name}:\");\n");
                             output.printf("\t\t\tfor(int i = 0; i < this._#{field.name}.length; i++){\n");
-                            output.printf("\t\t\t\tindentToString(indent, listable, first);\n")
+                            output.printf("\t\t\t\tindentToString(indent + 1, true, true);\n")
                             output.printf("\t\t\t\tSystem.out.println(\"\\\"\" + this._#{field.name}[i] + \"\\\"\");\n");
                             output.printf("\t\t\t}\n");
                             output.printf("\t\t}\n");

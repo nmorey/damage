@@ -22,18 +22,22 @@ module Damage
             @OUTFILE_C = "duplicate.c"
 
             def write(description)
-                outputC = Damage::Files.createAndOpen("gen/#{description.config.libname}/src", @OUTFILE_C)
+                description.entries.each() { |name, entry|
+                    outputC = Damage::Files.createAndOpen("gen/#{description.config.libname}/src", "duplicate__#{name}.c")
+                    self.genC(outputC, description, entry)
+                    outputC.close()
+                }
+
+
                 outputH = Damage::Files.createAndOpen("gen/#{description.config.libname}/include/#{description.config.libname}", @OUTFILE_H)
-                self.genC(outputC, description)
                 self.genH(outputH, description)
-                outputC.close()
                 outputH.close()
             end
             module_function :write
 
 
             private
-            def genC(output, description)
+            def genC(output, description, entry)
                 libName = description.config.libname
 
                 output.printf("#include <assert.h>\n")
@@ -44,7 +48,7 @@ module Damage
                 output.printf("#include <setjmp.h>\n")
                 output.printf("#include <libxml/xmlreader.h>\n")
                 output.printf("#include \"#{libName}.h\"\n")
-                output.printf("#include \"_#{libName}/common.h\"\n")
+                output.printf("#include \"_#{libName}/_common.h\"\n")
                 output.printf("\n\n") 
 
                 output.puts("
@@ -57,91 +61,93 @@ module Damage
  **/
 ");
                 
-                description.entries.each() { |name, entry|
-                    hasNext=""
-                    hasNext=", int next" if entry.attribute == :listable 
+                hasNext=""
+                hasNext=", int next" if entry.attribute == :listable 
 
-                    output.printf("__#{libName}_%s* __#{libName}_%s_duplicate(__#{libName}_%s *ptr#{hasNext}){\n", 
-                                  entry.name, entry.name, entry.name)
-                    output.printf("\t__#{libName}_%s *first = NULL;\n", entry.name);
-                    source="ptr"
-                    dest="first"
-                    indent="\t"
-                    if entry.attribute == :listable then
-                        output.printf("\t__#{libName}_%s *el, **last=&first, *new;\n\tfor(el = ptr; el != NULL; el = el->next) {\n",entry.name)
-                        source="el"
-                        dest="new"
-                        indent="\t\t"
-                    end
+                output.printf("__#{libName}_%s* __#{libName}_%s_duplicate(__#{libName}_%s *ptr#{hasNext}){\n", 
+                              entry.name, entry.name, entry.name)
+                output.printf("\t__#{libName}_%s *first = NULL;\n", entry.name);
+                source="ptr"
+                dest="first"
+                indent="\t"
+                if entry.attribute == :listable then
+                    output.printf("\t__#{libName}_%s *el, **last=&first, *new;\n\tfor(el = ptr; el != NULL; el = el->next) {\n",entry.name)
+                    source="el"
+                    dest="new"
+                    indent="\t\t"
+                end
 
-                    output.printf("#{indent}#{dest} = __#{libName}_#{entry.name}_alloc();\n");
-                    
-                    if entry.attribute == :listable then
-                        output.printf("#{indent}*last = #{dest};\n#{indent}last = &(#{dest}->next);\n")
-                    end
+                output.printf("#{indent}#{dest} = __#{libName}_#{entry.name}_alloc();\n");
+                
+                if entry.attribute == :listable then
+                    output.printf("#{indent}*last = #{dest};\n#{indent}last = &(#{dest}->next);\n")
+                end
 
-                    entry.fields.each() { |field|
-                        if field.target == :both then
-                            case field.qty
-                            when :single
-                                case field.category
-                                when :simple, :enum
-                                    # Do nothing
-                                    output.printf("#{indent}#{dest}->#{field.name} = #{source}->#{field.name};\n");
-                                when :string
-                                    output.printf("#{indent}if(#{source}->%s)\n", field.name)
-                                    output.printf("#{indent}\t#{dest}->#{field.name} = __#{libName}_strdup(#{source}->#{field.name});\n")
-                                when :intern
-                                    if field.attribute == :sort then
-                                        # We will regen it at the end
-                                        next
-                                    else
-                                        output.printf("#{indent}if(#{source}->%s)\n", field.name)
-                                        output.printf("#{indent}\t#{dest}->#{field.name} = __#{libName}_#{field.data_type}_duplicate(#{source}->#{field.name});\n")
-                                    end
-                                when :id, :idref
-                                    output.printf("#{indent}#{dest}->#{field.name} = #{source}->#{field.name};\n");
-                                    output.printf("#{indent}if(#{source}->%s_str)\n", field.name)
-                                    output.printf("#{indent}\t#{dest}->#{field.name} = __#{libName}_strdup(#{source}->#{field.name}_str);\n")
+                entry.fields.each() { |field|
+                    if field.target == :both then
+                        case field.qty
+                        when :single
+                            case field.category
+                            when :simple, :enum
+                                # Do nothing
+                                output.printf("#{indent}#{dest}->#{field.name} = #{source}->#{field.name};\n");
+                            when :string
+                                output.printf("#{indent}if(#{source}->%s)\n", field.name)
+                                output.printf("#{indent}\t#{dest}->#{field.name} = __#{libName}_strdup(#{source}->#{field.name});\n")
+                            when :intern
+                                if field.attribute == :sort then
+                                    # We will regen it at the end
+                                    next
                                 else
-                                    raise("Unsupported data category for #{entry.name}.#{field.name}");
-                                end
-                            when :list, :container
-                                case field.category
-                                when :simple
-                                    output.printf("#{indent}if(#{source}->%s){\n", field.name)
-                                    output.printf("#{indent}\t#{dest}->#{field.name}Len = #{source}->#{field.name}Len;\n")
-                                    output.printf("#{indent}\t#{dest}->#{field.name} = __#{libName}_malloc(#{dest}->#{field.name}Len * sizeof(*#{dest}->#{field.name}));\n")
-                                    output.printf("#{indent}\tmemcpy(#{dest}->#{field.name}, #{source}->#{field.name},#{dest}->#{field.name}Len * sizeof(*#{dest}->#{field.name}));\n");
-                                    output.printf("#{indent}}\n")
-                                when :string
-                                    output.printf("#{indent}if(#{source}->%s){\n", field.name)
-                                    output.printf("#{indent}\tunsigned int i;\n");
-                                    output.printf("#{indent}\t#{dest}->#{field.name}Len = #{source}->#{field.name}Len;\n")
-                                    output.printf("#{indent}\t#{dest}->#{field.name} = __#{libName}_malloc(#{dest}->#{field.name}Len * sizeof(*#{dest}->#{field.name}));\n")
-                                    output.printf("#{indent}\tfor(i = 0; i < #{source}->%sLen; i++){\n", 
-                                                  field.name);
-                                    output.printf("#{indent}\t\tif(#{source}->%s[i])\n", field.name);
-                                    output.printf("#{indent}\t\t\t#{dest}->#{field.name}[i] = __#{libName}_strdup(#{source}->#{field.name}[i]);\n")
-                                    output.printf("#{indent}\t}\n");
-                                    output.printf("#{indent}}\n")
-                                when :intern
                                     output.printf("#{indent}if(#{source}->%s)\n", field.name)
-                                    output.printf("#{indent}\t#{dest}->#{field.name} = __#{libName}_#{field.data_type}_duplicate(#{source}->#{field.name}, 1);\n")
-
-                                else
-                                    raise("Unsupported data category for #{entry.name}.#{field.name}");
+                                    output.printf("#{indent}\t#{dest}->#{field.name} = __#{libName}_#{field.data_type}_duplicate(#{source}->#{field.name});\n")
                                 end
+                            when :id, :idref
+                                output.printf("#{indent}#{dest}->#{field.name} = #{source}->#{field.name};\n");
+                                output.printf("#{indent}if(#{source}->%s_str)\n", field.name)
+                                output.printf("#{indent}\t#{dest}->#{field.name} = __#{libName}_strdup(#{source}->#{field.name}_str);\n")
+                            else
+                                raise("Unsupported data category for #{entry.name}.#{field.name}");
+                            end
+                        when :list, :container
+                            case field.category
+                            when :simple
+                                output.printf("#{indent}if(#{source}->%s){\n", field.name)
+                                output.printf("#{indent}\t#{dest}->#{field.name}Len = #{source}->#{field.name}Len;\n")
+                                output.printf("#{indent}\t#{dest}->#{field.name} = __#{libName}_malloc(#{dest}->#{field.name}Len * sizeof(*#{dest}->#{field.name}));\n")
+                                output.printf("#{indent}\tmemcpy(#{dest}->#{field.name}, #{source}->#{field.name},#{dest}->#{field.name}Len * sizeof(*#{dest}->#{field.name}));\n");
+                                output.printf("#{indent}}\n")
+                            when :string
+                                output.printf("#{indent}if(#{source}->%s){\n", field.name)
+                                output.printf("#{indent}\tunsigned int i;\n");
+                                output.printf("#{indent}\t#{dest}->#{field.name}Len = #{source}->#{field.name}Len;\n")
+                                output.printf("#{indent}\t#{dest}->#{field.name} = __#{libName}_malloc(#{dest}->#{field.name}Len * sizeof(*#{dest}->#{field.name}));\n")
+                                output.printf("#{indent}\tfor(i = 0; i < #{source}->%sLen; i++){\n", 
+                                              field.name);
+                                output.printf("#{indent}\t\tif(#{source}->%s[i])\n", field.name);
+                                output.printf("#{indent}\t\t\t#{dest}->#{field.name}[i] = __#{libName}_strdup(#{source}->#{field.name}[i]);\n")
+                                output.printf("#{indent}\t}\n");
+                                output.printf("#{indent}}\n")
+                            when :intern
+                                output.printf("#{indent}if(#{source}->%s)\n", field.name)
+                                output.printf("#{indent}\t#{dest}->#{field.name} = __#{libName}_#{field.data_type}_duplicate(#{source}->#{field.name}, 1);\n")
+
+                            else
+                                raise("Unsupported data category for #{entry.name}.#{field.name}");
                             end
                         end
-                    }
-                    if entry.attribute == :listable 
-                        output.printf("\t\tif(next == 0){\n\t\t\treturn first;\n\t\t}\n")
-                        output.printf("\t}\n") 
                     end
-                    output.printf("\treturn first;\n")
-                    output.printf("}\n\n")
                 }
+                # Autosort generation
+                entry.sort.each() {|field|
+                    output.printf("#{indent}__#{libName}_#{entry.name}_sort_#{field.name}(#{dest});\n")
+                }
+                if entry.attribute == :listable 
+                    output.printf("\t\tif(next == 0){\n\t\t\treturn first;\n\t\t}\n")
+                    output.printf("\t}\n") 
+                end
+                output.printf("\treturn first;\n")
+                output.printf("}\n\n")
 
                 output.puts("
 /** @} */

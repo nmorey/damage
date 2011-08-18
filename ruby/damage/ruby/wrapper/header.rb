@@ -24,7 +24,7 @@ module Damage
 #include <libxml/xmlreader.h>
 #include <#{libName}.h>
 #include <setjmp.h>
-#include <_#{libName}/common.h>
+#include <_#{libName}/_common.h>
 #include <assert.h>
 #include \"ruby_#{libName}.h\"
 
