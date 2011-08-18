@@ -48,20 +48,22 @@ public class #{params[:class]} extends SigmaCObject {
                             if field.category == :enum then
                                 output.puts("\t/** Enum for the #{field.name} field of a #{params[:class]} class */");
                                 output.printf("\tpublic enum #{field.java_type} {\n");
-                                output.printf("\t\tN_A /** Undefined */")
+                                output.printf("\t\tN_A (\"N/A\")/** Undefined */")
                                 count = 1;
                                 field.enum.each() { |str, val|
-                                    output.printf(",\n\t\t#{val} /** #{field.name} = \"#{str}\"*/")
+                                    output.printf(",\n\t\t#{val} (\"#{str}\")")
                                     count+=1
                                 }
+                                output.printf(";\n");
+                                output.printf("\t\tprivate final String stringValue;\n");
+                                output.printf("\t\t#{field.java_type}(String val) {\n");
+                                output.printf("\t\t\tthis.stringValue = val;\n");
+                                output.printf("\t\t}\n\n");
+                                output.printf("\t\t@Override\n");
+                                output.printf("\t\tpublic String toString() {\n");
+                                output.printf("\t\t\treturn this.stringValue;\n");
+                                output.printf("\t\t}\n");
                                 output.printf("\n\t}\n\n");
-                                output.puts("\t/** Array containing the string for each enum entry */");
-                                output.printf("\tpublic static final String _#{field.name}_strings[]= {\n");
-                                output.printf("\t\t\"N/A\"")
-                                field.enum.each() { |str, val|
-                                    output.printf(",\n\t\t\"#{str}\"")
-                                } 
-                                output.printf("\n\t};\n");
                             end
                             output.printf("\t/** #{field.description} */\n") if field.description != nil
                             output.printf("\t/** Field is an enum of type #{field.name.slice(0,1).upcase}#{field.name.slice(1..-1)}*/\n") if field.category == :enum
