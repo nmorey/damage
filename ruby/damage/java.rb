@@ -30,26 +30,27 @@ module Damage
                 outdir += dir + "/"
             }
             outdir += libName + "/"
-            ivisitorOutput = Damage::Files.createAndOpen(outdir, "ISigmaCObjectVisitor.java") 
-            ivisitorOutput.puts("package eu.kalray.sigmacDB;
+            uppercaseLibName = libName.slice(0,1).upcase + libName.slice(1..-1)
+            ivisitorOutput = Damage::Files.createAndOpen(outdir, "I#{uppercaseLibName}ObjectVisitor.java") 
+            ivisitorOutput.puts("package #{description.config.package}.#{libName};
           
 /**
  * Visitor (see http://en.wikipedia.org/wiki/Visitor_pattern)
  * @author xraynaud@kalray.eu
  *
  */
-public interface ISigmaCObjectVisitor {
+public interface I#{uppercaseLibName}ObjectVisitor {
   ");
             
-            visitorOutput = Damage::Files.createAndOpen(outdir, "DefaultSigmaCObjectVisitor.java")
-            visitorOutput.puts("package eu.kalray.sigmacDB;
+            visitorOutput = Damage::Files.createAndOpen(outdir, "Default#{uppercaseLibName}ObjectVisitor.java")
+            visitorOutput.puts("package #{description.config.package}.#{libName};
             
   /**
    * Default Visitor implementation (see http://en.wikipedia.org/wiki/Visitor_pattern)
    * @author xraynaud@kalray.eu
    *
    */
-  public class DefaultSigmaCObjectVisitor implements ISigmaCObjectVisitor {
+  public class Default#{uppercaseLibName}ObjectVisitor implements I#{uppercaseLibName}ObjectVisitor {
     ");
 
             description.entries.each(){ |name, entry|
@@ -69,12 +70,12 @@ public interface ISigmaCObjectVisitor {
                 visitorOutput.printf("\t@Override\n")
                 visitorOutput.printf("\tpublic void visit(%s obj) {}\n\n", "#{params[:class]}")
             }
-            output = Damage::Files.createAndOpen(outdir, "SigmaCObject.java") 
-            output.puts("package eu.kalray.sigmacDB;
+            output = Damage::Files.createAndOpen(outdir, "#{uppercaseLibName}Object.java") 
+            output.puts("package #{description.config.package}.#{libName};
 
 import java.util.HashMap;
 
-public abstract class SigmaCObject {
+public abstract class #{uppercaseLibName}Object {
 
   /**
    * Annotations
@@ -85,7 +86,7 @@ public abstract class SigmaCObject {
   /**
    * Constructor
    */
-  public SigmaCObject() {
+  public #{uppercaseLibName}Object() {
   }
 
 
@@ -100,7 +101,7 @@ public abstract class SigmaCObject {
   }
 
   /**
-   * Set an annotation to this SigmaCObject
+   * Set an annotation to this #{uppercaseLibName}Object
    * @return the previous one, if any.
    */
   public Object setAnnotation(String key, Object object) {
@@ -112,9 +113,9 @@ public abstract class SigmaCObject {
 
 
   /**
-   * Each SigmaCObject must implement this method
+   * Each #{uppercaseLibName}Object must implement this method
    */
-  public abstract void visit(ISigmaCObjectVisitor v);
+  public abstract void visit(I#{uppercaseLibName}ObjectVisitor v);
 
 
 }");

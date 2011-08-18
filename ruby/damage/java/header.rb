@@ -18,6 +18,7 @@ module Damage
   module Java
       module Header
         def write(output, libName, entry, pahole, params)
+         uppercaseLibName = libName.slice(0,1).upcase + libName.slice(1..-1)
          output.puts("
 package #{params[:package]};
 
@@ -27,19 +28,17 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.*;
 import java.nio.charset.*;
+import java.util.HashMap;
 
 /** Class #{params[:class]}: #{entry.description} */
-public class #{params[:class]} extends SigmaCObject {
+public class #{params[:class]} extends #{uppercaseLibName}Object {
 
 ")
             entry.fields.each() {|field|
                 case field.attribute
                 when :sort
-                    next #FIXME
-                    # output.printf("\t/** Sorted array (index) of \"#{field.sort_field}\" by #{field.sort_key} (not necessary dense) */\n")
-                    # output.printf("\tstruct ___#{libName}_#{field.data_type}** s_#{field.name} __#{libName.upcase}_ALIGN__;\n")
-                    # output.printf("\t/** Length of the s_#{field.name} array */\n")
-                    # output.printf("\tuint32_t n_%s;\n", field.name)
+                    output.printf("\t/** Map of \"#{field.sort_field}\" by #{field.sort_key} */\n")
+                    output.printf("\tpublic HashMap<Integer, #{field.java_type}> _#{field.name}_by_#{field.sort_key};\n")
                 when :meta,:container,:none
                     case field.category
                     when :simple, :enum, :string
