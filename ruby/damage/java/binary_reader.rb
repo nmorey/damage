@@ -176,6 +176,13 @@ module Damage
                         raise("Unsupported quantitiy for #{entry.name}.{field.name}")
                     end
                 }
+                
+              entry.fields.each() { |field|
+                case field.attribute
+                  when :sort
+                    output.printf("\t\tobj.sort_#{field.name}_by_#{field.sort_key}();\n")
+                  end
+                }
 
                 if entry.attribute == :listable
                     output.printf("#{indent}list.add(obj);\n") 

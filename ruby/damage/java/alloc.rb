@@ -38,14 +38,23 @@ module Damage
                 output.printf("\t\tv.visit(this);\n")
                 output.printf("\t}\n\n")
                 
-#                entry.fields.each() { |field|
-#                case field.attribute
-#                when :sort
-#                    next #FIXME
-#                    # output.printf("\t/** Sorted array (index) of \"#{field.sort_field}\" by #{field.sort_key} (not necessary dense) */\n")
-#                    # output.printf("\tstruct ___#{libName}_#{field.data_type}** s_#{field.name} __#{libName.upcase}_ALIGN__;\n")
-#                    # output.printf("\t/** Length of the s_#{field.name} array */\n")
-#                    # output.printf("\tuint32_t n_%s;\n", field.name)
+                entry.fields.each() { |field|
+                  case field.attribute
+                  when :sort
+                    output.printf("\t/** Sort #{field.sort_field}\ by #{field.sort_key} */\n")
+                    output.printf("\tpublic void sort_#{field.name}_by_#{field.sort_key}() {\n")
+                    output.printf("\t\tif (_#{field.name}_by_#{field.sort_key} == null) {\n")
+                    output.printf("\t\t\t_#{field.name}_by_#{field.sort_key} = new HashMap<Integer, #{field.java_type}>();\n")
+                    output.printf("\t\t} else {\n")
+                    output.printf("\t\t\t_#{field.name}_by_#{field.sort_key}.clear();\n")
+                    output.printf("\t\t}\n")
+                    output.printf("\t\tfor (#{field.java_type} obj: _#{field.name}) {\n")
+                    output.printf("\t\t\t_#{field.name}_by_#{field.sort_key}.put(obj._#{field.sort_key}, obj);\n")
+                    output.printf("\t\t}\n")
+                    output.printf("\t}\n\n")
+                  end
+                }
+                
 #                when :meta,:container,:none
 #                    case field.category
 #                    when :simple, :enum, :string
@@ -80,7 +89,7 @@ module Damage
 #                    raise("Unsupported data attribute for #{entry.name}.#{field.name}");
 #                end
 #                }
-            end
+              end
 
             module_function :write
         end
