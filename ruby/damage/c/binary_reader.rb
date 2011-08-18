@@ -171,6 +171,9 @@ __#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load_partial(FILE*
                             output.printf("#{indent}\t__#{libName}_fread(&len, sizeof(len), 1, file);\n")
                             output.printf("#{indent}\t#{source}->%s = __#{libName}_malloc(len * sizeof(char));\n", field.name)
                             output.printf("#{indent}\t__#{libName}_fread(#{source}->%s, sizeof(char), len, file);\n", field.name)
+                            output.printf("#{indent}} else {\n")
+                            output.printf("#{indent}\tuint32_t len;\n")
+                            output.printf("#{indent}\t__#{libName}_fread(&len, sizeof(len), 1, file);\n")
                             output.printf("#{indent}}\n")
                         when :intern
                             output.printf("#{indent}if((opt->#{field.data_type} != 0) && (#{source}->%s != NULL)){\n", field.name)

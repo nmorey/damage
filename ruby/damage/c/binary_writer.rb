@@ -168,7 +168,10 @@ uint32_t __#{libName}_#{entry.name}_binary_dump(__#{libName}_#{entry.name}* ptr,
                             output.printf("#{indent}\tuint32_t len = strlen(#{source}->%s) + 1;\n", field.name)
                             output.printf("#{indent}\t__#{libName}_fwrite(&len, sizeof(len), 1, file);\n", field.name)
                             output.printf("#{indent}\t__#{libName}_fwrite(#{source}->%s, sizeof(char), len, file);\n", field.name)
-                            output.printf("#{indent}}\n")
+                            output.printf("#{indent}} else {\n")
+                            output.printf("#{indent}\tuint32_t len = 0;\n", field.name)
+                            output.printf("#{indent}\t__#{libName}_fwrite(&len, sizeof(len), 1, file);\n", field.name)
+                            output.printf("#{indent}} \n")
                         when :intern
                             output.printf("#{indent}if(#{source}->%s){\n", field.name)
                             output.printf("#{indent}\tnbytes +=__#{libName}_%s_binary_dump(#{source}->%s, file);\n", 
@@ -279,6 +282,8 @@ uint32_t __#{libName}_#{entry.name}_binary_comp_offset(__#{libName}_#{entry.name
                             output.printf("#{indent}if(#{source}->%s){\n", field.name)
                             output.printf("#{indent}\tuint32_t len = strlen(#{source}->%s) + 1;\n", field.name)
                             output.printf("#{indent}\tchild_offset += len + sizeof(len);\n", field.name)
+                            output.printf("#{indent}} else {\n")
+                            output.printf("#{indent}\tchild_offset += sizeof(uint32_t);\n", field.name)
                             output.printf("#{indent}}\n")
                         when :intern
                             output.printf("#{indent}if(#{source}->%s){\n", field.name)
