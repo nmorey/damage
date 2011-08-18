@@ -155,7 +155,8 @@ __#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load_partial(FILE*
                 # Set next field if we have a predecessor
                 output.printf("\t\tif(prev){\n\t\t\tprev->next = el;\n\t\t} else {\n\t\t\tfirst = el;\n\t\t}\n") if entry.attribute == :listable
 
-                output.printf("#{indent}__#{libName}_fseek(file, offset, SEEK_SET);\n")
+                output.printf("#{indent}if(opt->_all != 1)\n")
+                output.printf("#{indent}\t__#{libName}_fseek(file, offset, SEEK_SET);\n")
                 output.printf("#{indent}__#{libName}_fread(el, sizeof(*el), 1, file);\n")
 
                 entry.fields.each() { |field|
@@ -378,6 +379,7 @@ __#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load_partial(FILE*
                 output.printf("\n")
 
                 output.printf("\t__#{libName}_partial_options_parse_#{entry.name}(&opt);\n");
+                output.printf("\topt._all = 1;\n");
                 output.printf("\treturn __#{libName}_#{entry.name}_binary_load_file_partial(file, opts, &opt);\n")
                 output.printf("}\n");
                 output.puts("
