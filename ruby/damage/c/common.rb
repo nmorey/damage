@@ -81,6 +81,7 @@ int __#{libName}_release_flock(const char* filename);
 #include <string.h>
 #include <setjmp.h>
 #include <libxml/xmlreader.h>
+#include <zlib.h>
 
 void *__#{libName}_malloc(unsigned long size);
 char *__#{libName}_strdup(const char* str);
@@ -106,6 +107,9 @@ double __#{libName}_read_value_double_attr(xmlAttrPtr reader);
 void __#{libName}_fread(void* buf, size_t elSize, int nbElem, FILE* input);
 void __#{libName}_fwrite(void* buf, size_t elSize, int nbElem, FILE* input);
 void __#{libName}_fseek(FILE *stream, long offset, int whence);
+void __#{libName}_gzread(gzFile input, void* buf, size_t size);
+void __#{libName}_gzwrite(gzFile output, void* buf, size_t size);
+void __#{libName}_gzseek(gzFile stream, long offset, int whence);
 
 void __#{libName}_paddOutput(FILE* file, int indent, int listable, int first);
 
@@ -206,6 +210,14 @@ void __#{libName}_fseek(FILE *stream, long offset, int whence){
     int ret;
     ret = fseek(stream, offset, whence);
     if(ret < 0 ){
+        __#{libName}_error(\"Failed to access DB. Invalid format: %s.\", errno, strerror(errno));
+    }
+}
+
+void __#{libName}_gzread(gzFile input, void* buf, size_t size){
+    unsigned int ret;
+    ret = gzread(input, buf, size);
+    if(ret != size){
         __#{libName}_error(\"Failed to read from DB. Invalid format.\", errno);
     }
 }
@@ -221,6 +233,22 @@ void __#{libName}_paddOutput(FILE* file, int indent, int listable, int first){
         } else {
             fprintf(file, \"  \");
         }
+    }
+}
+
+void __#{libName}_gzwrite(gzFile output, void* buf, size_t size){
+    unsigned int ret;
+    ret = gzwrite(output, buf, size);
+    if(ret != size){
+        __#{libName}_error(\"Failed to write DB. Invalid format.\", errno);
+    }
+}
+
+void __#{libName}_gzseek(gzFile stream, long offset, int whence){
+    int ret;
+    ret = gzseek(stream, offset, whence);
+    if(ret < 0 ){
+        __#{libName}_error(\"Failed to access DB. Invalid format: %s.\", errno, strerror(errno));
     }
 }
 

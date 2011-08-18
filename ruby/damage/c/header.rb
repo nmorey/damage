@@ -56,6 +56,7 @@ module Damage
 ")
                 output.puts("#include <stdio.h>")
                 output.puts("#include <stdint.h>")
+                output.puts("#include <zlib.h>")
                 output.puts("#include <#{libName}/common.h>")
                 output.puts("#include <#{libName}/enum.h>")
                 output.puts("#include <#{libName}/structs.h>")
@@ -85,7 +86,6 @@ module Damage
 
 /** Library version */
 #define __#{libName.upcase}_VERSION__ \"#{description.config.version}\"\n
-
 
 /** @} */
 ")
