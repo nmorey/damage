@@ -221,13 +221,13 @@ module Damage
                 ByteBuffer(output, "in", "\t\t", "#{params[:bin_header][:size]}", "0")
                 output.printf("\n\t\tval = in.getInt(#{params[:bin_header]["version"][:offset]});\n")
                 output.printf("\t\tif(val  != #{params[:version]})\n");
-                output.printf("\t\t\tthrow new java.io.UnsupportedEncodingException(\"Incompatible sigmacDB format\");\n\n")
+                output.printf("\t\t\tthrow new java.io.UnsupportedEncodingException(\"Incompatible #{libName} format\");\n\n")
                 output.printf("\t\tin.position(#{params[:bin_header]["damage_version[41]"][:offset]});\n")
                 output.printf("\t\tin.get(header_dVersion);\n")
                 output.printf("\t\tdamage_versionStr = new String(header_dVersion, Charset.forName(\"UTF-8\"));\n")
 
                 output.printf("\t\tif(damage_versionStr.compareTo(damage_version) != 0)\n")
-                output.printf("\t\t\tthrow new java.io.UnsupportedEncodingException(\"Incompatible sigmacDB format\");\n\n")
+                output.printf("\t\t\tthrow new java.io.UnsupportedEncodingException(\"Incompatible #{libName} format\");\n\n")
 
                 output.printf("\t\tval = in.getInt(#{params[:bin_header]["length"][:offset]});\n")
                 output.printf("\t\tif(val  != file.length())\n");

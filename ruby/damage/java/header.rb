@@ -18,6 +18,7 @@ module Damage
   module Java
       module Header
         def write(output, libName, entry, pahole, params)
+         uppercaseLibName = libName.slice(0,1).upcase + libName.slice(1..-1)
          output.puts("
 package #{params[:package]};
 
@@ -27,19 +28,17 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.*;
 import java.nio.charset.*;
+import java.util.HashMap;
 
 /** Class #{params[:class]}: #{entry.description} */
-public class #{params[:class]} {
+public class #{params[:class]} extends #{uppercaseLibName}Object {
 
 ")
             entry.fields.each() {|field|
                 case field.attribute
                 when :sort
-                    next #FIXME
-                    # output.printf("\t/** Sorted array (index) of \"#{field.sort_field}\" by #{field.sort_key} (not necessary dense) */\n")
-                    # output.printf("\tstruct ___#{libName}_#{field.data_type}** s_#{field.name} __#{libName.upcase}_ALIGN__;\n")
-                    # output.printf("\t/** Length of the s_#{field.name} array */\n")
-                    # output.printf("\tuint32_t n_%s;\n", field.name)
+                    output.printf("\t/** Map of \"#{field.sort_field}\" by #{field.sort_key} */\n")
+                    output.printf("\tpublic HashMap<Integer, #{field.java_type}> _#{field.name}_by_#{field.sort_key};\n")
                 when :meta,:container,:none
                     case field.category
                     when :simple, :enum, :string
@@ -48,20 +47,22 @@ public class #{params[:class]} {
                             if field.category == :enum then
                                 output.puts("\t/** Enum for the #{field.name} field of a #{params[:class]} class */");
                                 output.printf("\tpublic enum #{field.java_type} {\n");
-                                output.printf("\t\tN_A /** Undefined */")
+                                output.printf("\t\tN_A (\"N/A\")/** Undefined */")
                                 count = 1;
                                 field.enum.each() { |str, val|
-                                    output.printf(",\n\t\t#{val} /** #{field.name} = \"#{str}\"*/")
+                                    output.printf(",\n\t\t#{val} (\"#{str}\")")
                                     count+=1
                                 }
+                                output.printf(";\n");
+                                output.printf("\t\tprivate final String stringValue;\n");
+                                output.printf("\t\t#{field.java_type}(String val) {\n");
+                                output.printf("\t\t\tthis.stringValue = val;\n");
+                                output.printf("\t\t}\n\n");
+                                output.printf("\t\t@Override\n");
+                                output.printf("\t\tpublic String toString() {\n");
+                                output.printf("\t\t\treturn this.stringValue;\n");
+                                output.printf("\t\t}\n");
                                 output.printf("\n\t}\n\n");
-                                output.puts("\t/** Array containing the string for each enum entry */");
-                                output.printf("\tpublic static final String _#{field.name}_strings[]= {\n");
-                                output.printf("\t\t\"N/A\"")
-                                field.enum.each() { |str, val|
-                                    output.printf(",\n\t\t\"#{str}\"")
-                                } 
-                                output.printf("\n\t};\n");
                             end
                             output.printf("\t/** #{field.description} */\n") if field.description != nil
                             output.printf("\t/** Field is an enum of type #{field.name.slice(0,1).upcase}#{field.name.slice(1..-1)}*/\n") if field.category == :enum
@@ -85,8 +86,7 @@ public class #{params[:class]} {
                 else
                     raise("Unsupported data attribute for #{entry.name}.#{field.name}");
                 end
-            } 
-                
+            }
             output.puts("\n\n");
         end
         module_function :write

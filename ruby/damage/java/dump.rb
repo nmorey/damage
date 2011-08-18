@@ -46,17 +46,10 @@ module Damage
                     case field.qty
                     when :single
                         case field.category
-                        when :simple
+                        when :simple, :enum
                             output.printf("\t\tindentToString(indent, listable, first);\n")
                             output.printf("\t\tfirst = false;\n")
                             output.printf("\t\tSystem.out.println(\"#{field.name}: \" + this._#{field.name});\n");
-                        when :enum
-                            output.printf("\t\tindentToString(indent, listable, first);\n")
-                            output.printf("\t\tfirst = false;\n")
-                            output.printf("\t\tSystem.out.println(\"#{field.name}: \" + " +
-                                          " #{params[:class]}._#{field.name}_strings[#{params[:class]}." +
-                                          "#{field.java_type.slice(0,1).downcase + field.java_type.slice(1..-1)}"+
-                                          "ToId(this._#{field.name})]);\n");
                         when :string
                             output.printf("\t\tif(this._#{field.name} != null){\n");
                             output.printf("\t\t\tindentToString(indent, listable, first);\n")
