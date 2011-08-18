@@ -34,6 +34,10 @@ module Damage
                 }
 
                 output.printf("\t}\n\n")
+                output.printf("\t@Override\n")
+                output.printf("\tpublic void visit(ISigmaCObjectVisitor v) {\n")
+                output.printf("\t\tv.visit(this);\n")
+                output.printf("\t}\n\n")
             end
 
             module_function :write

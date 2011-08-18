@@ -29,7 +29,7 @@ import java.nio.channels.*;
 import java.nio.charset.*;
 
 /** Class #{params[:class]}: #{entry.description} */
-public class #{params[:class]} {
+public class #{params[:class]} extends SigmaCObject {
 
 ")
             entry.fields.each() {|field|
@@ -83,8 +83,7 @@ public class #{params[:class]} {
                 else
                     raise("Unsupported data attribute for #{entry.name}.#{field.name}");
                 end
-            } 
-                
+            }
             output.puts("\n\n");
         end
         module_function :write

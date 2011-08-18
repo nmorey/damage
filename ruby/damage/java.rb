@@ -29,6 +29,28 @@ module Damage
                 outdir += dir + "/"
             }
             outdir += libName + "/"
+            ivisitorOutput = Damage::Files.createAndOpen(outdir, "ISigmaCObjectVisitor.java") 
+            ivisitorOutput.puts("package eu.kalray.sigmacDB;
+          
+/**
+ * Visitor (see http://en.wikipedia.org/wiki/Visitor_pattern)
+ * @author xraynaud@kalray.eu
+ *
+ */
+public interface ISigmaCObjectVisitor {
+  ");
+            
+            visitorOutput = Damage::Files.createAndOpen(outdir, "DefaultSigmaCObjectVisitor.java")
+            visitorOutput.puts("package eu.kalray.sigmacDB;
+            
+  /**
+   * Default Visitor implementation (see http://en.wikipedia.org/wiki/Visitor_pattern)
+   * @author xraynaud@kalray.eu
+   *
+   */
+  public class DefaultSigmaCObjectVisitor implements ISigmaCObjectVisitor {
+    ");
+
             description.entries.each(){ |name, entry|
                 raise("Missing size info") if pahole.entries[name] == nil
                 params = nameToParams(description, name)
@@ -40,7 +62,67 @@ module Damage
                 Dump::write(output, libName, entry, pahole.entries[name], params)
                 output.puts("\n}\n\n")
                 output.close()
+                ivisitorOutput.printf("\tpublic void visit(%s obj);\n\n", "#{params[:class]}")
+                visitorOutput.printf("\t@Override\n")
+                visitorOutput.printf("\tpublic void visit(%s obj) {}\n\n", "#{params[:class]}")
             }
+            output = Damage::Files.createAndOpen(outdir, "SigmaCObject.java") 
+            output.puts("package eu.kalray.sigmacDB;
+
+import java.util.HashMap;
+
+public abstract class SigmaCObject {
+
+  /**
+   * Annotations
+   * Developer can put any Object in this map.
+   */
+  private HashMap<String, Object> m_annotations;
+
+  /**
+   * Constructor
+   */
+  public SigmaCObject() {
+  }
+
+
+  /**
+   * Gets the annotation fir the given key.
+   */
+  public Object getAnnotation(String key) {
+    if (m_annotations != null) {
+      return m_annotations.get(key);
+    }
+    return null;
+  }
+
+  /**
+   * Set an annotation to this SigmaCObject
+   * @return the previous one, if any.
+   */
+  public Object setAnnotation(String key, Object object) {
+    if (m_annotations == null) {
+      m_annotations = new HashMap<String, Object>();
+    }
+    return m_annotations.put(key, object);
+  }
+
+
+  /**
+   * Each SigmaCObject must implement this method
+   */
+  public abstract void visit(ISigmaCObjectVisitor v);
+
+
+}");
+ 
+            output.close();
+
+            ivisitorOutput.puts("}\n");
+            visitorOutput.puts("}\n");
+            ivisitorOutput.close();
+            visitorOutput.close();
+            
         end
         module_function :generate
 
