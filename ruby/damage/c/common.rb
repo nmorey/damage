@@ -144,7 +144,9 @@ jmp_buf __#{libName}_error_happened;
 /** Represent a lock of a #{libName} DB file */
 typedef struct ___#{libName}_db_lock{
     /** Pointer to the open file (used for lock) */
-    FILE* file;
+    int file;
+    /** Old file copy used by fdopen */
+    int oldfd;
     /** Name of the DB file */
     char* name;
     /** Pointer to the next lock */
@@ -447,15 +449,17 @@ static __#{libName}_db_lock* lockedDBs = NULL;;
 
 static inline void __#{libName}_free_dblock(__#{libName}_db_lock* dbLock)
 {
-	fclose(dbLock->file);
+    if(dbLock->oldfd != -1)
+        close(dbLock->oldfd);
+	close(dbLock->file);
 	free(dbLock->name);
 	free(dbLock);
 
 }
 FILE* __#{libName}_acquire_flock(const char* filename, int rdonly){
-	__#{libName}_db_lock* dbLock;
-   struct flock lock;
-
+    __#{libName}_db_lock* dbLock;
+    struct flock lock;
+    FILE * ptr;
     if(filename == NULL){
         return NULL;
     }
@@ -475,43 +479,52 @@ FILE* __#{libName}_acquire_flock(const char* filename, int rdonly){
         dbLock->next = lockedDBs;
         dbLock->name = strdup(filename);
         dbLock->rdonly = rdonly;
+        dbLock->oldfd = -1;
         if(!dbLock->name){
             free(dbLock);
             return NULL;
         }
-        dbLock->file = fopen(dbLock->name, rdonly ? \"r\" : \"r+\");
-        if(!dbLock->file && rdonly == 0){
-            dbLock->file = fopen(dbLock->name, \"w+\");
-        }
-        if(!dbLock->file){
+        dbLock->file = open(dbLock->name, O_CREAT | (rdonly ? O_RDONLY : O_RDWR), 0777);
+        if(dbLock->file == -1){
             free(dbLock->name);
             free(dbLock);
             return NULL;
         }
-	} else {
-        /* We already got the lock ! */
-        return dbLock->file;
-    }
 
-	lock.l_whence = SEEK_SET;
-	lock.l_start = 0;
-	lock.l_len = 0;
-	lock.l_pid = getpid();
-    if(rdonly){
-        lock.l_type = F_RDLCK;
-    } else {
-        lock.l_type = F_WRLCK;
-    }
-
-	while(fcntl(fileno(dbLock->file), F_SETLKW, &lock))
-		if(errno != EINTR){
-            __#{libName}_free_dblock(dbLock);
-			return NULL;
+    	lock.l_whence = SEEK_SET;
+    	lock.l_start = 0;
+    	lock.l_len = 0;
+    	lock.l_pid = getpid();
+        if(rdonly){
+            lock.l_type = F_RDLCK;
+        } else {
+            lock.l_type = F_WRLCK;
         }
 
-    lockedDBs = dbLock;
-    fseek(dbLock->file, 0, SEEK_SET);
-	return dbLock->file;
+    	while(fcntl(dbLock->file, F_SETLKW, &lock)){
+    		if(errno != EINTR){
+                __#{libName}_free_dblock(dbLock);
+    			return NULL;
+            }
+        }
+        lockedDBs = dbLock;
+    }
+
+    /* We  got the lock ! */
+    if(dbLock->oldfd != -1){
+        close(dbLock->oldfd);
+    }
+    dbLock->oldfd = dup(dbLock->file);
+    if(lseek(dbLock->oldfd, 0, SEEK_SET) == (off_t) -1){
+        __#{libName}_free_dblock(dbLock);
+     	return NULL;
+    }
+
+    ptr = fdopen(dbLock->oldfd, rdonly? \"r\" : \"r+\");
+    if(!ptr){
+        __#{libName}_free_dblock(dbLock);
+    }
+ 	return ptr;
 }
 
 int __#{libName}_release_flock(const char* filename){
@@ -536,7 +549,7 @@ int __#{libName}_release_flock(const char* filename){
 	lock.l_pid = getpid();
 	lock.l_type = F_UNLCK;
 
-	while(fcntl(fileno(dbLock->file), F_SETLKW, &lock))
+	while(fcntl(dbLock->file, F_SETLKW, &lock))
 		if(errno != EINTR)
 			return 1;
 

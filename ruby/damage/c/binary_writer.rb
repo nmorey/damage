@@ -374,14 +374,14 @@ uint32_t __#{libName}_#{entry.name}_binary_comp_offset(__#{libName}_#{entry.name
 
                 output.printf("\tif((output = __#{libName}_acquire_flock(file, 0)) == NULL)\n");
                 output.printf("\t\t__#{libName}_error(\"Failed to lock output file %%s: %%s\", ENOENT, file, strerror(errno));\n\n");
-
-                output.printf("\tif(ftruncate(fileno(output), 0) != 0)\n");
-                output.printf("\t\t__#{libName}_error(\"Failed to truncate output file %%s: %%s\", ENOENT, file, strerror(errno));\n\n");
                 output.printf("\theader.length = __#{libName}_%s_binary_comp_offset(ptr, sizeof(header));\n", entry.name)
-                output.printf("\t__#{libName}_fseek(output, 0, SEEK_SET);\n")
                 output.printf("\t__#{libName}_fwrite(&header, sizeof(header), 1, output);\n\n");
 
                 output.printf("\t__#{libName}_%s_binary_dump(ptr, output);\n", entry.name)
+
+                output.printf("\tfflush(output);\n")
+                output.printf("\tif(ftruncate(fileno(output), header.length) != 0)\n");
+                output.printf("\t\t__#{libName}_error(\"Failed to truncate output file %%s: %%s\", ENOENT, file, strerror(errno));\n\n");
 
                 output.printf("\tif((opts & __#{libName.upcase}_OPTION_KEEPLOCKED) == 0)\n");
                 output.printf("\t\t__#{libName}_release_flock(file);\n");
