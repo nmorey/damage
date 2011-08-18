@@ -228,7 +228,7 @@ module Damage
                 ByteBuffer(output, "in", "\t\t", "2 * 4", "0")
                 output.printf("\n\t\tval = in.getInt(0);\n")
                 output.printf("\t\tif(val  != #{params[:version]})\n");
-                output.printf("\t\t\tthrow new java.io.UnsupportedEncodingException(\"Incompatible sigmacDB format\");\n\n")
+                output.printf("\t\t\tthrow new java.io.UnsupportedEncodingException(\"Incompatible #{libName} format\");\n\n")
 
                 output.printf("\t\tval = in.getInt(4);\n")
                 output.printf("\t\tif(val  != file.length())\n");

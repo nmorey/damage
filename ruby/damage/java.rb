@@ -30,6 +30,29 @@ module Damage
                 outdir += dir + "/"
             }
             outdir += libName + "/"
+            uppercaseLibName = libName.slice(0,1).upcase + libName.slice(1..-1)
+            ivisitorOutput = Damage::Files.createAndOpen(outdir, "I#{uppercaseLibName}ObjectVisitor.java") 
+            ivisitorOutput.puts("package #{description.config.package}.#{libName};
+          
+/**
+ * Visitor (see http://en.wikipedia.org/wiki/Visitor_pattern)
+ * @author xraynaud@kalray.eu
+ *
+ */
+public interface I#{uppercaseLibName}ObjectVisitor {
+  ");
+            
+            visitorOutput = Damage::Files.createAndOpen(outdir, "Default#{uppercaseLibName}ObjectVisitor.java")
+            visitorOutput.puts("package #{description.config.package}.#{libName};
+            
+  /**
+   * Default Visitor implementation (see http://en.wikipedia.org/wiki/Visitor_pattern)
+   * @author xraynaud@kalray.eu
+   *
+   */
+  public class Default#{uppercaseLibName}ObjectVisitor implements I#{uppercaseLibName}ObjectVisitor {
+    ");
+
             description.entries.each(){ |name, entry|
                 raise("Missing size info") if pahole.entries[name] == nil
                 params = nameToParams(description, name)
@@ -43,7 +66,67 @@ module Damage
                 ParserOptions::write(description)
                 output.puts("\n}\n\n")
                 output.close()
+                ivisitorOutput.printf("\tpublic void visit(%s obj);\n\n", "#{params[:class]}")
+                visitorOutput.printf("\t@Override\n")
+                visitorOutput.printf("\tpublic void visit(%s obj) {}\n\n", "#{params[:class]}")
             }
+            output = Damage::Files.createAndOpen(outdir, "#{uppercaseLibName}Object.java") 
+            output.puts("package #{description.config.package}.#{libName};
+
+import java.util.HashMap;
+
+public abstract class #{uppercaseLibName}Object {
+
+  /**
+   * Annotations
+   * Developer can put any Object in this map.
+   */
+  private HashMap<String, Object> m_annotations;
+
+  /**
+   * Constructor
+   */
+  public #{uppercaseLibName}Object() {
+  }
+
+
+  /**
+   * Gets the annotation fir the given key.
+   */
+  public Object getAnnotation(String key) {
+    if (m_annotations != null) {
+      return m_annotations.get(key);
+    }
+    return null;
+  }
+
+  /**
+   * Set an annotation to this #{uppercaseLibName}Object
+   * @return the previous one, if any.
+   */
+  public Object setAnnotation(String key, Object object) {
+    if (m_annotations == null) {
+      m_annotations = new HashMap<String, Object>();
+    }
+    return m_annotations.put(key, object);
+  }
+
+
+  /**
+   * Each #{uppercaseLibName}Object must implement this method
+   */
+  public abstract void visit(I#{uppercaseLibName}ObjectVisitor v);
+
+
+}");
+ 
+            output.close();
+
+            ivisitorOutput.puts("}\n");
+            visitorOutput.puts("}\n");
+            ivisitorOutput.close();
+            visitorOutput.close();
+            
         end
         module_function :generate
 
