@@ -330,7 +330,10 @@ __#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load_partial(FILE*
                 output.printf("\tif((output = __#{libName}_acquire_flock(file, opts & __#{libName.upcase}_OPTION_READONLY)) == NULL)\n");
                 output.printf("\t\t__#{libName}_error(\"Failed to lock output file %%s: %%s\", ENOENT, file, strerror(errno));\n");
                 output.printf("\t\t__#{libName}_fread(&header, sizeof(header), 1, output);\n")
-                output.printf("\t\tif(header.version != #{description.config.version})\n")
+                output.printf("\t\tif(header.version != __#{libName.upcase}_DB_FORMAT)\n")
+                output.printf("\t\t__#{libName}_error(\"Version from file %%s is incompatible.\", EACCES, file);\n\n");
+
+                output.printf("\t\tif(strcmp(header.damage_version, __#{libName.upcase}_DAMAGE_VERSION))\n")
                 output.printf("\t\t__#{libName}_error(\"Version from file %%s is incompatible.\", EACCES, file);\n\n");
 
                 output.printf("\t\tret = fstat(fileno(output), &fStat);\n")

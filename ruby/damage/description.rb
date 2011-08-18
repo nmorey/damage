@@ -412,6 +412,8 @@ module Damage
             attr_accessor :rowip
             # Java package prefix
             attr_accessor :package
+            #Version of damage
+            attr_accessor :damage_version
 
             # Build a new config from a parsed YAML tree
             def initialize(config)
@@ -443,7 +445,8 @@ module Damage
             # Returns a list of all the containers defined in the entries
             # This is useful are containers are implied entries only defined as field
             attr_accessor  :containers
-
+            # Pointer to pahole description
+            attr_accessor :pahole
 
             # Build a description from a parsed YAML tree
             def initialize(tree)

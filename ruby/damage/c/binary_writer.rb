@@ -363,7 +363,7 @@ uint32_t __#{libName}_#{entry.name}_binary_comp_offset(__#{libName}_#{entry.name
                 output.printf("unsigned long __#{libName}_%s_binary_dump_file(const char* file, __#{libName}_%s *ptr, __#{libName}_options opts)\n{\n", entry.name, entry.name)
                 output.printf("\tuint32_t ret;\n")
                 output.printf("\tFILE* output;\n")
-                output.printf("\t__#{libName}_binary_header header = { #{description.config.version}, 0};\n")
+                output.printf("\t__#{libName}_binary_header header = { __#{libName.upcase}_DB_FORMAT, __#{libName.upcase}_DAMAGE_VERSION, 0};\n")
                 output.printf("\n")
 
                 output.printf("\tret = setjmp(__#{libName}_error_happened);\n");

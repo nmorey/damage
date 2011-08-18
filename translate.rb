@@ -23,6 +23,7 @@ require 'damage'
 f = File.open(ARGV[0])
 tree = YAML::load(f)
 desc = Damage::Description::Description.new(tree)
+desc.config.damage_version = `cd #{File.dirname(__FILE__)}; git rev-parse HEAD; cd - > /dev/null`.chomp()
 
 if ARGV[1] == nil then 
     Damage::Doc::generate(desc)
@@ -30,6 +31,6 @@ if ARGV[1] == nil then
     Damage::Ruby::generate(desc)
 else
     input = File.open(ARGV[1])
-    pahole = Damage::Description::Pahole.new(desc.config.libname, input)
-    Damage::Java::generate(desc, pahole)
+    desc.pahole = Damage::Description::Pahole.new(desc.config.libname, input)
+    Damage::Java::generate(desc, desc.pahole)
 end

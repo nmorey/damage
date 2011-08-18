@@ -210,21 +210,30 @@ module Damage
                 output.printf("\t\tjava.io.File fileLock = new java.io.File(filename + \".lock\");\n")
                 output.printf("\t\tFileChannel fc = file.getChannel();\n");
                 output.printf("\t\tFileChannel fChanLock = new RandomAccessFile( fileLock, \"rws\").getChannel();\n");
+                output.printf("\t\tString damage_version = new String(\"#{params[:damage_version]}\");\n")
+                output.printf("\t\tString damage_versionStr;\n")
+                output.printf("\t\tbyte[] header_dVersion = new byte[40];\n")
                 output.printf("\t\t#{retType} obj = null;\n")
                 output.printf("\t\tByteBuffer in; int nbytes;\n");
-                output.printf("\t\tint val;\n\n");
+                output.printf("\t\tint val, i;\n\n");
                 
                 output.printf("\t\tfChanLock.lock(0, Long.MAX_VALUE, readOnly);\n\n");
-                ByteBuffer(output, "in", "\t\t", "2 * 4", "0")
-                output.printf("\n\t\tval = in.getInt(0);\n")
+                ByteBuffer(output, "in", "\t\t", "#{params[:bin_header][:size]}", "0")
+                output.printf("\n\t\tval = in.getInt(#{params[:bin_header]["version"][:offset]});\n")
                 output.printf("\t\tif(val  != #{params[:version]})\n");
                 output.printf("\t\t\tthrow new java.io.UnsupportedEncodingException(\"Incompatible sigmacDB format\");\n\n")
+                output.printf("\t\tin.position(#{params[:bin_header]["damage_version[41]"][:offset]});\n")
+                output.printf("\t\tin.get(header_dVersion);\n")
+                output.printf("\t\tdamage_versionStr = new String(header_dVersion, Charset.forName(\"UTF-8\"));\n")
 
-                output.printf("\t\tval = in.getInt(4);\n")
+                output.printf("\t\tif(damage_versionStr.compareTo(damage_version) != 0)\n")
+                output.printf("\t\t\tthrow new java.io.UnsupportedEncodingException(\"Incompatible sigmacDB format\");\n\n")
+
+                output.printf("\t\tval = in.getInt(#{params[:bin_header]["length"][:offset]});\n")
                 output.printf("\t\tif(val  != file.length())\n");
                 output.printf("\t\t\tthrow new IOException(\"Corrupted file. Size does not match header\");\n\n")
 
-                output.printf("\t\tobj = loadFromBinaryPartial(fc, 8, pOpts) ;\n")
+                output.printf("\t\tobj = loadFromBinaryPartial(fc, #{params[:bin_header][:size]}, pOpts) ;\n")
                 output.printf("\t\tfc.close();\n\n");
 
                 output.printf("\t\tif(readOnly){\n");
