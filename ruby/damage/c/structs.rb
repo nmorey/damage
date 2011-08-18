@@ -32,7 +32,7 @@ module Damage
 
             def genStruct(output, libName, entry, rowip)
                 nextPart=""
-
+                postPart=""
                 output.printf("/** Structure __#{libName}_%s: #{entry.description} */\n", entry.name)
                 output.printf("typedef struct ___#{libName}_%s {\n", entry.name);
                 entry.fields.each() {|field|
@@ -77,8 +77,8 @@ module Damage
                                output.printf("\tuint32_t #{field.name}Len;\n")
                            end
                         when :intern
-                               nextPart += "\t/** #{field.description} */\n" if field.description != nil
-                               nextPart += "\tstruct ___#{libName}_#{field.data_type}* #{field.name} __#{libName.upcase}_ALIGN__;\n"
+                               postPart += "\t/** #{field.description} */\n" if field.description != nil
+                               postPart += "\tstruct ___#{libName}_#{field.data_type}* #{field.name} __#{libName.upcase}_ALIGN__;\n"
                         when :id, :idref
                             output.printf("\t/** Field ID: #{field.description} */\n")
                             output.printf("\tchar* %s_str; __#{libName.upcase}_ALIGN__\n", field.name)
@@ -91,6 +91,7 @@ module Damage
 
                 } 
                 output.puts nextPart
+                output.puts postPart
 
                 if entry.attribute == :listable then
                     output.printf("\t/** Pointer to the next element in the list */\n")
@@ -98,10 +99,10 @@ module Damage
                 end
                 output.printf("\t/** Internal: Pointer to the ruby VALUE when using the ruby wrapper  */\n")
                 output.printf("\tvoid* _private  __#{libName.upcase}_ALIGN__;\n");
+                output.printf("\t/** Internal: Offset in the binary DB */\n")
+                output.printf("\tunsigned long _rowip_pos  __#{libName.upcase}_ALIGN__;\n");
 
                 if rowip == true
-                    output.printf("\t/** Internal: Offset in the binary DB */\n")
-                    output.printf("\tunsigned long _rowip_pos  __#{libName.upcase}_ALIGN__;\n");
                     output.printf("\t/** Internal: DB infos */\n")
                     output.printf("\tvoid* _rowip  __#{libName.upcase}_ALIGN__;\n");
                 end

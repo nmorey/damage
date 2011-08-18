@@ -167,7 +167,6 @@ __#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load_partial(FILE*
                         when :string
                             output.printf("#{indent}if(#{source}->%s){\n", field.name)
                             output.printf("#{indent}\tuint32_t len;\n")
-                            output.printf("#{indent}\t__#{libName}_fseek(file, (unsigned long)#{source}->%s, SEEK_SET);\n", field.name)
                             output.printf("#{indent}\t__#{libName}_fread(&len, sizeof(len), 1, file);\n")
                             output.printf("#{indent}\t#{source}->%s = __#{libName}_malloc(len * sizeof(char));\n", field.name)
                             output.printf("#{indent}\t__#{libName}_fread(#{source}->%s, sizeof(char), len, file);\n", field.name)
@@ -177,14 +176,6 @@ __#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load_partial(FILE*
                             output.printf("#{indent}\t#{source}->%s = __#{libName}_%s_binary_load_partial(file, (uint32_t)(unsigned long)(#{source}->%s), opt);\n", 
                                           field.name, field.data_type, field.name)
                             output.printf("#{indent}} else {\n#{indent}\t#{source}->#{field.name} = NULL;\n#{indent}}\n")
-                        when :id, :idref
-                            output.printf("#{indent}if(#{source}->%s_str){\n", field.name)
-                            output.printf("#{indent}\tuint32_t len;\n")
-                            output.printf("#{indent}\t__#{libName}_fseek(file, (unsigned long)#{source}->%s_str, SEEK_SET);\n", field.name)
-                            output.printf("#{indent}\t__#{libName}_fread(&len, sizeof(len), 1, file);\n")
-                            output.printf("#{indent}\t#{source}->%s_str = __#{libName}_malloc(len * sizeof(char));\n", field.name)
-                            output.printf("#{indent}\t__#{libName}_fread(#{source}->%s_str, sizeof(char), len, file);\n", field.name)
-                            output.printf("#{indent}}\n")
                         else
                             raise("Unsupported data category for #{entry.name}.#{field.name}");
                         end
@@ -196,39 +187,34 @@ __#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load_partial(FILE*
                             # Alloc and read the array of data
                             output.printf("#{indent}\t%s* array = __#{libName}_malloc(#{source}->%sLen * sizeof(*array));\n", 
                                           field.data_type, field.name, field.data_type)
-                            output.printf("#{indent}\t__#{libName}_fseek(file, (unsigned long)#{source}->%s, SEEK_SET);\n", field.name)
                             output.printf("#{indent}\t__#{libName}_fread(array, sizeof(*array), #{source}->%sLen, file);\n",
                                           field.name, field.name);
                             output.printf("#{indent}\t#{source}->%s = array;\n", field.name)              
                             output.printf("#{indent}}\n")
                         when :string
                             output.printf("#{indent}if(#{source}->%s){\n", field.name)
+                            output.printf("#{indent}\tuint32_t len;\n")
                             # Alloc and read the array of data
-                            output.printf("#{indent}\tuint32_t *tmp_array = __#{libName}_malloc(#{source}->%sLen * sizeof(*tmp_array));\n", 
-                                          field.name)
                             output.printf("#{indent}\t%s* array = __#{libName}_malloc(#{source}->%sLen * sizeof(*array));\n", 
                                           field.data_type, field.name)
 
-                            output.printf("#{indent}\t__#{libName}_fseek(file, (unsigned long)#{source}->%s, SEEK_SET);\n", field.name)
-                            output.printf("#{indent}\t__#{libName}_fread(tmp_array, sizeof(*tmp_array), #{source}->%sLen, file);\n",
-                                          field.name, field.name);
                             output.printf("#{indent}\t#{source}->%s = array;\n", field.name)
 
                             # Read the string at each index
-                            output.printf("#{indent}\tunsigned int i; for(i = 0; i < #{source}->%sLen; i++){\n", 
+                            output.printf("#{indent}\tunsigned int i;\n")
+                            output.printf("#{indent}\t\tfor(i = 0; i < #{source}->%sLen; i++){\n", 
                                           field.name);
 
-                            output.printf("#{indent}\t\tif(tmp_array[i]){\n", field.name);
-                            output.printf("#{indent}\t\t\t__#{libName}_fseek(file, (unsigned long)tmp_array[i], SEEK_SET);\n")
-                            output.printf("#{indent}\t\t\tuint32_t len;\n")
                             # get the string size
-                            output.printf("#{indent}\t\t\t__#{libName}_fread(&len, sizeof(len), 1, file);\n")
+                            output.printf("#{indent}\t\t__#{libName}_fread(&len, sizeof(len), 1, file);\n")
                             # Alloc it and read it
+                            output.printf("#{indent}\t\tif(len > 0) {\n");
                             output.printf("#{indent}\t\t\tarray[i] = __#{libName}_malloc(sizeof(char) * len);\n")
                             output.printf("#{indent}\t\t\t__#{libName}_fread(array[i], sizeof(char), len, file);\n", field.name)
+                            output.printf("#{indent}\t\t} else {\n")
+                            output.printf("#{indent}\t\t\tarray[i] = NULL;\n")
                             output.printf("#{indent}\t\t}\n")
-                            output.printf("#{indent}\t}\n");    
-                            output.printf("#{indent}free(tmp_array);\n");
+                            output.printf("#{indent}\t}\n")
                             output.printf("#{indent}}\n")
                         when :intern
                             output.printf("#{indent}if((opt->#{field.data_type} != 0) && (#{source}->%s != NULL)){\n", field.name)

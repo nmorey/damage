@@ -47,9 +47,12 @@ module Damage
                 output.printf("#{indent}\t\t\tstr.position(0);\n")
                 output.printf("#{indent}\t\t\tstr.get(strCopy);\n")
                 output.printf("#{indent}\t\t\t#{dest} = new String(strCopy, Charset.forName(\"UTF-8\"));\n")
-                output.printf("#{indent}\t\t} else {\n")
+                output.printf("#{indent}\t\t} else if (strLen == 1) {\n")
                 output.printf("#{indent}\t\t\t#{dest} = new String(\"\");\n")
+                output.printf("#{indent}\t\t} else {\n")
+                output.printf("#{indent}\t\t\t#{dest} = null;\n")
                 output.printf("#{indent}\t\t}\n")
+
                 output.printf("#{indent}\t} else {\n")
                 output.printf("#{indent}\t\t#{dest} = null;\n")
                 output.printf("#{indent}\t}\n")
