@@ -21,7 +21,11 @@ module Damage
             def write(description)
                 description.entries.each() { |name, entry|
                     outputC = Damage::Files.createAndOpen("gen/#{description.config.libname}/src", "binary_writer__#{name}.c")
-                    self.genBinaryWriter(outputC, description, entry)
+                    self.genBinaryWriter(outputC, description, entry, false)
+                    outputC.close()
+
+                    outputC = Damage::Files.createAndOpen("gen/#{description.config.libname}/src", "binary_writer_gz__#{name}.c")
+                    self.genBinaryWriter(outputC, description, entry, true)
                     outputC.close()
 
                     outputC = Damage::Files.createAndOpen("gen/#{description.config.libname}/src", "binary_writer_size_comp__#{name}.c")
@@ -76,6 +80,17 @@ module Damage
                     output.puts "uint32_t __#{libName}_#{entry.name}_binary_dump(__#{libName}_#{entry.name}* ptr, FILE* file);\n"
                     output.puts("
 /**
+ * Internal: Write a complete #__#{libName}_#{entry.name} structure and its children in binary form to an open gzipped file.
+ * This function uses longjmp to the \"__#{libName}_error_happened\".
+ * Thus it needs to be set up properly before calling this function.
+ * @param[in] ptr Structure to write
+ * @param[in] file Pointer to the gzFile
+ * @return offset + number of bytes written
+ */");
+                    output.puts "uint32_t __#{libName}_#{entry.name}_binary_dump_gz(__#{libName}_#{entry.name}* ptr, gzFile file);\n"
+
+                    output.puts("
+/**
  * Write a complete #__#{libName}_#{entry.name} structure and its children in binary form to a file
  * @param[in] file Filename
  * @param[in] ptr Structure to write
@@ -95,9 +110,23 @@ module Damage
                 output.puts("#endif /* __#{libName}_binary_writer_h__ */\n")
             end
             module_function :genBinaryWriterH
-            def genBinaryWriter(output, description, entry)
-                libName = description.config.libname
 
+            def cWrite(output, libName, zipped, indent, src, size, qty, file)
+                if zipped == true
+                    output.printf("#{indent}__#{libName}_gzwrite(#{file}, #{src}, #{size}* #{qty});\n")
+                else
+                    output.printf("#{indent}__#{libName}_fwrite(#{src}, #{size}, #{qty}, #{file});\n")
+                end
+            end
+            module_function :cWrite
+
+            def genBinaryWriter(output, description, entry, zipped)
+                libName = description.config.libname
+                if zipped == true
+                    fext="_gz"
+                else
+                    fext=""
+                end
                 output.printf("#include \"#{libName}.h\"\n")
                 output.printf("#include \"_#{libName}/_common.h\"\n")
                 output.printf("#include <stdint.h>\n")
@@ -115,11 +144,18 @@ module Damage
 
                 output.printf("\n\n") 
 
-                output.puts"
+                if zipped == true then
+                    output.puts "
+uint32_t __#{libName}_#{entry.name}_binary_dump_gz(__#{libName}_#{entry.name}* ptr, 
+                                                     gzFile file){\n"
+                else
+                    output.puts "
 uint32_t __#{libName}_#{entry.name}_binary_dump(__#{libName}_#{entry.name}* ptr, 
-                                                     FILE* file){
-\tuint32_t nbytes = 0;
-"
+                                                     FILE* file){\n"
+
+                end
+                output.printf("\tuint32_t nbytes = 0;\n")
+
                 if entry.attribute == :listable then
                     output.printf("\t__#{libName}_%s *el, *next;\n\tfor(el = ptr; el != NULL; el = next) {\n",entry.name)
                     output.printf("\t\tnext = el->next;\n");
@@ -154,7 +190,7 @@ uint32_t __#{libName}_#{entry.name}_binary_dump(__#{libName}_#{entry.name}* ptr,
                 end
                 output.printf("#{indent}val._private = NULL;\n")
                 output.printf("#{indent}if(el->next != NULL) {val.next = (void*)(unsigned long)el->next->_rowip_pos;}\n") if entry.attribute == :listable 
-                output.printf("#{indent}__#{libName}_fwrite(&val, sizeof(val), 1, file);\n")
+                cWrite(output, libName, zipped, indent, "&val", "sizeof(val)", "1", "file")
                 output.printf("#{indent}nbytes += sizeof(*#{source});\n\n")
 
                 entry.fields.each() { |field|
@@ -166,15 +202,17 @@ uint32_t __#{libName}_#{entry.name}_binary_dump(__#{libName}_#{entry.name}* ptr,
                         when :string
                             output.printf("#{indent}if(#{source}->%s){\n", field.name)
                             output.printf("#{indent}\tuint32_t len = strlen(#{source}->%s) + 1;\n", field.name)
-                            output.printf("#{indent}\t__#{libName}_fwrite(&len, sizeof(len), 1, file);\n", field.name)
-                            output.printf("#{indent}\t__#{libName}_fwrite(#{source}->%s, sizeof(char), len, file);\n", field.name)
+                            cWrite(output, libName, zipped, indent, "&len", "sizeof(len)", "1", "file")
+                            cWrite(output, libName, zipped, indent, "#{source}->#{field.name}", "sizeof(char)", "len", "file")
+
                             output.printf("#{indent}} else {\n")
+
                             output.printf("#{indent}\tuint32_t len = 0;\n", field.name)
-                            output.printf("#{indent}\t__#{libName}_fwrite(&len, sizeof(len), 1, file);\n", field.name)
+                            cWrite(output, libName, zipped, indent, "&len", "sizeof(len)", "1", "file")
                             output.printf("#{indent}} \n")
                         when :intern
                             output.printf("#{indent}if(#{source}->%s){\n", field.name)
-                            output.printf("#{indent}\tnbytes +=__#{libName}_%s_binary_dump(#{source}->%s, file);\n", 
+                            output.printf("#{indent}\tnbytes +=__#{libName}_%s_binary_dump#{fext}(#{source}->%s, file);\n", 
                                           field.data_type, field.name)
                             output.printf("#{indent}}\n")
                         else
@@ -184,8 +222,7 @@ uint32_t __#{libName}_#{entry.name}_binary_dump(__#{libName}_#{entry.name}* ptr,
                         case field.category
                         when :simple
                             output.printf("#{indent}if(#{source}->%s){\n", field.name)
-                            output.printf("#{indent}\t__#{libName}_fwrite(#{source}->%s, sizeof(*#{source}->%s), #{source}->%sLen, file);\n",
-                                          field.name, field.name, field.name);
+                            cWrite(output, libName, zipped, indent, "#{source}->#{field.name}", "sizeof(*#{source}->#{field.name})", "#{source}->#{field.name}Len", "file")
                             output.printf("#{indent}\tnbytes += sizeof(*#{source}->%s) * #{source}->%sLen;\n", field.name, field.name)
                             output.printf("#{indent}}\n")
                         when :string
@@ -194,12 +231,14 @@ uint32_t __#{libName}_#{entry.name}_binary_dump(__#{libName}_#{entry.name}* ptr,
                                           field.name);
                             output.printf("#{indent}\t\tif(#{source}->%s[i]){\n", field.name);
                             output.printf("#{indent}\t\t\tuint32_t len = strlen(#{source}->%s[i]) + 1;\n", field.name)
-                            output.printf("#{indent}\t\t\t__#{libName}_fwrite(&len, sizeof(len), 1, file);\n", field.name)
-                            output.printf("#{indent}\t\t\t__#{libName}_fwrite(#{source}->%s[i], sizeof(char), len, file);\n", field.name)
+
+                            cWrite(output, libName, zipped, indent, "&len", "sizeof(len)", "1", "file")
+                            cWrite(output, libName, zipped, indent, "#{source}->#{field.name}[i]", "sizeof(char)", "len", "file")
+
                             output.printf("#{indent}\t\t\tnbytes += sizeof(len) + len;\n")
                             output.printf("#{indent}\t\t} else {\n")
                             output.printf("#{indent}\t\t\tuint32_t len = 0;\n", field.name)
-                            output.printf("#{indent}\t\t\t__#{libName}_fwrite(&len, sizeof(len), 1, file);\n", field.name)
+                            cWrite(output, libName, zipped, indent, "&len", "sizeof(len)", "1", "file")
                             output.printf("#{indent}\t\t\tnbytes += sizeof(len);\n")
                             output.printf("#{indent}\t\t}\n")
                             output.printf("#{indent}\t}\n\n");
@@ -207,7 +246,7 @@ uint32_t __#{libName}_#{entry.name}_binary_dump(__#{libName}_#{entry.name}* ptr,
 
                         when :intern
                             output.printf("#{indent}if(#{source}->%s){\n", field.name)
-                            output.printf("#{indent}\tnbytes += __#{libName}_%s_binary_dump(#{source}->%s, file);\n", 
+                            output.printf("#{indent}\tnbytes += __#{libName}_%s_binary_dump#{fext}(#{source}->%s, file);\n", 
                                           field.data_type, field.name)
                             output.printf("#{indent}}\n")
                         else
@@ -216,10 +255,6 @@ uint32_t __#{libName}_#{entry.name}_binary_dump(__#{libName}_#{entry.name}* ptr,
                     end
                 }
 
-                
-
-
-
                 if entry.attribute == :listable  then
                     output.printf("\t}\n") 
                 end
@@ -227,13 +262,79 @@ uint32_t __#{libName}_#{entry.name}_binary_dump(__#{libName}_#{entry.name}* ptr,
                 output.puts "\treturn nbytes;"
                 output.puts "}"
 
-                output.puts("
+               output.puts("
 /** @} */
 /** @} */
 ")
-                
             end
             module_function :genBinaryWriter
+
+
+ #            def genBinaryWriter(output, description)
+#                 libName = description.config.libname
+
+#                 output.printf("#include \"#{libName}.h\"\n")
+#                 output.printf("#include \"_#{libName}/common.h\"\n")
+#                 output.printf("#include <stdint.h>\n")
+#                 output.printf("#include <zlib.h>\n")
+#                 output.printf("\n\n") 
+#                 output.puts("
+
+# /** \\addtogroup #{libName} DAMAGE #{libName} Library
+#  * @{
+# **/
+# /** \\addtogroup binary_writer Binary Writer API
+#  * @{
+#  **/
+# ");
+
+#                 binaryWriters(output, description, false)
+#                 binaryWriters(output, description, true)
+
+#                 description.entries.each() { | name, entry|
+#                     output.printf("unsigned long __#{libName}_%s_binary_dump_file(const char* file, __#{libName}_%s *ptr, __#{libName}_options opts)\n{\n", entry.name, entry.name)
+#                     output.printf("\tuint32_t ret;\n")
+#                     output.printf("\tFILE* output;\n")
+#                     output.printf("\tgzFile outputGz;\n")
+#                     output.printf("\n")
+
+#                     output.printf("\tret = setjmp(__#{libName}_error_happened);\n");
+#                     output.printf("\tif (ret != 0) {\n");
+#                     output.printf("\t\terrno = ret;\n");
+#                     output.printf("\t\treturn 0UL;\n");
+#                     output.printf("\t}\n\n");
+
+#                     output.printf("\tif(__#{libName}_acquire_flock(file, 1))\n");
+#                     output.printf("\t\t__#{libName}_error(\"Failed to lock output file %%s: %%s\", ENOENT, file, strerror(errno));\n");
+
+
+#                     output.printf("\tif(opts & __#{libName.upcase}_OPTION_GZIPPED){\n")
+#                     output.printf("\t\tif((outputGz = gzopen(file, \"wb\")) == NULL)\n");
+#                     output.printf("\t\t\t__#{libName}_error(\"Failed to open output file %%s\", errno, file);\n");
+#                     output.printf("\t\tret = __#{libName}_%s_binary_dump_gz(ptr, outputGz, sizeof(uint32_t));\n", entry.name)
+#                     output.printf("\t\t__#{libName}_gzseek(outputGz, 0, SEEK_SET);\n")
+#                     output.printf("\t\t__#{libName}_gzwrite(outputGz, &ret, sizeof(ret));\n");
+#                     output.printf("\t\tgzclose(outputGz);\n")
+#                     output.printf("\t} else {\n");
+#                     output.printf("\t\tif((output = fopen(file, \"w\")) == NULL)\n");
+#                     output.printf("\t\t\t__#{libName}_error(\"Failed to open output file %%s\", errno, file);\n");
+#                     output.printf("\t\tret = __#{libName}_%s_binary_dump(ptr, output, sizeof(uint32_t));\n", entry.name)
+#                     output.printf("\t\t__#{libName}_fseek(output, 0, SEEK_SET);\n")
+#                     output.printf("\t\t__#{libName}_fwrite(&ret, sizeof(ret), 1, output);\n");
+#                     output.printf("\t\tfclose(output);\n")
+#                     output.printf("\t}\n");
+#                     output.printf("\tif(opts & __#{libName.upcase}_OPTION_UNLOCKED)\n");
+#                     output.printf("\t\t__#{libName}_release_flock(file);\n");
+#                     output.printf("\treturn (unsigned long)ret;\n");
+#                     output.printf("}\n");
+#                 }
+#                 output.puts("
+# /** @} */
+# /** @} */
+# ")
+                
+#             end
+#             module_function :genBinaryWriter
 
             def genBinarySizeComp(output, description, entry)
                 libName = description.config.libname
@@ -363,6 +464,7 @@ uint32_t __#{libName}_#{entry.name}_binary_comp_offset(__#{libName}_#{entry.name
                 output.printf("unsigned long __#{libName}_%s_binary_dump_file(const char* file, __#{libName}_%s *ptr, __#{libName}_options opts)\n{\n", entry.name, entry.name)
                 output.printf("\tuint32_t ret;\n")
                 output.printf("\tFILE* output;\n")
+                output.printf("\tgzFile outputGz;\n")
                 output.printf("\t__#{libName}_binary_header header = { __#{libName.upcase}_DB_FORMAT, 0, __#{libName.upcase}_DAMAGE_VERSION};\n")
                 output.printf("\n")
 
@@ -375,14 +477,20 @@ uint32_t __#{libName}_#{entry.name}_binary_comp_offset(__#{libName}_#{entry.name
                 output.printf("\tif((output = __#{libName}_acquire_flock(file, 0)) == NULL)\n");
                 output.printf("\t\t__#{libName}_error(\"Failed to lock output file %%s: %%s\", ENOENT, file, strerror(errno));\n\n");
                 output.printf("\theader.length = __#{libName}_%s_binary_comp_offset(ptr, sizeof(header));\n", entry.name)
-                output.printf("\t__#{libName}_fwrite(&header, sizeof(header), 1, output);\n\n");
-
+   
+                output.printf("\tif(opts & __#{libName.upcase}_OPTION_GZIPPED){\n")
+                output.printf("\t\tif((outputGz = gzdopen(fileno(output), \"w\")) == NULL)\n")
+                output.printf("\t\t\t__#{libName}_error(\"Failed to open output file %%s: %%s\", ENOENT, file, strerror(errno));\n\n");
+                cWrite(output, libName, true, "\t\t", "&header", "sizeof(header)", "1", "outputGz")
+                output.printf("\t__#{libName}_%s_binary_dump_gz(ptr, outputGz);\n", entry.name)
+                output.printf("\tgzclose(outputGz);\n", entry.name)
+                output.printf("\t} else {\n")
+                cWrite(output, libName, false, "\t\t", "&header", "sizeof(header)", "1", "output")
                 output.printf("\t__#{libName}_%s_binary_dump(ptr, output);\n", entry.name)
-
                 output.printf("\tfflush(output);\n")
                 output.printf("\tif(ftruncate(fileno(output), header.length) != 0)\n");
                 output.printf("\t\t__#{libName}_error(\"Failed to truncate output file %%s: %%s\", ENOENT, file, strerror(errno));\n\n");
-
+                output.printf("\t}\n")
                 output.printf("\tif((opts & __#{libName.upcase}_OPTION_KEEPLOCKED) == 0)\n");
                 output.printf("\t\t__#{libName}_release_flock(file);\n");
                 output.printf("\treturn (unsigned long)header.length;\n");
