@@ -25,6 +25,35 @@ module Damage
         
         def generate(description, pahole)
             libName = description.config.libname
+            version = description.config.version;
+            pom =  Damage::Files.createAndOpen("gen/#{libName}/java/", "pom.xml")
+            pom.puts("<?xml version=\"1.0\" encoding=\"UTF-8\"?>
+<project xmlns=\"http://maven.apache.org/POM/4.0.0\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"
+   xsi:schemaLocation=\"http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd\">
+<modelVersion>4.0.0</modelVersion>
+  <groupId>#{libName}</groupId>
+  <artifactId>#{libName}</artifactId>
+  <version>#{version}</version>
+  <packaging>jar</packaging>
+        
+  <build>
+    <sourceDirectory>src</sourceDirectory>
+    <outputDirectory>bin</outputDirectory>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <version>2.3</version>
+        <configuration>
+          <classesDirectory>bin</classesDirectory>
+          <finalName>#{libName}</finalName>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+  
+</project>");
+            
             outdir = "gen/#{libName}/java/src/"
             description.config.package.split(".").each() { |dir|
                 outdir += dir + "/"
