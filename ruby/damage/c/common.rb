@@ -196,7 +196,7 @@ void __#{libName}_fread(void* buf, size_t elSize, int nbElem, FILE* input){
     int ret;
     ret = fread(buf, elSize, nbElem, input);
     if(ret != nbElem){
-        __#{libName}_error(\"Failed to read from DB. Invalid format.\", errno);
+        __#{libName}_error(\"Failed to read from DB. %s.\", errno, strerror(errno));
     }
 }
 
@@ -204,7 +204,7 @@ void __#{libName}_fwrite(void* buf, size_t elSize, int nbElem, FILE* input){
     int ret;
     ret = fwrite(buf, elSize, nbElem, input);
     if(ret != nbElem){
-        __#{libName}_error(\"Failed to write DB. Invalid format.\", errno);
+        __#{libName}_error(\"Failed to write to DB: %s.\", errno, strerror(errno));
     }
 }
 
@@ -212,15 +212,15 @@ void __#{libName}_fseek(FILE *stream, long offset, int whence){
     int ret;
     ret = fseek(stream, offset, whence);
     if(ret < 0 ){
-        __#{libName}_error(\"Failed to access DB. Invalid format: %s.\", errno, strerror(errno));
+        __#{libName}_error(\"Failed to seek in DB. Invalid format: %s.\", errno, strerror(errno));
     }
 }
 
 void __#{libName}_gzread(gzFile input, void* buf, size_t size){
-    unsigned int ret;
+    int ret;
     ret = gzread(input, buf, size);
-    if(ret != size){
-        __#{libName}_error(\"Failed to read from DB. Invalid format.\", errno);
+    if(ret != (signed)size){
+        __#{libName}_error(\"Failed to read from DB: %s.\", errno, gzerror(input, &ret));
     }
 }
 
@@ -239,10 +239,10 @@ void __#{libName}_paddOutput(FILE* file, int indent, int listable, int first){
 }
 
 void __#{libName}_gzwrite(gzFile output, void* buf, size_t size){
-    unsigned int ret;
+    int ret;
     ret = gzwrite(output, buf, size);
-    if(ret != size){
-        __#{libName}_error(\"Failed to write DB. Invalid format.\", errno);
+    if(ret != (signed int)size){
+        __#{libName}_error(\"Failed to write to DB: %s.\", errno, gzerror(output, &ret));
     }
 }
 
@@ -250,7 +250,7 @@ void __#{libName}_gzseek(gzFile stream, long offset, int whence){
     int ret;
     ret = gzseek(stream, offset, whence);
     if(ret < 0 ){
-        __#{libName}_error(\"Failed to access DB. Invalid format: %s.\", errno, strerror(errno));
+        __#{libName}_error(\"Failed to seek in DB: %s.\", errno, gzerror(stream, &ret));
     }
 }
 
