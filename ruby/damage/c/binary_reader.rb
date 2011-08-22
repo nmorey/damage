@@ -370,7 +370,7 @@ __#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load_partial(FILE*
 ");
 
                 output.printf("__#{libName}_%s* __#{libName}_%s_binary_load_file_partial(const char* file, __#{libName}_options opts, __#{libName}_partial_options *partial_opts)\n{\n", entry.name, entry.name)
-                output.printf("\tint ret;\n")
+                output.printf("\tint ret, fd;\n")
                 output.printf("\t__#{libName}_%s *ptr = NULL;\n", entry.name);
                 output.printf("\tFILE* output;\n")
                 output.printf("\tgzFile outputGz;\n")
@@ -386,11 +386,13 @@ __#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load_partial(FILE*
                 output.printf("\t\treturn NULL;\n");
                 output.printf("\t}\n\n");
                 
-                output.printf("\tif((output = __#{libName}_acquire_flock(file, opts & __#{libName.upcase}_OPTION_READONLY)) == NULL)\n");
+                output.printf("\tif((fd = __#{libName}_acquire_flock(file, opts & __#{libName.upcase}_OPTION_READONLY)) == -1)\n");
                 output.printf("\t\t__#{libName}_error(\"Failed to lock output file %%s: %%s\", ENOENT, file, strerror(errno));\n");
                 output.printf("\tif(opts & __#{libName.upcase}_OPTION_GZIPPED){\n")
-                output.printf("\t\tif((outputGz = gzdopen(fileno(output), \"r\")) == NULL)\n")
+                output.printf("\t\tif((outputGz = gzdopen(fd, \"r\")) == NULL)\n")
                 output.printf("\t\t\t__#{libName}_error(\"Failed to open output file %%s: %%s\", ENOENT, file, strerror(errno));\n\n"); 
+
+                output.printf("\t\tgzbuffer(outputGz, 1048576);\n")
 
                 cRead(output, libName, true, "\t\t", "&header", "sizeof(header)", "1", "outputGz")
                 output.printf("\t\tif(header.version != __#{libName.upcase}_DB_FORMAT)\n")
@@ -400,9 +402,10 @@ __#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load_partial(FILE*
                 output.printf("\t\t__#{libName}_error(\"Version from file %%s is incompatible.\", EACCES, file);\n\n");
                 output.printf("\tptr = __#{libName}_%s_binary_load_partial_gz(outputGz, sizeof(header), partial_opts);\n\n", entry.name)
 
-                output.printf("\tgzclose(outputGz);\n", entry.name)
 
                 output.printf("\t} else {\n")
+                output.printf("\t\tif((output = fdopen(fd, \"r\")) == NULL)\n")
+                output.printf("\t\t\t__#{libName}_error(\"Failed to open output file %%s: %%s\", ENOENT, file, strerror(errno));\n\n");
 
                 cRead(output, libName, false, "\t\t", "&header", "sizeof(header)", "1", "output")
                 output.printf("\t\tif(header.version != __#{libName.upcase}_DB_FORMAT)\n")

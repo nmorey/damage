@@ -236,7 +236,7 @@ module Damage
                 output.printf("\txmlNodePtr node = NULL;\n")
                 output.printf("\txmlSaveCtxtPtr ctx = NULL;\n")
                 output.printf("\tuint32_t ret;\n")
-                output.printf("\tFILE *output;\n")
+                output.printf("\tint fd;\n")
                 output.printf("\n")
                 output.printf("\tret = setjmp(__#{libName}_error_happened);\n");
                 output.printf("\tif (ret != 0) {\n");
@@ -250,12 +250,12 @@ module Damage
                 output.printf("\tnode = __#{libName}_create_%s_xml_node(NULL, ptr);\n", entry.name)
                 output.printf("\txmlDocSetRootElement(doc, node);\n")
                 output.printf("\n")
-                output.printf("\tif((output = __#{libName}_acquire_flock(file, 0)) == NULL)\n");
+                output.printf("\tif((fd = __#{libName}_acquire_flock(file, 0)) == -1)\n");
                 output.printf("\t\t__#{libName}_error(\"Failed to lock output file %%s: %%s\", ENOENT, file, strerror(errno));\n\n");
-                output.printf("\tif(ftruncate(fileno(output), 0) != 0)\n");
+                output.printf("\tif(ftruncate(fd, 0) != 0)\n");
                 output.printf("\t\t__#{libName}_error(\"Failed to truncate output file %%s: %%s\", ENOENT, file, strerror(errno));\n\n");
 
-                output.printf("\tif((ctx = xmlSaveToFd(fileno(output), NULL, XML_SAVE_FORMAT)) == NULL)\n");
+                output.printf("\tif((ctx = xmlSaveToFd(fd, NULL, XML_SAVE_FORMAT)) == NULL)\n");
                 output.printf("\t\t__#{libName}_error(\"Failed to write to output file %%s: %%s\", ENOENT, file, strerror(errno));\n\n");
                 output.printf("\txmlSaveDoc(ctx, doc);\n");
                 output.printf("\txmlSaveFlush(ctx);\n\n");
