@@ -190,6 +190,8 @@ module Damage
                     output.printf("\t\tobj.sort_#{field.name}_by_#{field.sort_key}();\n")
                   end
                 }
+		uppercaseLibName = libName.slice(0,1).upcase + libName.slice(1..-1)
+		output.printf("\t\tCleanup#{uppercaseLibName}ObjectVisitor.instance.visit(obj);\n");
 
                 if entry.attribute == :listable
                     output.printf("#{indent}list.add(obj);\n") 
