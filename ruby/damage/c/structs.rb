@@ -163,7 +163,8 @@ typedef enum {
 \t__#{libName.upcase}_OPTION_NONE = 0x0,
 \t__#{libName.upcase}_OPTION_READONLY = 0x1,
 \t__#{libName.upcase}_OPTION_KEEPLOCKED = 0x2,
-\t__#{libName.upcase}_OPTION_GZIPPED = 0x4
+\t__#{libName.upcase}_OPTION_GZIPPED = 0x4,
+\t__#{libName.upcase}_OPTION_NO_SIBLINGS = 0x8
 } __#{libName}_options;
 ");
                 output.puts("
