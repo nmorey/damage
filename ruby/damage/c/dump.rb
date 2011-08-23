@@ -169,9 +169,12 @@ module Damage
  **/
 ");
 
-                output.printf("\tvoid __#{libName}_#{entry.name}_dump(FILE* file, __#{libName}_#{entry.name} *ptr){\n")
+                output.printf("\tvoid __#{libName}_#{entry.name}_dump(FILE* file, __#{libName}_#{entry.name} *ptr, __#{libName}_options opts){\n")
+                
                 output.printf("\t\tfprintf(file, \"#{entry.name}:\\n\");\n")
-                output.printf("\t\t__#{libName}_#{entry.name}_dumpWithIndent(file, ptr, 1);\n")
+                output.printf("\t\tdo {\n")
+                output.printf("\t\t\t__#{libName}_#{entry.name}_dumpWithIndent(file, ptr, 1);\n")
+                output.printf("\t\t}while(ptr != NULL && (opts & __#{libName.upcase}_OPTION_NO_SIBLINGS) == 0);\n")
                 output.printf("\t}\n\n")
                 output.puts("
 /** @} */
@@ -210,9 +213,10 @@ module Damage
  * Dump a #__#{libName}_#{entry.name} to YAML form
  * @param[in] file Output file
  * @param[in] ptr Pointer to the objet to dump (without siblings)
+ * @param[in] opts Options to dumper (dump simblings, etc)
  * @return A valid pointer to a #__#{libName}_#{entry.name}. Exit with an error message if alloc failed.
 */")
-                    output.printf("\tvoid __#{libName}_#{entry.name}_dump(FILE* file, __#{libName}_#{entry.name} *ptr);\n")
+                    output.printf("\tvoid __#{libName}_#{entry.name}_dump(FILE* file, __#{libName}_#{entry.name} *ptr, __#{libName}_options opts);\n")
                 }
 
                 output.puts("
