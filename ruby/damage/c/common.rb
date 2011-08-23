@@ -48,10 +48,10 @@ module Damage
  * Note that acquiring the lock is acquirable if it already belong to the calling process.
  * @param[in] filename DB file name
  * @param[in] rdonly Is lock read only?
- * @return Pointer to open file
+ * @return File descriptor
  * @retval NULL Error
  */
-FILE* __#{libName}_acquire_flock(const char* filename, int rdonly);
+int __#{libName}_acquire_flock(const char* filename, int rdonly);
 
 /**
  * Release a lock on a #{libName} file acquire by #__#{libName}_acquire_flock.
@@ -81,6 +81,7 @@ int __#{libName}_release_flock(const char* filename);
 #include <string.h>
 #include <setjmp.h>
 #include <libxml/xmlreader.h>
+#include <zlib.h>
 
 void *__#{libName}_malloc(unsigned long size);
 char *__#{libName}_strdup(const char* str);
@@ -106,6 +107,9 @@ double __#{libName}_read_value_double_attr(xmlAttrPtr reader);
 void __#{libName}_fread(void* buf, size_t elSize, int nbElem, FILE* input);
 void __#{libName}_fwrite(void* buf, size_t elSize, int nbElem, FILE* input);
 void __#{libName}_fseek(FILE *stream, long offset, int whence);
+void __#{libName}_gzread(gzFile input, void* buf, size_t size);
+void __#{libName}_gzwrite(gzFile output, void* buf, size_t size);
+void __#{libName}_gzseek(gzFile stream, long offset, int whence);
 
 void __#{libName}_paddOutput(FILE* file, int indent, int listable, int first);
 
@@ -140,7 +144,7 @@ jmp_buf __#{libName}_error_happened;
 /** Represent a lock of a #{libName} DB file */
 typedef struct ___#{libName}_db_lock{
     /** Pointer to the open file (used for lock) */
-    FILE* file;
+    int file;
     /** Name of the DB file */
     char* name;
     /** Pointer to the next lock */
@@ -190,7 +194,7 @@ void __#{libName}_fread(void* buf, size_t elSize, int nbElem, FILE* input){
     int ret;
     ret = fread(buf, elSize, nbElem, input);
     if(ret != nbElem){
-        __#{libName}_error(\"Failed to read from DB. Invalid format.\", errno);
+        __#{libName}_error(\"Failed to read from DB. %s.\", errno, strerror(errno));
     }
 }
 
@@ -198,7 +202,7 @@ void __#{libName}_fwrite(void* buf, size_t elSize, int nbElem, FILE* input){
     int ret;
     ret = fwrite(buf, elSize, nbElem, input);
     if(ret != nbElem){
-        __#{libName}_error(\"Failed to write DB. Invalid format.\", errno);
+        __#{libName}_error(\"Failed to write to DB: %s.\", errno, strerror(errno));
     }
 }
 
@@ -206,7 +210,15 @@ void __#{libName}_fseek(FILE *stream, long offset, int whence){
     int ret;
     ret = fseek(stream, offset, whence);
     if(ret < 0 ){
-        __#{libName}_error(\"Failed to read from DB. Invalid format.\", errno);
+        __#{libName}_error(\"Failed to seek in DB. Invalid format: %s.\", errno, strerror(errno));
+    }
+}
+
+void __#{libName}_gzread(gzFile input, void* buf, size_t size){
+    int ret;
+    ret = gzread(input, buf, size);
+    if(ret != (signed)size){
+        __#{libName}_error(\"Failed to read from DB: %s.\", errno, gzerror(input, &ret));
     }
 }
 
@@ -221,6 +233,22 @@ void __#{libName}_paddOutput(FILE* file, int indent, int listable, int first){
         } else {
             fprintf(file, \"  \");
         }
+    }
+}
+
+void __#{libName}_gzwrite(gzFile output, void* buf, size_t size){
+    int ret;
+    ret = gzwrite(output, buf, size);
+    if(ret != (signed int)size){
+        __#{libName}_error(\"Failed to write to DB: %s.\", errno, gzerror(output, &ret));
+    }
+}
+
+void __#{libName}_gzseek(gzFile stream, long offset, int whence){
+    int ret;
+    ret = gzseek(stream, offset, whence);
+    if(ret < 0 ){
+        __#{libName}_error(\"Failed to seek in DB: %s.\", errno, gzerror(stream, &ret));
     }
 }
 
@@ -419,17 +447,17 @@ static __#{libName}_db_lock* lockedDBs = NULL;;
 
 static inline void __#{libName}_free_dblock(__#{libName}_db_lock* dbLock)
 {
-	fclose(dbLock->file);
+	close(dbLock->file);
 	free(dbLock->name);
 	free(dbLock);
 
 }
-FILE* __#{libName}_acquire_flock(const char* filename, int rdonly){
-	__#{libName}_db_lock* dbLock;
-   struct flock lock;
+int __#{libName}_acquire_flock(const char* filename, int rdonly){
+    __#{libName}_db_lock* dbLock;
+    struct flock lock;
 
     if(filename == NULL){
-        return NULL;
+        return -1;
     }
 
     for(dbLock = lockedDBs; dbLock; dbLock=dbLock->next){
@@ -439,51 +467,47 @@ FILE* __#{libName}_acquire_flock(const char* filename, int rdonly){
 
     if(dbLock && dbLock->rdonly == 1 && rdonly == 0){
         /* File was locked in readonly. We can't allow to open in RW */
-        return NULL;
+        return -1;
     } else if(!dbLock){
         dbLock = malloc(sizeof(*dbLock));
         if(!dbLock)
-            return NULL;
+            return -1;
         dbLock->next = lockedDBs;
         dbLock->name = strdup(filename);
         dbLock->rdonly = rdonly;
         if(!dbLock->name){
             free(dbLock);
-            return NULL;
+            return -1;
         }
-        dbLock->file = fopen(dbLock->name, rdonly ? \"r\" : \"r+\");
-        if(!dbLock->file && rdonly == 0){
-            dbLock->file = fopen(dbLock->name, \"w+\");
-        }
-        if(!dbLock->file){
+        dbLock->file = open(dbLock->name, O_CREAT | (rdonly ? O_RDONLY : O_RDWR), 0777);
+        if(dbLock->file == -1){
             free(dbLock->name);
             free(dbLock);
-            return NULL;
+            return -1;
         }
-	} else {
-        /* We already got the lock ! */
-        return dbLock->file;
-    }
 
-	lock.l_whence = SEEK_SET;
-	lock.l_start = 0;
-	lock.l_len = 0;
-	lock.l_pid = getpid();
-    if(rdonly){
-        lock.l_type = F_RDLCK;
+    	lock.l_whence = SEEK_SET;
+    	lock.l_start = 0;
+    	lock.l_len = 0;
+    	lock.l_pid = getpid();
+        if(rdonly){
+            lock.l_type = F_RDLCK;
+        } else {
+            lock.l_type = F_WRLCK;
+        }
+
+    	while(fcntl(dbLock->file, F_SETLKW, &lock)){
+    		if(errno != EINTR){
+                __#{libName}_free_dblock(dbLock);
+    			return -1;
+            }
+        }
+        lockedDBs = dbLock;
     } else {
-        lock.l_type = F_WRLCK;
+        lseek(dbLock->file, SEEK_SET, 0);
     }
 
-	while(fcntl(fileno(dbLock->file), F_SETLKW, &lock))
-		if(errno != EINTR){
-            __#{libName}_free_dblock(dbLock);
-			return NULL;
-        }
-
-    lockedDBs = dbLock;
-    fseek(dbLock->file, 0, SEEK_SET);
-	return dbLock->file;
+ 	return dbLock->file;
 }
 
 int __#{libName}_release_flock(const char* filename){
@@ -508,7 +532,7 @@ int __#{libName}_release_flock(const char* filename){
 	lock.l_pid = getpid();
 	lock.l_type = F_UNLCK;
 
-	while(fcntl(fileno(dbLock->file), F_SETLKW, &lock))
+	while(fcntl(dbLock->file, F_SETLKW, &lock))
 		if(errno != EINTR)
 			return 1;
 

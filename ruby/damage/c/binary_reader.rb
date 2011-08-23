@@ -22,7 +22,11 @@ module Damage
                 description.entries.each() {|name, entry|
                     outputC = Damage::Files.createAndOpen("gen/#{description.config.libname}/src", 
                                                           "binary_reader__#{name}.c")
-                    self.genBinaryReader(outputC, description, entry)
+                    self.genBinaryReader(outputC, description, entry, false)
+                    outputC.close()
+                    outputC = Damage::Files.createAndOpen("gen/#{description.config.libname}/src", 
+                                                          "binary_reader_gz__#{name}.c")
+                    self.genBinaryReader(outputC, description, entry, true)
                     outputC.close()
                     outputC = Damage::Files.createAndOpen("gen/#{description.config.libname}/src", 
                                                           "binary_reader_wrapper__#{name}.c")
@@ -30,7 +34,11 @@ module Damage
                     outputC.close()
                     outputC = Damage::Files.createAndOpen("gen/#{description.config.libname}/src", 
                                                           "binary_reader_partial__#{name}.c")
-                    self.genBinaryReaderPartial(outputC, description, entry)
+                    self.genBinaryReaderPartial(outputC, description, entry, false)
+                    outputC.close()
+                    outputC = Damage::Files.createAndOpen("gen/#{description.config.libname}/src", 
+                                                          "binary_reader_partial_gz__#{name}.c")
+                    self.genBinaryReaderPartial(outputC, description, entry, true)
                     outputC.close()
                     outputC = Damage::Files.createAndOpen("gen/#{description.config.libname}/src", 
                                                           "binary_reader_wrapper_partial__#{name}.c")
@@ -73,6 +81,20 @@ module Damage
  */");
 
                     output.puts "__#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load_partial(FILE* file, uint32_t offset, __#{libName}_partial_options *opt);\n"
+
+                    output.puts("
+/**
+ * Internal: Read a partial #__#{libName}_#{entry.name} structure and its children in binary form from an open GZ file .
+ * This function uses longjmp to the \"__#{libName}_error_happened\".
+ * Thus it needs to be set up properly before calling this function.
+ * @param[in] file Pointer to the gzipped file
+ * @param[in] offset Position of the beginning of the struct within the file.
+ * @param[in] opt Pointer to the partial options that describes the structures to parse.
+ * @return Pointer to a valid #__#{libName}_#{entry.name} structure. If something fails, it executes a longjmp to __#{libName}_error_happened
+ */");
+
+                    output.puts "__#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load_partial_gz(gzFile, uint32_t offset, __#{libName}_partial_options *opt);\n"
+
                     output.puts("
 /**
  * Read a partial #__#{libName}_#{entry.name} structure and its children in binary form from a file
@@ -98,6 +120,18 @@ module Damage
                     output.puts "__#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load(FILE* file, uint32_t offset);\n"
                     output.puts("
 /**
+ * Internal: Read a complete #__#{libName}_#{entry.name} structure and its children in binary form from an open GZ file.
+ * This function uses longjmp to the \"__#{libName}_error_happened\".
+ * Thus it needs to be set up properly before calling this function.
+ * @param[in] file Pointer to the gzipped file
+ * @param[in] offset Position of the beginning of the struct within the file
+ * @return Pointer to a valid #__#{libName}_#{entry.name} structure. If something fails, it executes a longjmp to __#{libName}_error_happened
+ */");
+
+                    output.puts "__#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load_gz(gzFile file, uint32_t offset);\n"
+
+                    output.puts("
+/**
  * Read a complete #__#{libName}_#{entry.name} structure and its children in binary form from a file
  * @param[in] file Filename
  * @param[in] opts Options to parser (compression, read-only, etc)
@@ -116,8 +150,19 @@ module Damage
                 output.puts("#endif /* __#{libName}_binary_reader_h__ */\n")
             end
             module_function :genBinaryReaderH
-            def genBinaryReaderPartial(output, description, entry)
+
+            def cRead(output, libName, zipped, indent, dest, size, qty, file)
+                if zipped == true
+                    output.printf("#{indent}__#{libName}_gzread(#{file}, #{dest}, #{size} * #{qty});\n")
+                else
+                    output.printf("#{indent}__#{libName}_fread(#{dest}, #{size}, #{qty}, #{file});\n")
+                end
+            end
+            module_function :cRead
+
+            def genBinaryReaderPartial(output, description, entry, zipped)
                 libName = description.config.libname
+                fExt= (zipped == true) ? "_gz" : ""
 
                 output.printf("#include \"#{libName}.h\"\n")
                 output.printf("#include \"_#{libName}/_common.h\"\n")
@@ -134,10 +179,15 @@ module Damage
  * @{
  **/
 ");
-
-                output.puts"
+                if zipped == true
+                    output.puts"
+__#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load_partial_gz(gzFile file, uint32_t offset, __#{libName}_partial_options *opt){
+"
+                else
+                    output.puts"
 __#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load_partial(FILE* file, uint32_t offset, __#{libName}_partial_options *opt){
 "
+                end
                 
                 output.printf("\t__#{libName}_%s *el;\n",entry.name)
                 output.printf("\t__#{libName}_%s *prev = NULL, *first = NULL;\n",entry.name) if entry.attribute == :listable 
@@ -155,8 +205,13 @@ __#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load_partial(FILE*
                 # Set next field if we have a predecessor
                 output.printf("\t\tif(prev){\n\t\t\tprev->next = el;\n\t\t} else {\n\t\t\tfirst = el;\n\t\t}\n") if entry.attribute == :listable
 
-                output.printf("#{indent}__#{libName}_fseek(file, offset, SEEK_SET);\n")
-                output.printf("#{indent}__#{libName}_fread(el, sizeof(*el), 1, file);\n")
+                output.printf("#{indent}if(opt->_all != 1)\n")
+                if zipped == true
+                    output.printf("#{indent}\t__#{libName}_gzseek(file, offset, SEEK_SET);\n")
+                else
+                    output.printf("#{indent}\t__#{libName}_fseek(file, offset, SEEK_SET);\n")
+                end
+                cRead(output, libName, zipped, indent, "el", "sizeof(*el)", "1", "file")
 
                 entry.fields.each() { |field|
                     next if field.target != :both
@@ -167,24 +222,19 @@ __#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load_partial(FILE*
                         when :string
                             output.printf("#{indent}if(#{source}->%s){\n", field.name)
                             output.printf("#{indent}\tuint32_t len;\n")
-                            output.printf("#{indent}\t__#{libName}_fseek(file, (unsigned long)#{source}->%s, SEEK_SET);\n", field.name)
-                            output.printf("#{indent}\t__#{libName}_fread(&len, sizeof(len), 1, file);\n")
+                            cRead(output, libName, zipped, "#{indent}\t", "&len", "sizeof(len)", "1", "file")
                             output.printf("#{indent}\t#{source}->%s = __#{libName}_malloc(len * sizeof(char));\n", field.name)
-                            output.printf("#{indent}\t__#{libName}_fread(#{source}->%s, sizeof(char), len, file);\n", field.name)
+
+                            cRead(output, libName, zipped, "#{indent}\t", "#{source}->#{field.name}", "sizeof(char)", "len", "file")
+                            output.printf("#{indent}} else {\n")
+                            output.printf("#{indent}\tuint32_t len;\n")
+                            cRead(output, libName, zipped, "#{indent}\t", "&len", "sizeof(len)", "1", "file")
                             output.printf("#{indent}}\n")
                         when :intern
                             output.printf("#{indent}if((opt->#{field.data_type} != 0) && (#{source}->%s != NULL)){\n", field.name)
-                            output.printf("#{indent}\t#{source}->%s = __#{libName}_%s_binary_load_partial(file, (uint32_t)(unsigned long)(#{source}->%s), opt);\n", 
+                            output.printf("#{indent}\t#{source}->%s = __#{libName}_%s_binary_load_partial#{fExt}(file, (uint32_t)(unsigned long)(#{source}->%s), opt);\n", 
                                           field.name, field.data_type, field.name)
                             output.printf("#{indent}} else {\n#{indent}\t#{source}->#{field.name} = NULL;\n#{indent}}\n")
-                        when :id, :idref
-                            output.printf("#{indent}if(#{source}->%s_str){\n", field.name)
-                            output.printf("#{indent}\tuint32_t len;\n")
-                            output.printf("#{indent}\t__#{libName}_fseek(file, (unsigned long)#{source}->%s_str, SEEK_SET);\n", field.name)
-                            output.printf("#{indent}\t__#{libName}_fread(&len, sizeof(len), 1, file);\n")
-                            output.printf("#{indent}\t#{source}->%s_str = __#{libName}_malloc(len * sizeof(char));\n", field.name)
-                            output.printf("#{indent}\t__#{libName}_fread(#{source}->%s_str, sizeof(char), len, file);\n", field.name)
-                            output.printf("#{indent}}\n")
                         else
                             raise("Unsupported data category for #{entry.name}.#{field.name}");
                         end
@@ -196,43 +246,38 @@ __#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load_partial(FILE*
                             # Alloc and read the array of data
                             output.printf("#{indent}\t%s* array = __#{libName}_malloc(#{source}->%sLen * sizeof(*array));\n", 
                                           field.data_type, field.name, field.data_type)
-                            output.printf("#{indent}\t__#{libName}_fseek(file, (unsigned long)#{source}->%s, SEEK_SET);\n", field.name)
-                            output.printf("#{indent}\t__#{libName}_fread(array, sizeof(*array), #{source}->%sLen, file);\n",
-                                          field.name, field.name);
+                            cRead(output, libName, zipped, "#{indent}\t", "array", "sizeof(*array)", "#{source}->#{field.name}Len", "file")
+
                             output.printf("#{indent}\t#{source}->%s = array;\n", field.name)              
                             output.printf("#{indent}}\n")
                         when :string
                             output.printf("#{indent}if(#{source}->%s){\n", field.name)
+                            output.printf("#{indent}\tuint32_t len;\n")
                             # Alloc and read the array of data
-                            output.printf("#{indent}\tuint32_t *tmp_array = __#{libName}_malloc(#{source}->%sLen * sizeof(*tmp_array));\n", 
-                                          field.name)
                             output.printf("#{indent}\t%s* array = __#{libName}_malloc(#{source}->%sLen * sizeof(*array));\n", 
                                           field.data_type, field.name)
 
-                            output.printf("#{indent}\t__#{libName}_fseek(file, (unsigned long)#{source}->%s, SEEK_SET);\n", field.name)
-                            output.printf("#{indent}\t__#{libName}_fread(tmp_array, sizeof(*tmp_array), #{source}->%sLen, file);\n",
-                                          field.name, field.name);
                             output.printf("#{indent}\t#{source}->%s = array;\n", field.name)
 
                             # Read the string at each index
-                            output.printf("#{indent}\tunsigned int i; for(i = 0; i < #{source}->%sLen; i++){\n", 
+                            output.printf("#{indent}\tunsigned int i;\n")
+                            output.printf("#{indent}\t\tfor(i = 0; i < #{source}->%sLen; i++){\n", 
                                           field.name);
 
-                            output.printf("#{indent}\t\tif(tmp_array[i]){\n", field.name);
-                            output.printf("#{indent}\t\t\t__#{libName}_fseek(file, (unsigned long)tmp_array[i], SEEK_SET);\n")
-                            output.printf("#{indent}\t\t\tuint32_t len;\n")
                             # get the string size
-                            output.printf("#{indent}\t\t\t__#{libName}_fread(&len, sizeof(len), 1, file);\n")
+                            cRead(output, libName, zipped, "#{indent}\t\t", "&len", "sizeof(len)", "1", "file")
                             # Alloc it and read it
+                            output.printf("#{indent}\t\tif(len > 0) {\n");
                             output.printf("#{indent}\t\t\tarray[i] = __#{libName}_malloc(sizeof(char) * len);\n")
-                            output.printf("#{indent}\t\t\t__#{libName}_fread(array[i], sizeof(char), len, file);\n", field.name)
+                            cRead(output, libName, zipped, "#{indent}\t\t\t", "array[i]", "sizeof(char)", "len", "file")
+                            output.printf("#{indent}\t\t} else {\n")
+                            output.printf("#{indent}\t\t\tarray[i] = NULL;\n")
                             output.printf("#{indent}\t\t}\n")
-                            output.printf("#{indent}\t}\n");    
-                            output.printf("#{indent}free(tmp_array);\n");
+                            output.printf("#{indent}\t}\n")
                             output.printf("#{indent}}\n")
                         when :intern
                             output.printf("#{indent}if((opt->#{field.data_type} != 0) && (#{source}->%s != NULL)){\n", field.name)
-                            output.printf("#{indent}\t#{source}->%s = __#{libName}_%s_binary_load_partial(file, (uint32_t)(unsigned long)(#{source}->%s), opt);\n", 
+                            output.printf("#{indent}\t#{source}->%s = __#{libName}_%s_binary_load_partial#{fExt}(file, (uint32_t)(unsigned long)(#{source}->%s), opt);\n", 
                                           field.name, field.data_type, field.name)
                             output.printf("#{indent}} else {\n#{indent}\t#{source}->#{field.name} = NULL;\n#{indent}}\n")
                         else
@@ -242,7 +287,7 @@ __#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load_partial(FILE*
                 }
                 # Autosort generation
                 entry.sort.each() {|field|
-                    output.printf("\t__#{libName}_#{entry.name}_sort_#{field.name}(#{source});\n")
+                    output.printf("#{indent}__#{libName}_#{entry.name}_sort_#{field.name}(#{source});\n")
                 }
                 
                 if entry.attribute == :listable  then
@@ -269,8 +314,9 @@ __#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load_partial(FILE*
             end
             module_function :genBinaryReaderPartial
 
-            def genBinaryReader(output, description, entry)
+            def genBinaryReader(output, description, entry, zipped)
                 libName = description.config.libname
+                fExt= (zipped == true) ? "_gz" : ""
 
                 output.printf("#include \"#{libName}.h\"\n")
                 output.printf("#include \"_#{libName}/_common.h\"\n")
@@ -287,12 +333,12 @@ __#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load_partial(FILE*
  * @{
  **/
 ");
-                output.puts "__#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load(FILE* file, uint32_t offset){\n"
+                output.puts "__#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load#{fExt}(#{(zipped == true) ? "gzFile" : "FILE*"} file, uint32_t offset){\n"
                 output.printf("\t__#{libName}_partial_options opt;\n")
                 output.printf("\n")
 
                 output.printf("\t__#{libName}_partial_options_parse_#{entry.name}(&opt);\n");
-                output.printf("\treturn __#{libName}_#{entry.name}_binary_load_partial(file, offset, &opt);\n")
+                output.printf("\treturn __#{libName}_#{entry.name}_binary_load_partial#{fExt}(file, offset, &opt);\n")
                 output.printf("}\n");
 
                 output.puts("
@@ -301,6 +347,8 @@ __#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load_partial(FILE*
 ")
             end
             module_function :genBinaryReader
+
+
 
             def genBinaryReaderWrapperPartial(output, description, entry)
                 libName = description.config.libname
@@ -322,9 +370,10 @@ __#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load_partial(FILE*
 ");
 
                 output.printf("__#{libName}_%s* __#{libName}_%s_binary_load_file_partial(const char* file, __#{libName}_options opts, __#{libName}_partial_options *partial_opts)\n{\n", entry.name, entry.name)
-                output.printf("\tint ret;\n")
+                output.printf("\tint ret, fd;\n")
                 output.printf("\t__#{libName}_%s *ptr = NULL;\n", entry.name);
                 output.printf("\tFILE* output;\n")
+                output.printf("\tgzFile outputGz;\n")
                 output.printf("\t__#{libName}_binary_header header;\n")
                 output.printf("\tstruct stat fStat;\n")
                 output.printf("\n")
@@ -337,10 +386,30 @@ __#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load_partial(FILE*
                 output.printf("\t\treturn NULL;\n");
                 output.printf("\t}\n\n");
                 
-                output.printf("\tif((output = __#{libName}_acquire_flock(file, opts & __#{libName.upcase}_OPTION_READONLY)) == NULL)\n");
+                output.printf("\tif((fd = __#{libName}_acquire_flock(file, opts & __#{libName.upcase}_OPTION_READONLY)) == -1)\n");
                 output.printf("\t\t__#{libName}_error(\"Failed to lock output file %%s: %%s\", ENOENT, file, strerror(errno));\n");
-                output.printf("\t\t__#{libName}_fread(&header, sizeof(header), 1, output);\n")
-                output.printf("\t\tif(header.version != #{description.config.version})\n")
+                output.printf("\tif(opts & __#{libName.upcase}_OPTION_GZIPPED){\n")
+                output.printf("\t\tif((outputGz = gzdopen(fd, \"r\")) == NULL)\n")
+                output.printf("\t\t\t__#{libName}_error(\"Failed to open output file %%s: %%s\", ENOENT, file, strerror(errno));\n\n"); 
+
+                cRead(output, libName, true, "\t\t", "&header", "sizeof(header)", "1", "outputGz")
+                output.printf("\t\tif(header.version != __#{libName.upcase}_DB_FORMAT)\n")
+                output.printf("\t\t__#{libName}_error(\"Version from file %%s is incompatible.\", EACCES, file);\n\n");
+
+                output.printf("\t\tif(strcmp(header.damage_version, __#{libName.upcase}_DAMAGE_VERSION))\n")
+                output.printf("\t\t__#{libName}_error(\"Version from file %%s is incompatible.\", EACCES, file);\n\n");
+                output.printf("\tptr = __#{libName}_%s_binary_load_partial_gz(outputGz, sizeof(header), partial_opts);\n\n", entry.name)
+
+
+                output.printf("\t} else {\n")
+                output.printf("\t\tif((output = fdopen(fd, \"r\")) == NULL)\n")
+                output.printf("\t\t\t__#{libName}_error(\"Failed to open output file %%s: %%s\", ENOENT, file, strerror(errno));\n\n");
+
+                cRead(output, libName, false, "\t\t", "&header", "sizeof(header)", "1", "output")
+                output.printf("\t\tif(header.version != __#{libName.upcase}_DB_FORMAT)\n")
+                output.printf("\t\t__#{libName}_error(\"Version from file %%s is incompatible.\", EACCES, file);\n\n");
+
+                output.printf("\t\tif(strcmp(header.damage_version, __#{libName.upcase}_DAMAGE_VERSION))\n")
                 output.printf("\t\t__#{libName}_error(\"Version from file %%s is incompatible.\", EACCES, file);\n\n");
 
                 output.printf("\t\tret = fstat(fileno(output), &fStat);\n")
@@ -349,8 +418,10 @@ __#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load_partial(FILE*
                 output.printf("\t\t}\n")
                 output.printf("\t\tif(header.length != fStat.st_size)\n")
                 output.printf("\t\t__#{libName}_error(\"DB file %%s is corrupted: size does not match header.\", EIO, file);\n\n");
-
                 output.printf("\tptr = __#{libName}_%s_binary_load_partial(output, sizeof(header), partial_opts);\n\n", entry.name)
+                output.printf("\t}\n")
+
+
 
                 output.printf("\tif (opts & __#{libName.upcase}_OPTION_READONLY ) {\n");
                 output.printf("\t__#{libName}_release_flock(file);\n");
@@ -392,6 +463,7 @@ __#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load_partial(FILE*
                 output.printf("\n")
 
                 output.printf("\t__#{libName}_partial_options_parse_#{entry.name}(&opt);\n");
+                output.printf("\topt._all = 1;\n");
                 output.printf("\treturn __#{libName}_#{entry.name}_binary_load_file_partial(file, opts, &opt);\n")
                 output.printf("}\n");
                 output.puts("

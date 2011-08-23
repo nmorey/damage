@@ -21,7 +21,15 @@ module Damage
             def write(description)
                 description.entries.each() { |name, entry|
                     outputC = Damage::Files.createAndOpen("gen/#{description.config.libname}/src", "binary_writer__#{name}.c")
-                    self.genBinaryWriter(outputC, description, entry)
+                    self.genBinaryWriter(outputC, description, entry, false)
+                    outputC.close()
+
+                    outputC = Damage::Files.createAndOpen("gen/#{description.config.libname}/src", "binary_writer_gz__#{name}.c")
+                    self.genBinaryWriter(outputC, description, entry, true)
+                    outputC.close()
+
+                    outputC = Damage::Files.createAndOpen("gen/#{description.config.libname}/src", "binary_writer_size_comp__#{name}.c")
+                    self.genBinarySizeComp(outputC, description, entry)
                     outputC.close()
                     outputC = Damage::Files.createAndOpen("gen/#{description.config.libname}/src", "binary_writer_wrapper__#{name}.c")
                     self.genBinaryWriterWrapper(outputC, description, entry)
@@ -51,17 +59,39 @@ module Damage
  **/
 ");
                 description.entries.each() {|name, entry|
+                    hasNext=""
+                    hasNext = (entry.attribute == :listable) ? ", int siblings" : ""
+                    hasNextDoc = (entry.attribute == :listable) ? "\n * @param[in] siblings Dump node siblings?" : ""
+                    output.puts("
+/**
+ * Internal: Compute the offset in binary form of a complete #__#{libName}_#{entry.name} structure and its children
+ * @param[in] ptr Structure to compute offset for
+ * @param[in] offset Position of the beginning of the struct within the file#{hasNextDoc}
+ * @return offset + number of bytes written
+ */");
+                    output.puts "uint32_t __#{libName}_#{entry.name}_binary_comp_offset(__#{libName}_#{entry.name}* ptr, uint32_t offset#{hasNext});\n"
+
                     output.puts("
 /**
  * Internal: Write a complete #__#{libName}_#{entry.name} structure and its children in binary form to an open file.
  * This function uses longjmp to the \"__#{libName}_error_happened\".
  * Thus it needs to be set up properly before calling this function.
  * @param[in] ptr Structure to write
- * @param[in] file Pointer to the FILE
- * @param[in] offset Position of the beginning of the struct within the file
+ * @param[in] file Pointer to the FILE#{hasNextDoc}
  * @return offset + number of bytes written
  */");
-                    output.puts "uint32_t __#{libName}_#{entry.name}_binary_dump(__#{libName}_#{entry.name}* ptr, FILE* file, uint32_t offset);\n"
+                    output.puts "uint32_t __#{libName}_#{entry.name}_binary_dump(__#{libName}_#{entry.name}* ptr, FILE* file#{hasNext});\n"
+                    output.puts("
+/**
+ * Internal: Write a complete #__#{libName}_#{entry.name} structure and its children in binary form to an open gzipped file.
+ * This function uses longjmp to the \"__#{libName}_error_happened\".
+ * Thus it needs to be set up properly before calling this function.
+ * @param[in] ptr Structure to write
+ * @param[in] file Pointer to the gzFile#{hasNextDoc}
+ * @return offset + number of bytes written
+ */");
+                    output.puts "uint32_t __#{libName}_#{entry.name}_binary_dump_gz(__#{libName}_#{entry.name}* ptr, gzFile file#{hasNext});\n"
+
                     output.puts("
 /**
  * Write a complete #__#{libName}_#{entry.name} structure and its children in binary form to a file
@@ -83,9 +113,25 @@ module Damage
                 output.puts("#endif /* __#{libName}_binary_writer_h__ */\n")
             end
             module_function :genBinaryWriterH
-            def genBinaryWriter(output, description, entry)
-                libName = description.config.libname
 
+            def cWrite(output, libName, zipped, indent, src, size, qty, file)
+                if zipped == true
+                    output.printf("#{indent}__#{libName}_gzwrite(#{file}, #{src}, #{size}* #{qty});\n")
+                else
+                    output.printf("#{indent}__#{libName}_fwrite(#{src}, #{size}, #{qty}, #{file});\n")
+                end
+            end
+            module_function :cWrite
+
+            def genBinaryWriter(output, description, entry, zipped)
+                libName = description.config.libname
+                if zipped == true
+                    fext="_gz"
+                else
+                    fext=""
+                end
+                hasNext = (entry.attribute == :listable) ? ", int siblings" : ""
+                
                 output.printf("#include \"#{libName}.h\"\n")
                 output.printf("#include \"_#{libName}/_common.h\"\n")
                 output.printf("#include <stdint.h>\n")
@@ -103,11 +149,17 @@ module Damage
 
                 output.printf("\n\n") 
 
-                output.puts"
+                if zipped == true then
+                    output.puts "
+uint32_t __#{libName}_#{entry.name}_binary_dump_gz(__#{libName}_#{entry.name}* ptr, 
+                                                     gzFile file#{hasNext}){\n"
+                else
+                    output.puts "
 uint32_t __#{libName}_#{entry.name}_binary_dump(__#{libName}_#{entry.name}* ptr, 
-                                                     FILE* file, uint32_t offset){
-"
-                output.printf("\tuint32_t child_offset = offset + sizeof(*ptr);\n")
+                                                     FILE* file#{hasNext}){\n"
+
+                end
+                output.printf("\tuint32_t nbytes = 0;\n")
 
                 if entry.attribute == :listable then
                     output.printf("\t__#{libName}_%s *el, *next;\n\tfor(el = ptr; el != NULL; el = next) {\n",entry.name)
@@ -131,6 +183,23 @@ uint32_t __#{libName}_#{entry.name}_binary_dump(__#{libName}_#{entry.name}* ptr,
                         end
                         next
                     end
+                    if field.category == :intern then
+                        output.printf("#{indent}if(#{source}->%s){\n", field.name)
+                        output.printf("#{indent}\tval.%s = (void*)(unsigned long)#{source}->%s->_rowip_pos;\n", field.name, field.name)
+                        output.printf("#{indent}}\n")
+                    end
+                }
+
+                if description.config.rowip == true
+                    output.printf("#{indent}val._rowip = NULL;\n")
+                end
+                output.printf("#{indent}val._private = NULL;\n")
+                output.printf("#{indent}if(el->next != NULL) {val.next = (void*)(unsigned long)el->next->_rowip_pos;}\n") if entry.attribute == :listable 
+                cWrite(output, libName, zipped, indent, "&val", "sizeof(val)", "1", "file")
+                output.printf("#{indent}nbytes += sizeof(*#{source});\n\n")
+
+                entry.fields.each() { |field|
+                    next if field.target != :both
                     case field.qty
                     when :single
                         case field.category
@@ -138,31 +207,19 @@ uint32_t __#{libName}_#{entry.name}_binary_dump(__#{libName}_#{entry.name}* ptr,
                         when :string
                             output.printf("#{indent}if(#{source}->%s){\n", field.name)
                             output.printf("#{indent}\tuint32_t len = strlen(#{source}->%s) + 1;\n", field.name)
-                            output.printf("#{indent}\tval.%s = (char*)(unsigned long) child_offset;\n", field.name)
-                            output.printf("#{indent}\t__#{libName}_fseek(file, child_offset, SEEK_SET);\n")
-                            output.printf("#{indent}\t__#{libName}_fwrite(&len, sizeof(len), 1, file);\n", field.name)
-                            output.printf("#{indent}\t__#{libName}_fwrite(#{source}->%s, sizeof(char), len, file);\n", field.name)
-                            output.printf("#{indent}\tchild_offset += len + sizeof(len);\n", field.name)
-                            output.printf("#{indent}}\n")
+                            cWrite(output, libName, zipped, indent, "&len", "sizeof(len)", "1", "file")
+                            cWrite(output, libName, zipped, indent, "#{source}->#{field.name}", "sizeof(char)", "len", "file")
+
+                            output.printf("#{indent}} else {\n")
+
+                            output.printf("#{indent}\tuint32_t len = 0;\n", field.name)
+                            cWrite(output, libName, zipped, indent, "&len", "sizeof(len)", "1", "file")
+                            output.printf("#{indent}} \n")
                         when :intern
                             output.printf("#{indent}if(#{source}->%s){\n", field.name)
-                            output.printf("#{indent}\tval.%s = (__#{libName}_%s*)(unsigned long)child_offset;\n", field.name, field.name)
-                            output.printf("#{indent}\tchild_offset = __#{libName}_%s_binary_dump(#{source}->%s, file, child_offset);\n", 
+                            output.printf("#{indent}\tnbytes +=__#{libName}_%s_binary_dump#{fext}(#{source}->%s, file);\n", 
                                           field.data_type, field.name)
                             output.printf("#{indent}}\n")
-                        when :id, :idref
-                            output.printf("#{indent}if(#{source}->%s_str){\n", field.name)
-                            output.printf("#{indent}\tuint32_t len = strlen(#{source}->%s_str) + 1;\n", field.name)
-                            output.printf("#{indent}\tval.%s_str = (char*) (unsigned long)child_offset;\n", field.name)
-                            output.printf("#{indent}\t__#{libName}_fseek(file, child_offset, SEEK_SET);\n")
-                            output.printf("#{indent}\t__#{libName}_fwrite(&len, sizeof(len), 1, file);\n", field.name)
-                            output.printf("#{indent}\tif(len > 0)\n");
-                            output.printf("#{indent}\t__#{libName}_fwrite(#{source}->%s_str, sizeof(char), len, file);\n", field.name)
-                            output.printf("#{indent}\tchild_offset += len + sizeof(len);\n", field.name)
-                            output.printf("#{indent}}\n")
-                            output.printf("#{indent}\t__#{libName}_fseek(file, child_offset, SEEK_SET);\n")
-                            output.printf("#{indent}\t__#{libName}_fwrite(&#{source}->%s, sizeof(unsigned long), 1, file);\n", field.name)
-                            output.printf("#{indent}\tchild_offset += sizeof(unsigned long);\n", field.name)
                         else
                             raise("Unsupported data category for #{entry.name}.#{field.name}");
                         end
@@ -170,41 +227,31 @@ uint32_t __#{libName}_#{entry.name}_binary_dump(__#{libName}_#{entry.name}* ptr,
                         case field.category
                         when :simple
                             output.printf("#{indent}if(#{source}->%s){\n", field.name)
-                            output.printf("#{indent}\tval.%s = (void*)(unsigned long)child_offset;\n", field.name)
-                            output.printf("#{indent}\t__#{libName}_fseek(file, child_offset, SEEK_SET);\n")
-                            output.printf("#{indent}\t__#{libName}_fwrite(#{source}->%s, sizeof(*#{source}->%s), #{source}->%sLen, file);\n",
-                                          field.name, field.name, field.name);
-                            output.printf("#{indent}\tchild_offset += (sizeof(*#{source}->%s) * #{source}->%sLen);\n",
-                                          field.name, field.name)
+                            cWrite(output, libName, zipped, indent, "#{source}->#{field.name}", "sizeof(*#{source}->#{field.name})", "#{source}->#{field.name}Len", "file")
+                            output.printf("#{indent}\tnbytes += sizeof(*#{source}->%s) * #{source}->%sLen;\n", field.name, field.name)
                             output.printf("#{indent}}\n")
                         when :string
                             output.printf("#{indent}if(#{source}->%s){\n", field.name)
-                            output.printf("#{indent}\t__#{libName}_fseek(file, child_offset, SEEK_SET);\n")
-                            output.printf("#{indent}\tuint32_t *tmp_array = __#{libName}_malloc(#{source}->%sLen * sizeof(*tmp_array));\n", field.name)
                             output.printf("#{indent}\tunsigned int i; for(i = 0; i < #{source}->%sLen; i++){\n", 
                                           field.name);
                             output.printf("#{indent}\t\tif(#{source}->%s[i]){\n", field.name);
                             output.printf("#{indent}\t\t\tuint32_t len = strlen(#{source}->%s[i]) + 1;\n", field.name)
-                            output.printf("#{indent}\t\t\ttmp_array[i] = child_offset;\n")
-                            output.printf("#{indent}\t\t\t__#{libName}_fwrite(&len, sizeof(len), 1, file);\n", field.name)
-                            output.printf("#{indent}\t\t\t__#{libName}_fwrite(#{source}->%s[i], sizeof(char), len, file);\n", field.name)
-                            output.printf("#{indent}\t\t\tchild_offset += len + sizeof(len);\n", field.name)
+
+                            cWrite(output, libName, zipped, indent, "&len", "sizeof(len)", "1", "file")
+                            cWrite(output, libName, zipped, indent, "#{source}->#{field.name}[i]", "sizeof(char)", "len", "file")
+
+                            output.printf("#{indent}\t\t\tnbytes += sizeof(len) + len;\n")
+                            output.printf("#{indent}\t\t} else {\n")
+                            output.printf("#{indent}\t\t\tuint32_t len = 0;\n", field.name)
+                            cWrite(output, libName, zipped, indent, "&len", "sizeof(len)", "1", "file")
+                            output.printf("#{indent}\t\t\tnbytes += sizeof(len);\n")
                             output.printf("#{indent}\t\t}\n")
                             output.printf("#{indent}\t}\n\n");
-                            
-                            output.printf("#{indent}\tval.%s = (char**)(unsigned long)child_offset;\n", field.name)
-                            output.printf("#{indent}\t__#{libName}_fwrite(tmp_array, sizeof(*tmp_array), #{source}->%sLen, file);\n",
-                                          field.name, field.name);
-                            output.printf("#{indent}\tchild_offset += (sizeof(*tmp_array) * #{source}->%sLen);\n",
-                                          field.name, field.name)
-                            output.printf("#{indent}\t__#{libName}_free(tmp_array);\n")
-
                             output.printf("#{indent}}\n")
 
                         when :intern
                             output.printf("#{indent}if(#{source}->%s){\n", field.name)
-                            output.printf("#{indent}\tval.%s = (void*)(unsigned long)child_offset;\n", field.name)
-                            output.printf("#{indent}\tchild_offset = __#{libName}_%s_binary_dump(#{source}->%s, file, child_offset);\n", 
+                            output.printf("#{indent}\tnbytes += __#{libName}_%s_binary_dump#{fext}(#{source}->%s, file, 1);\n", 
                                           field.data_type, field.name)
                             output.printf("#{indent}}\n")
                         else
@@ -213,23 +260,118 @@ uint32_t __#{libName}_#{entry.name}_binary_dump(__#{libName}_#{entry.name}* ptr,
                     end
                 }
 
-                
-                output.printf("#{indent}if(el->next != NULL) {val.next = (void*)(unsigned long)child_offset;}\n") if entry.attribute == :listable 
-                if description.config.rowip == true
-                    output.printf("#{indent}val._rowip_pos = offset;\n")
-                    output.printf("#{indent}val._rowip = NULL;\n")
-                end
-                output.printf("#{indent}val._private = NULL;\n")
-
-
-                output.printf("#{indent}__#{libName}_fseek(file, offset, SEEK_SET);\n")
-                output.printf("#{indent}__#{libName}_fwrite(&val, sizeof(val), 1, file);\n")
-
                 if entry.attribute == :listable  then
-                    output.printf("#{indent}if(el->next != NULL){\n")
-                    output.printf("#{indent}\toffset = child_offset;\n") 
-                    output.printf("#{indent}\tchild_offset += sizeof(*ptr);\n") 
-                    output.printf("#{indent}};\n") 
+                    output.printf("\t\tif(siblings == 0){\n")
+                    output.printf("\t\t\treturn nbytes;\n") 
+                    output.printf("\t\t}\n") 
+                    output.printf("\t}\n") 
+                end
+
+                output.puts "\treturn nbytes;"
+                output.puts "}"
+
+               output.puts("
+/** @} */
+/** @} */
+")
+            end
+            module_function :genBinaryWriter
+
+
+            def genBinarySizeComp(output, description, entry)
+                libName = description.config.libname
+
+                output.printf("#include \"#{libName}.h\"\n")
+                output.printf("#include \"_#{libName}/_common.h\"\n")
+                output.printf("#include <stdint.h>\n")
+                output.printf("\n\n") 
+                output.puts("
+
+/** \\addtogroup #{libName} DAMAGE #{libName} Library
+ * @{
+**/
+/** \\addtogroup binary_writer Binary Writer API
+ * @{
+ **/
+");
+
+                hasNext = (entry.attribute == :listable) ? ", int siblings" : ""
+
+                output.printf("\n\n") 
+
+                output.puts"
+uint32_t __#{libName}_#{entry.name}_binary_comp_offset(__#{libName}_#{entry.name}* ptr, uint32_t offset#{hasNext}){
+"
+                output.printf("\tuint32_t child_offset = offset;\n")
+
+                if entry.attribute == :listable then
+                    output.printf("\t__#{libName}_%s *el, *next;\n\tfor(el = ptr; el != NULL; el = next) {\n",entry.name)
+                    output.printf("\t\tnext = el->next;\n");
+                    source="el"
+                    indent="\t\t"
+                else
+                    indent="\t"
+                    source="ptr"
+                end
+                output.printf("#{indent}#{source}->_rowip_pos = child_offset;\n")
+                output.printf("#{indent}child_offset += sizeof(*#{source});\n")
+
+                entry.fields.each() { |field|
+                    next if field.target != :both
+                    case field.qty
+                    when :single
+                        case field.category
+                        when :simple, :enum
+                        when :string
+                            output.printf("#{indent}if(#{source}->%s){\n", field.name)
+                            output.printf("#{indent}\tuint32_t len = strlen(#{source}->%s) + 1;\n", field.name)
+                            output.printf("#{indent}\tchild_offset += len + sizeof(len);\n", field.name)
+                            output.printf("#{indent}} else {\n")
+                            output.printf("#{indent}\tchild_offset += sizeof(uint32_t);\n", field.name)
+                            output.printf("#{indent}}\n")
+                        when :intern
+                            output.printf("#{indent}if(#{source}->%s){\n", field.name)
+                            output.printf("#{indent}\tchild_offset = __#{libName}_%s_binary_comp_offset(#{source}->%s, child_offset);\n", 
+                                          field.data_type, field.name)
+                            output.printf("#{indent}}\n")
+                        else
+                            raise("Unsupported data category for #{entry.name}.#{field.name}");
+                        end
+                    when :list, :container
+                        case field.category
+                        when :simple
+                            output.printf("#{indent}if(#{source}->%s){\n", field.name)
+                            output.printf("#{indent}\tchild_offset += (sizeof(*#{source}->%s) * #{source}->%sLen);\n",
+                                          field.name, field.name)
+                            output.printf("#{indent}}\n")
+                        when :string
+                            output.printf("#{indent}if(#{source}->%s){\n", field.name)
+                            output.printf("#{indent}\tunsigned int i; for(i = 0; i < #{source}->%sLen; i++){\n", 
+                                          field.name);
+                            output.printf("#{indent}\t\tif(#{source}->%s[i]){\n", field.name);
+                            output.printf("#{indent}\t\t\tuint32_t len = strlen(#{source}->%s[i]) + 1;\n", field.name)
+                            output.printf("#{indent}\t\t\tchild_offset += len + sizeof(len);\n", field.name)
+                            output.printf("#{indent}\t\t} else {\n")
+                            output.printf("#{indent}\t\t\tchild_offset += sizeof(uint32_t);\n", field.name)
+                            output.printf("#{indent}\t\t}\n")
+                            output.printf("#{indent}\t}\n\n");
+                            output.printf("#{indent}}\n")
+
+                        when :intern
+                            output.printf("#{indent}if(#{source}->%s){\n", field.name)
+                            output.printf("#{indent}\tchild_offset = __#{libName}_%s_binary_comp_offset(#{source}->%s, child_offset, 1);\n", 
+                                          field.data_type, field.name)
+                            output.printf("#{indent}}\n")
+                        else
+                            raise("Unsupported data category for #{entry.name}.#{field.name}");
+                        end
+                    end
+                }
+                if entry.attribute == :listable  then
+ 
+                    output.printf("\t\tif(siblings == 0){\n")
+                    output.printf("\t\t\treturn child_offset;\n") 
+                    output.printf("\t\t}\n") 
                     output.printf("\t}\n") 
                 end
 
@@ -242,11 +384,12 @@ uint32_t __#{libName}_#{entry.name}_binary_dump(__#{libName}_#{entry.name}* ptr,
 ")
                 
             end
-            module_function :genBinaryWriter
+            module_function :genBinarySizeComp
 
             def genBinaryWriterWrapper(output, description, entry)
                 libName = description.config.libname
 
+                nextParam = (entry.attribute == :listable) ? ", opts & __#{libName.upcase}_OPTION_NO_SIBLINGS " : ""
                 output.printf("#include \"#{libName}.h\"\n")
                 output.printf("#include \"_#{libName}/_common.h\"\n")
                 output.printf("#include <stdint.h>\n")
@@ -268,8 +411,10 @@ uint32_t __#{libName}_#{entry.name}_binary_dump(__#{libName}_#{entry.name}* ptr,
 
                 output.printf("unsigned long __#{libName}_%s_binary_dump_file(const char* file, __#{libName}_%s *ptr, __#{libName}_options opts)\n{\n", entry.name, entry.name)
                 output.printf("\tuint32_t ret;\n")
+                output.printf("\tint fd;\n")
                 output.printf("\tFILE* output;\n")
-                output.printf("\t__#{libName}_binary_header header = { #{description.config.version}, 0};\n")
+                output.printf("\tgzFile outputGz;\n")
+                output.printf("\t__#{libName}_binary_header header = { __#{libName.upcase}_DB_FORMAT, 0, __#{libName.upcase}_DAMAGE_VERSION};\n")
                 output.printf("\n")
 
                 output.printf("\tret = setjmp(__#{libName}_error_happened);\n");
@@ -278,16 +423,27 @@ uint32_t __#{libName}_#{entry.name}_binary_dump(__#{libName}_#{entry.name}* ptr,
                 output.printf("\t\treturn 0UL;\n");
                 output.printf("\t}\n\n");
 
-                output.printf("\tif((output = __#{libName}_acquire_flock(file, 0)) == NULL)\n");
+                output.printf("\theader.length = __#{libName}_%s_binary_comp_offset(ptr, sizeof(header)#{nextParam});\n", entry.name)
+   
+                output.printf("\tif((fd = __#{libName}_acquire_flock(file, 0)) == -1)\n");
                 output.printf("\t\t__#{libName}_error(\"Failed to lock output file %%s: %%s\", ENOENT, file, strerror(errno));\n\n");
 
-                output.printf("\tif(ftruncate(fileno(output), 0) != 0)\n");
-                output.printf("\t\t__#{libName}_error(\"Failed to truncate output file %%s: %%s\", ENOENT, file, strerror(errno));\n\n");
+                output.printf("\tif(opts & __#{libName.upcase}_OPTION_GZIPPED){\n")
+                output.printf("\t\tif((outputGz = gzdopen(fd, \"w\")) == NULL)\n")
+                output.printf("\t\t\t__#{libName}_error(\"Failed to open output file %%s: %%s\", ENOENT, file, strerror(errno));\n\n");
+                cWrite(output, libName, true, "\t\t", "&header", "sizeof(header)", "1", "outputGz")
+                output.printf("\t\t__#{libName}_%s_binary_dump_gz(ptr, outputGz#{nextParam});\n", entry.name)
+                output.printf("\t\tgzflush(outputGz, Z_FINISH);\n")
+                output.printf("\t} else {\n")
+                output.printf("\t\tif((output = fdopen(fd, \"w\")) == NULL)\n")
+                output.printf("\t\t\t__#{libName}_error(\"Failed to open output file %%s: %%s\", ENOENT, file, strerror(errno));\n\n");
 
-                output.printf("\theader.length = __#{libName}_%s_binary_dump(ptr, output, sizeof(header));\n", entry.name)
-                output.printf("\t__#{libName}_fseek(output, 0, SEEK_SET);\n")
-                output.printf("\t__#{libName}_fwrite(&header, sizeof(header), 1, output);\n\n");
-
+                cWrite(output, libName, false, "\t\t", "&header", "sizeof(header)", "1", "output")
+                output.printf("\t\t__#{libName}_%s_binary_dump(ptr, output#{nextParam});\n", entry.name)
+                output.printf("\t\tfflush(output);\n")
+                output.printf("\t\tif(ftruncate(fileno(output), header.length) != 0)\n");
+                output.printf("\t\t\t__#{libName}_error(\"Failed to truncate output file %%s: %%s\", ENOENT, file, strerror(errno));\n\n");
+                output.printf("\t}\n")
                 output.printf("\tif((opts & __#{libName.upcase}_OPTION_KEEPLOCKED) == 0)\n");
                 output.printf("\t\t__#{libName}_release_flock(file);\n");
                 output.printf("\treturn (unsigned long)header.length;\n");

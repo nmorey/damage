@@ -106,6 +106,13 @@ void Init_#{params[:classNameList]}(){
     rb_define_method(#{params[:classValueList]}, \"each\", #{params[:funcPrefixList]}_arrayEach, 0);
     rb_define_method(#{params[:classValueList]}, \"length\", #{params[:funcPrefixList]}_arrayLength, 0);
     rb_define_method(#{params[:classValueList]}, \"<<\", #{params[:funcPrefixList]}_arrayAdd, 1);
+
+    rb_define_method(#{params[:classValueList]}, \"to_binary\", #{params[:funcPrefix]}_to_binary, 2);
+    rb_define_method(#{params[:classValueList]}, \"to_xml\", #{params[:funcPrefix]}_to_xml, 2);
+    rb_define_singleton_method(#{params[:classValueList]}, \"load_xml\", #{params[:funcPrefix]}_load_xml, 2);
+    rb_define_singleton_method(#{params[:classValueList]}, \"load_binary\", #{params[:funcPrefix]}_load_binary, 2);
+    rb_define_method(#{params[:classValueList]}, \"to_s\", #{params[:funcPrefix]}_to_s, 0);
+
 }
 ");
                         if rowip == true
@@ -122,6 +129,7 @@ void Init_#{params[:classNameListRowip]}(){
     rb_define_method(#{params[:classValueListRowip]}, \"[]\", #{params[:funcPrefixList]}_arrayGetRowip, 1);
     rb_define_method(#{params[:classValueListRowip]}, \"each\", #{params[:funcPrefixList]}_arrayEachRowip, 0);
     rb_define_method(#{params[:classValueListRowip]}, \"length\", #{params[:funcPrefixList]}_arrayLengthRowip, 0);
+
 }
 ")
                         end

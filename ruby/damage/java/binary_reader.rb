@@ -22,37 +22,34 @@ module Damage
             def ByteBuffer(output, name, indent, size, offset)
                 output.printf("#{indent}#{name} = ByteBuffer.allocate(#{size});\n")
                 output.printf("#{indent}#{name}.order(ByteOrder.LITTLE_ENDIAN);\n")
-                output.printf("#{indent}fc.position(#{offset});\n\n")
+                output.printf("#{indent}fc.position(#{offset});\n\n") if offset != nil
 
                 output.printf("#{indent}do {\n");
                 output.printf("#{indent}\tnbytes = fc.read(#{name});\n")
                 output.printf("#{indent}} while(nbytes != -1 && #{name}.hasRemaining());\n\n")
                 output.printf("#{indent}if(nbytes == -1 && #{name}.hasRemaining())\n");
-                output.printf("#{indent}\tthrow new IOException(\"Unexpected EOF at offset \" + #{offset});\n")
+                output.printf("#{indent}\tthrow new IOException(\"Unexpected EOF at offset \" + fc.position());\n")
             end
             module_function :ByteBuffer
 
-            def ParseString(output, indent, input, offset, dest)
+            def ParseString(output, indent, dest)
                 output.printf("#{indent}{\n")
-                output.printf("#{indent}\tint strPos = #{input}.getInt(#{offset});\n")
-                output.printf("#{indent}\tif(strPos != 0){\n")
                 output.printf("#{indent}\t\tint strLen;\n")
                 output.printf("#{indent}\t\tbyte[] strCopy;\n")
                 output.printf("#{indent}\t\tByteBuffer str;\n")
-                ByteBuffer(output, "str", "#{indent}\t\t", "4", "strPos")
+                ByteBuffer(output, "str", "#{indent}\t\t", "4", nil)
                 output.printf("#{indent}\t\tstrLen = str.getInt(0);\n")
                 output.printf("#{indent}\t\tif(strLen > 1){\n")
                 output.printf("#{indent}\t\t\tstrCopy = new byte[strLen - 1];\n")
-                ByteBuffer(output, "str", "#{indent}\t\t\t", "strLen", "strPos+4")
+                ByteBuffer(output, "str", "#{indent}\t\t\t", "strLen", nil)
                 output.printf("#{indent}\t\t\tstr.position(0);\n")
                 output.printf("#{indent}\t\t\tstr.get(strCopy);\n")
                 output.printf("#{indent}\t\t\t#{dest} = new String(strCopy, Charset.forName(\"UTF-8\"));\n")
-                output.printf("#{indent}\t\t} else {\n")
+                output.printf("#{indent}\t\t} else if (strLen == 1) {\n")
                 output.printf("#{indent}\t\t\t#{dest} = new String(\"\");\n")
+                output.printf("#{indent}\t\t} else {\n")
+                output.printf("#{indent}\t\t\t#{dest} = null;\n")
                 output.printf("#{indent}\t\t}\n")
-                output.printf("#{indent}\t} else {\n")
-                output.printf("#{indent}\t\t#{dest} = null;\n")
-                output.printf("#{indent}\t}\n")
                 output.printf("#{indent}}\n")
             end
             module_function :ParseString
@@ -118,7 +115,7 @@ module Damage
                             output.printf("#{indent}}\n")
 
                         when :string
-                            ParseString(output, indent, "in", pahole[field.name][:offset], "obj._#{field.name}")
+                            ParseString(output, indent, "obj._#{field.name}")
                         when :intern
                             output.printf("#{indent}obj._#{field.name}_offset = in.getInt(#{pahole[field.name][:offset]});\n")
                             output.printf("#{indent}if((pOpts._#{field.data_type} != false) && (obj._#{field.name}_offset != 0))\n")
@@ -133,9 +130,8 @@ module Damage
                             output.printf("#{indent}\tint _len = in.getInt(#{pahole[field.name + "Len"][:offset]});\n")
                             output.printf("#{indent}\tif(_len != 0){\n")
                             output.printf("#{indent}\t\tobj._#{field.name} = new #{field.java_type}[_len];\n")
-                            output.printf("#{indent}\t\tint arPos = in.getInt(#{pahole[field.name][:offset]});\n")
                             output.printf("#{indent}\t\tByteBuffer array;\n")
-                            ByteBuffer(output, "array", "#{indent}\t\t", "_len * #{field.type_size}", "arPos")
+                            ByteBuffer(output, "array", "#{indent}\t\t", "_len * #{field.type_size}", nil)
 
                             output.printf("#{indent}\t\tfor(int i = 0; i < _len; i++){\n")
                             case field.java_type
@@ -158,11 +154,8 @@ module Damage
                             output.printf("#{indent}\tint _len = in.getInt(#{pahole[field.name + "Len"][:offset]});\n")
                             output.printf("#{indent}\tif(_len != 0){\n")
                             output.printf("#{indent}\t\tobj._#{field.name} = new #{field.java_type}[_len];\n")
-                            output.printf("#{indent}\t\tint arPos = in.getInt(#{pahole[field.name][:offset]});\n")
-                            output.printf("#{indent}\t\tByteBuffer array;\n")
-                            ByteBuffer(output, "array", "#{indent}\t\t", "_len * 4", "arPos")
                             output.printf("#{indent}\t\tfor(int i = 0; i < _len; i++){\n")
-                            ParseString(output, "#{indent}\t\t\t", "array", "i * 4", "obj._#{field.name}[i]")
+                            ParseString(output, "#{indent}\t\t\t", "obj._#{field.name}[i]")
                             output.printf("#{indent}\t\t}\n")
                             output.printf("#{indent}\t} else {\n")
                             output.printf("#{indent}\t\tobj._#{field.name} = null;\n")
@@ -226,21 +219,30 @@ module Damage
                 output.printf("\t\tjava.io.File fileLock = new java.io.File(filename + \".lock\");\n")
                 output.printf("\t\tFileChannel fc = file.getChannel();\n");
                 output.printf("\t\tFileChannel fChanLock = new RandomAccessFile( fileLock, \"rws\").getChannel();\n");
+                output.printf("\t\tString damage_version = new String(\"#{params[:damage_version]}\");\n")
+                output.printf("\t\tString damage_versionStr;\n")
+                output.printf("\t\tbyte[] header_dVersion = new byte[40];\n")
                 output.printf("\t\t#{retType} obj = null;\n")
                 output.printf("\t\tByteBuffer in; int nbytes;\n");
-                output.printf("\t\tint val;\n\n");
+                output.printf("\t\tint val, i;\n\n");
                 
                 output.printf("\t\tfChanLock.lock(0, Long.MAX_VALUE, readOnly);\n\n");
-                ByteBuffer(output, "in", "\t\t", "2 * 4", "0")
-                output.printf("\n\t\tval = in.getInt(0);\n")
+                ByteBuffer(output, "in", "\t\t", "#{params[:bin_header][:size]}", "0")
+                output.printf("\n\t\tval = in.getInt(#{params[:bin_header]["version"][:offset]});\n")
                 output.printf("\t\tif(val  != #{params[:version]})\n");
                 output.printf("\t\t\tthrow new java.io.UnsupportedEncodingException(\"Incompatible #{libName} format\");\n\n")
+                output.printf("\t\tin.position(#{params[:bin_header]["damage_version[41]"][:offset]});\n")
+                output.printf("\t\tin.get(header_dVersion);\n")
+                output.printf("\t\tdamage_versionStr = new String(header_dVersion, Charset.forName(\"UTF-8\"));\n")
 
-                output.printf("\t\tval = in.getInt(4);\n")
+                output.printf("\t\tif(damage_versionStr.compareTo(damage_version) != 0)\n")
+                output.printf("\t\t\tthrow new java.io.UnsupportedEncodingException(\"Incompatible #{libName} format\");\n\n")
+
+                output.printf("\t\tval = in.getInt(#{params[:bin_header]["length"][:offset]});\n")
                 output.printf("\t\tif(val  != file.length())\n");
                 output.printf("\t\t\tthrow new IOException(\"Corrupted file. Size does not match header\");\n\n")
 
-                output.printf("\t\tobj = loadFromBinaryPartial(fc, 8, pOpts) ;\n")
+                output.printf("\t\tobj = loadFromBinaryPartial(fc, #{params[:bin_header][:size]}, pOpts) ;\n")
                 output.printf("\t\tfc.close();\n\n");
 
                 output.printf("\t\tif(readOnly){\n");

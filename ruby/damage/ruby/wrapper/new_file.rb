@@ -49,7 +49,7 @@ static VALUE #{params[:funcPrefix]}_load_binary(VALUE klass, VALUE filePath, VAL
     ptr = __#{libName}_#{entry.name}_binary_load_file(StringValuePtr(filePath), opts);
 
     if(ptr == NULL)
-        rb_raise(rb_eArgError, \"Failed to load XML file\");
+        rb_raise(rb_eArgError, \"Failed to load binary file\");
     if(ptr->_private)
         #{params[:funcPrefix]}_cleanup(ptr);
     return #{params[:funcPrefix]}_decorate(#{params[:funcPrefix]}_wrapFirst(ptr));
@@ -68,7 +68,7 @@ static VALUE #{params[:funcPrefix]}_load_binary_rowip(VALUE klass, VALUE filePat
     ptr = __#{libName}_#{entry.name}_binary_load_file_rowip(StringValuePtr(filePath), opts);
 
     if(ptr == NULL)
-        rb_raise(rb_eArgError, \"Failed to load XML file\");
+        rb_raise(rb_eArgError, \"Failed to load binary file\");
     if(ptr->_private)
         #{params[:funcPrefix]}_cleanupRowip(ptr);
     return #{params[:funcPrefix]}_decorateRowip(#{params[:funcPrefix]}_wrapFirstRowip(ptr));

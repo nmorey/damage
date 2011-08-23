@@ -97,6 +97,8 @@ module Damage
                 output.puts("
 /** Partial binary parser configuration structure */
 typedef struct ___#{libName}_partial_options {
+\t/** Internal: Means full parsing so no need to seek */
+\t char _all;
 ")
                 description.entries.each() {|name, entry|
                     output.puts("

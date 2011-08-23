@@ -54,11 +54,9 @@ module Damage
  * @{
 **/
 ")
-                output.puts("
-/** Library version */
-#define __#{libName.upcase}_VERSION__ \"#{description.config.version}\"\n")
                 output.puts("#include <stdio.h>")
                 output.puts("#include <stdint.h>")
+                output.puts("#include <zlib.h>")
                 output.puts("#include <#{libName}/common.h>")
                 output.puts("#include <#{libName}/enum.h>")
                 output.puts("#include <#{libName}/structs.h>")
@@ -80,6 +78,15 @@ module Damage
                     output.puts("#include <#{libName}/#{hfile}>");
                 }
                 output.puts("
+/** Version of damage toolchain */
+#define __#{libName.upcase}_DAMAGE_VERSION \"#{description.config.damage_version}\"
+
+/** Version of the DB format */
+#define __#{libName.upcase}_DB_FORMAT #{description.config.version}
+
+/** Library version */
+#define __#{libName.upcase}_VERSION__ \"#{description.config.version}\"\n
+
 /** @} */
 ")
                 output.puts("#endif /* __#{libName}_h__ */\n")

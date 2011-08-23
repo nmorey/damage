@@ -61,8 +61,7 @@ module Damage
  **/
 ");
                 
-                hasNext=""
-                hasNext=", int next" if entry.attribute == :listable 
+                hasNext = (entry.attribute == :listable) ? ", int siblings" : ""
 
                 output.printf("__#{libName}_%s* __#{libName}_%s_duplicate(__#{libName}_%s *ptr#{hasNext}){\n", 
                               entry.name, entry.name, entry.name)
@@ -141,9 +140,11 @@ module Damage
                 # Autosort generation
                 entry.sort.each() {|field|
                     output.printf("#{indent}__#{libName}_#{entry.name}_sort_#{field.name}(#{dest});\n")
-                }
+                } 
+                output.printf("\t#{entry.cleanup}(#{dest});\n") if entry.cleanup != nil 
+
                 if entry.attribute == :listable 
-                    output.printf("\t\tif(next == 0){\n\t\t\treturn first;\n\t\t}\n")
+                    output.printf("\t\tif(siblings == 0){\n\t\t\treturn first;\n\t\t}\n")
                     output.printf("\t}\n") 
                 end
                 output.printf("\treturn first;\n")
@@ -174,11 +175,10 @@ module Damage
 /**
  * Duplicate a #__#{libName}_#{entry.name} 
  * @param[in] ptr Tree to duplicate");
-output.puts(" * @param[in] next Copy siblings")                     if entry.attribute == :listable 
+output.puts(" * @param[in] siblings Copy siblings")                     if entry.attribute == :listable 
 output.puts(" * @return A valid pointer to a #__#{libName}_#{entry.name}. Exit with an error message if duplicate failed.
 */")
-                    hasNext=""
-                    hasNext=", int next" if entry.attribute == :listable 
+                    hasNext = (entry.attribute == :listable) ? ", int siblings" : ""
                     output.printf("__#{libName}_%s *__#{libName}_%s_duplicate(__#{libName}_%s *ptr#{hasNext});\n", entry.name, entry.name, entry.name)
                 }
                 output.puts("

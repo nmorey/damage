@@ -521,8 +521,7 @@ module Damage
                 output.printf("__#{libName}_%s *__#{libName}_%s_xml_load_file(const char* file, __#{libName}_options opts){\n", entry.name, entry.name);
                 output.printf("\t__#{libName}_%s *ptr = NULL;\n", entry.name);
                 
-                output.printf("\tint ret;\n");
-                output.printf("\tFILE *input;\n");
+                output.printf("\tint ret, fd;\n");
                 output.printf("\txmlDocPtr document = NULL;\n\n");
                 output.printf("\txmlNode* root;\n");
 
@@ -538,9 +537,9 @@ module Damage
                 output.printf("\t\treturn NULL;\n");
                 output.printf("\t}\n\n");
                 
-                output.printf("\tif((input = __#{libName}_acquire_flock(file, opts & __#{libName.upcase}_OPTION_READONLY)) == NULL)\n");
+                output.printf("\tif((fd = __#{libName}_acquire_flock(file, opts & __#{libName.upcase}_OPTION_READONLY)) == -1)\n");
                 output.printf("\t\t__#{libName}_error(\"Failed to lock output file %%s: %%s\", ENOENT, file, strerror(errno));\n");
-                output.printf("\tdocument = xmlReadFd(fileno(input), NULL, NULL, 0);\n\n");
+                output.printf("\tdocument = xmlReadFd(fd, NULL, NULL, 0);\n\n");
                 
                 output.printf("\tif (document == NULL) {\n");
                 output.printf("\t\t__#{libName}_error(\"Failed to open XML file %%s\",\n");
