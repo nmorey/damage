@@ -392,8 +392,6 @@ __#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load_partial(FILE*
                 output.printf("\t\tif((outputGz = gzdopen(fd, \"r\")) == NULL)\n")
                 output.printf("\t\t\t__#{libName}_error(\"Failed to open output file %%s: %%s\", ENOENT, file, strerror(errno));\n\n"); 
 
-                output.printf("\t\tgzbuffer(outputGz, 1048576);\n")
-
                 cRead(output, libName, true, "\t\t", "&header", "sizeof(header)", "1", "outputGz")
                 output.printf("\t\tif(header.version != __#{libName.upcase}_DB_FORMAT)\n")
                 output.printf("\t\t__#{libName}_error(\"Version from file %%s is incompatible.\", EACCES, file);\n\n");
