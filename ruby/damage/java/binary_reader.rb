@@ -46,7 +46,7 @@ module Damage
                 output.printf("#{indent}\t\t\tstr.get(strCopy);\n")
                 output.printf("#{indent}\t\t\t#{dest} = new String(strCopy, Charset.forName(\"UTF-8\"));\n")
                 output.printf("#{indent}\t\t} else if (strLen == 1) {\n")
-                output.printf("#{indent}\t\t\t#{dest} = new String(\"\");\n")
+                output.printf("#{indent}\t\t\t#{dest} = \"\";\n")
                 output.printf("#{indent}\t\t} else {\n")
                 output.printf("#{indent}\t\t\t#{dest} = null;\n")
                 output.printf("#{indent}\t\t}\n")
@@ -219,7 +219,7 @@ module Damage
                 output.printf("\t\tjava.io.File fileLock = new java.io.File(filename + \".lock\");\n")
                 output.printf("\t\tFileChannel fc = file.getChannel();\n");
                 output.printf("\t\tFileChannel fChanLock = new RandomAccessFile( fileLock, \"rws\").getChannel();\n");
-                output.printf("\t\tString damage_version = new String(\"#{params[:damage_version]}\");\n")
+                output.printf("\t\tString damage_version = \"#{params[:damage_version]}\";\n")
                 output.printf("\t\tString damage_versionStr;\n")
                 output.printf("\t\tbyte[] header_dVersion = new byte[40];\n")
                 output.printf("\t\t#{retType} obj = null;\n")
