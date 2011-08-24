@@ -110,7 +110,7 @@ public abstract class #{uppercaseLibName}Object {
    * Annotations
    * Developer can put any Object in this map.
    */
-  private HashMap<String, Object> m_annotations;
+  private HashMap<Object, Object> m_annotations;
 
   /**
    * Constructor
@@ -122,7 +122,7 @@ public abstract class #{uppercaseLibName}Object {
   /**
    * Gets the annotation fir the given key.
    */
-  public Object getAnnotation(String key) {
+  public Object getAnnotation(Object key) {
     if (m_annotations != null) {
       return m_annotations.get(key);
     }
@@ -133,9 +133,9 @@ public abstract class #{uppercaseLibName}Object {
    * Set an annotation to this #{uppercaseLibName}Object
    * @return the previous one, if any.
    */
-  public Object setAnnotation(String key, Object object) {
+  public Object setAnnotation(Object key, Object object) {
     if (m_annotations == null) {
-      m_annotations = new HashMap<String, Object>();
+      m_annotations = new HashMap<Object, Object>();
     }
     return m_annotations.put(key, object);
   }
