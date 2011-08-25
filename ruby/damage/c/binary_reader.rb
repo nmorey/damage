@@ -370,7 +370,7 @@ __#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load_partial(FILE*
 ");
 
                 output.printf("__#{libName}_%s* __#{libName}_%s_binary_load_file_partial(const char* file, __#{libName}_options opts, __#{libName}_partial_options *partial_opts)\n{\n", entry.name, entry.name)
-                output.printf("\tint ret, fd;\n")
+                output.printf("\tint ret;\n")
                 output.printf("\t__#{libName}_%s *ptr = NULL;\n", entry.name);
                 output.printf("\tFILE* output;\n")
                 output.printf("\tgzFile outputGz;\n")
@@ -386,10 +386,9 @@ __#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load_partial(FILE*
                 output.printf("\t\treturn NULL;\n");
                 output.printf("\t}\n\n");
                 
-                output.printf("\tif((fd = __#{libName}_acquire_flock(file, opts & __#{libName.upcase}_OPTION_READONLY)) == -1)\n");
-                output.printf("\t\t__#{libName}_error(\"Failed to lock output file %%s: %%s\", ENOENT, file, strerror(errno));\n");
+;
                 output.printf("\tif(opts & __#{libName.upcase}_OPTION_GZIPPED){\n")
-                output.printf("\t\tif((outputGz = gzdopen(fd, \"r\")) == NULL)\n")
+                output.printf("\t\tif((outputGz = __#{libName}_open_gzFile(file, opts & __#{libName.upcase}_OPTION_READONLY, \"r\")) == NULL)\n")
                 output.printf("\t\t\t__#{libName}_error(\"Failed to open output file %%s: %%s\", ENOENT, file, strerror(errno));\n\n"); 
 
                 cRead(output, libName, true, "\t\t", "&header", "sizeof(header)", "1", "outputGz")
@@ -402,7 +401,7 @@ __#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load_partial(FILE*
 
 
                 output.printf("\t} else {\n")
-                output.printf("\t\tif((output = fdopen(fd, \"r\")) == NULL)\n")
+                output.printf("\t\tif((output = __#{libName}_open_FILE(file, opts & __#{libName.upcase}_OPTION_READONLY, \"r\")) == NULL)\n")
                 output.printf("\t\t\t__#{libName}_error(\"Failed to open output file %%s: %%s\", ENOENT, file, strerror(errno));\n\n");
 
                 cRead(output, libName, false, "\t\t", "&header", "sizeof(header)", "1", "output")

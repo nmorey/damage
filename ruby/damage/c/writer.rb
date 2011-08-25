@@ -250,7 +250,7 @@ module Damage
                 output.printf("\tnode = __#{libName}_create_%s_xml_node(NULL, ptr);\n", entry.name)
                 output.printf("\txmlDocSetRootElement(doc, node);\n")
                 output.printf("\n")
-                output.printf("\tif((fd = __#{libName}_acquire_flock(file, 0)) == -1)\n");
+                output.printf("\tif((fd = __#{libName}_open_fd(file, 0)) == -1)\n");
                 output.printf("\t\t__#{libName}_error(\"Failed to lock output file %%s: %%s\", ENOENT, file, strerror(errno));\n\n");
                 output.printf("\tif(ftruncate(fd, 0) != 0)\n");
                 output.printf("\t\t__#{libName}_error(\"Failed to truncate output file %%s: %%s\", ENOENT, file, strerror(errno));\n\n");
