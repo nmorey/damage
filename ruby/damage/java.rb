@@ -18,6 +18,7 @@ module Damage
     module Java
         require File.dirname(__FILE__) + '/java/header'
         require File.dirname(__FILE__) + '/java/enum'
+	require File.dirname(__FILE__) + '/java/xml_reader'
         require File.dirname(__FILE__) + '/java/alloc'
         require File.dirname(__FILE__) + '/java/binary_reader'
         require File.dirname(__FILE__) + '/java/dump'
@@ -35,7 +36,13 @@ module Damage
   <artifactId>#{libName}</artifactId>
   <version>#{version}</version>
   <packaging>jar</packaging>
-        
+  <dependencies>
+    <dependency>
+  		<groupId>dom4j</groupId>
+  		<artifactId>dom4j</artifactId>
+  		<version>1.6</version>
+	</dependency>
+  </dependencies>    
   <build>
     <sourceDirectory>src</sourceDirectory>
     <outputDirectory>bin</outputDirectory>
@@ -90,6 +97,7 @@ public interface I#{uppercaseLibName}ObjectVisitor {
                 Enum::write(output, libName, entry, pahole.entries[name], params)
                 Alloc::write(output, libName, entry, pahole.entries[name], params)
                 BinaryReader::write(output, libName, entry, pahole.entries[name], params)
+		XmlReader::write(output, libName, entry, pahole.entries[name], params)
                 Dump::write(output, libName, entry, pahole.entries[name], params)
 
                 ParserOptions::write(description)
@@ -110,7 +118,7 @@ public abstract class #{uppercaseLibName}Object {
    * Annotations
    * Developer can put any Object in this map.
    */
-  private HashMap<String, Object> m_annotations;
+  private HashMap<Object, Object> m_annotations;
 
   /**
    * Constructor
@@ -122,7 +130,7 @@ public abstract class #{uppercaseLibName}Object {
   /**
    * Gets the annotation fir the given key.
    */
-  public Object getAnnotation(String key) {
+  public Object getAnnotation(Object key) {
     if (m_annotations != null) {
       return m_annotations.get(key);
     }
@@ -133,9 +141,9 @@ public abstract class #{uppercaseLibName}Object {
    * Set an annotation to this #{uppercaseLibName}Object
    * @return the previous one, if any.
    */
-  public Object setAnnotation(String key, Object object) {
+  public Object setAnnotation(Object key, Object object) {
     if (m_annotations == null) {
-      m_annotations = new HashMap<String, Object>();
+      m_annotations = new HashMap<Object, Object>();
     }
     return m_annotations.put(key, object);
   }

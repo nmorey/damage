@@ -40,6 +40,19 @@ module Damage
 
                 output.printf("
 \t/**
+\t * Match an String (xml parsing) ##{field.java_type} value 
+\t */
+")
+                output.printf("\tpublic static #{field.java_type} StrTo#{field.java_type}(String value) "+
+                              "throws IndexOutOfBoundsException{\n");
+                field.enum.each() { |str, val|
+                    output.printf("\t\t\tif (\"#{str}\".equals(value)) return #{field.java_type}.#{val};\n")
+                }
+                output.printf("\t\t\tthrow new IndexOutOfBoundsException();\n")
+                output.printf("\t}\n\n");
+
+                output.printf("
+\t/**
 \t * Match a ##{field.java_type} value to an int (C equivalent) 
 \t */
 ")
