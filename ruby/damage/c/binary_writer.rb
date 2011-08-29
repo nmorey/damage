@@ -411,7 +411,6 @@ uint32_t __#{libName}_#{entry.name}_binary_comp_offset(__#{libName}_#{entry.name
 
                 output.printf("unsigned long __#{libName}_%s_binary_dump_file(const char* file, __#{libName}_%s *ptr, __#{libName}_options opts)\n{\n", entry.name, entry.name)
                 output.printf("\tuint32_t ret;\n")
-                output.printf("\tint fd;\n")
                 output.printf("\tFILE* output;\n")
                 output.printf("\tgzFile outputGz;\n")
                 output.printf("\t__#{libName}_binary_header header = { __#{libName.upcase}_DB_FORMAT, 0, __#{libName.upcase}_DAMAGE_VERSION};\n")
@@ -425,17 +424,15 @@ uint32_t __#{libName}_#{entry.name}_binary_comp_offset(__#{libName}_#{entry.name
 
                 output.printf("\theader.length = __#{libName}_%s_binary_comp_offset(ptr, sizeof(header)#{nextParam});\n", entry.name)
    
-                output.printf("\tif((fd = __#{libName}_acquire_flock(file, 0)) == -1)\n");
-                output.printf("\t\t__#{libName}_error(\"Failed to lock output file %%s: %%s\", ENOENT, file, strerror(errno));\n\n");
 
                 output.printf("\tif(opts & __#{libName.upcase}_OPTION_GZIPPED){\n")
-                output.printf("\t\tif((outputGz = gzdopen(fd, \"w\")) == NULL)\n")
+                output.printf("\t\tif((outputGz = __#{libName}_open_gzFile(file, __#{libName.upcase}_OPTION_NONE, \"w\")) == NULL)\n")
                 output.printf("\t\t\t__#{libName}_error(\"Failed to open output file %%s: %%s\", ENOENT, file, strerror(errno));\n\n");
                 cWrite(output, libName, true, "\t\t", "&header", "sizeof(header)", "1", "outputGz")
                 output.printf("\t\t__#{libName}_%s_binary_dump_gz(ptr, outputGz#{nextParam});\n", entry.name)
                 output.printf("\t\tgzflush(outputGz, Z_FINISH);\n")
                 output.printf("\t} else {\n")
-                output.printf("\t\tif((output = fdopen(fd, \"w\")) == NULL)\n")
+                 output.printf("\t\tif((output = __#{libName}_open_FILE(file, __#{libName.upcase}_OPTION_NONE, \"w\")) == NULL)\n")
                 output.printf("\t\t\t__#{libName}_error(\"Failed to open output file %%s: %%s\", ENOENT, file, strerror(errno));\n\n");
 
                 cWrite(output, libName, false, "\t\t", "&header", "sizeof(header)", "1", "output")
