@@ -26,44 +26,94 @@ module Damage
 ")
 	output.printf("\tstatic public #{params[:class]} XmlRead(Element el) {\n");
 	output.printf("\t\t#{params[:class]} obj=new #{params[:class]}();\n");
+	check = 0
             entry.fields.each() {|field|
 	    output.printf("\t\ttry {\n");
                 case field.attribute
 		when :sort
+			check = 1
                 when :meta
+			check = 1
 		when :container,:none
                     case field.category
-                    when :simple, :enum, :string
+                    when :simple, :enum, :string,:id, :idref
                         case field.qty
                         when :single
+			check = 1
 			    if field.category == :enum then
 				output.printf("\t\tobj._#{field.name}=StrTo#{field.java_type}(el.attributeValue(\"#{field.name}\"));\n");
 				else
-				output.printf("\t\tobj._#{field.name}=el.attributeValue(\"#{field.name}\");\n") if field.java_type == "String"
-				output.printf("\t\tobj._#{field.name}=Integer.parseInt(el.attributeValue(\"#{field.name}\"));\n") if field.java_type == "int"
-				output.printf("\t\tobj._#{field.name}=Double.parseDouble(el.attributeValue(\"#{field.name}\"));\n") if field.java_type == "double"
-				output.printf("\t\tobj._#{field.name}=Byte.parseByte(el.attributeValue(\"#{field.name}\"));\n") if field.java_type == "byte"
-				output.printf("\t\tobj._#{field.name}=Short.parseShort(el.attributeValue(\"#{field.name}\"));\n") if field.java_type == "short"
-				output.printf("\t\tobj._#{field.name}=el.attributeValue(\"#{field.name}\").charAt(0);\n") if field.java_type == "char"
-				output.printf("\t\tobj._#{field.name}=Float.parseFloat(el.attributeValue(\"#{field.name}\"));\n") if field.java_type == "float"
-				output.printf("\t\tobj._#{field.name}=Long.parseLong(el.attributeValue(\"#{field.name}\"));\n") if field.java_type == "long"
+					case field.java_type
+					when "String"
+						output.printf("\t\tobj._#{field.name}=el.attributeValue(\"#{field.name}\");\n")
+					when "int"
+						output.printf("\t\tobj._#{field.name}=Integer.parseInt(el.attributeValue(\"#{field.name}\"));\n")
+					when "double"
+						output.printf("\t\tobj._#{field.name}=Double.parseDouble(el.attributeValue(\"#{field.name}\"));\n")
+					when "byte"
+						output.printf("\t\tobj._#{field.name}=Byte.parseByte(el.attributeValue(\"#{field.name}\"));\n")
+					when "short"
+						output.printf("\t\tobj._#{field.name}=Short.parseShort(el.attributeValue(\"#{field.name}\"));\n")
+					when "char"
+						output.printf("\t\tobj._#{field.name}=el.attributeValue(\"#{field.name}\").charAt(0);\n")
+					when "float"
+						output.printf("\t\tobj._#{field.name}=Float.parseFloat(el.attributeValue(\"#{field.name}\"));\n")
+					when "long"		
+						output.printf("\t\tobj._#{field.name}=Long.parseLong(el.attributeValue(\"#{field.name}\"));\n")
+					else
+						raise("Unsupported java-type for #{entry.name}.#{field.name}");
+					end
 				end
-			    end
+			when :list
+			check = 1
+				output.printf("\t\t{\n\t\t\tStringTokenizer ST=new StringTokenizer(el.elementText(\"#{field.name}\"),\",\");\n");
+				output.printf("\t\t\tobj._#{field.name}=new #{field.java_type}[ST.countTokens()];\n");
+				output.printf("\t\t\tint count=0;\n");
+				output.printf("\t\t\twhile (ST.hasMoreElements()) {\n");
+				case field.java_type
+					when "String"
+						output.printf("\t\tobj._#{field.name}[count++]=el.attributeValue(ST.nextElement().toString());\n")
+					when "int"
+						output.printf("\t\tobj._#{field.name}[count++]=Integer.parseInt(el.attributeValue(ST.nextElement().toString()));\n")
+					when "double"
+						output.printf("\t\tobj._#{field.name}[count++]=Double.parseDouble(el.attributeValue(ST.nextElement().toString()));\n")
+					when "byte"
+						output.printf("\t\tobj._#{field.name}[count++]=Byte.parseByte(el.attributeValue(ST.nextElement().toString()));\n")
+					when "short"
+						output.printf("\t\tobj._#{field.name}[count++]=Short.parseShort(el.attributeValue(ST.nextElement().toString()));\n")
+					when "char"
+						output.printf("\t\tobj._#{field.name}[count++]=el.attributeValue(ST.nextElement().toString()).charAt(0);\n")
+					when "float"
+						output.printf("\t\tobj._#{field.name}[count++]=Float.parseFloat(el.attributeValue(ST.nextElement().toString()));\n")
+					when "long"		
+						output.printf("\t\tobj._#{field.name}[count++]=Long.parseLong(el.attributeValue(ST.nextElement().toString()));\n")
+					else
+						raise("Unsupported java-type for #{entry.name}.#{field.name}");
+					end
+				output.printf("\t\t\t}\n");
+				output.printf("\t\t}\n");
+			else
+				raise("Unsupported data qty for #{entry.name}.#{field.name}");
+			end
                     when :intern
-                        if field.qty == :single then
+                        case field.qty
+                        when :single
+			check = 1
 			    output.printf("\t\tobj._#{field.name}=#{field.java_type}.XmlRead(el.element(\"#{field.name}\"));\n");
-                        else
+                        when :list, :container
+			check = 1
                             output.printf("\t\tobj._#{field.name}=new java.util.ArrayList<#{field.java_type}>();\n");
 			    output.printf("\t\t\t{\n");
 			    if field.attribute == :container
-				output.printf("\t\t\tjava.util.List<Element> tmp=el.element(\"#{field.name}\").elements(\"#{field.java_type.slice(0,1).downcase}#{field.java_type.slice(1..-1)}\");\n") 
+				output.printf("\t\t\tjava.util.List<Element> tmp=(java.util.List<Element>)el.element(\"#{field.name}\").elements(\"#{field.java_type.slice(0,1).downcase}#{field.java_type.slice(1..-1)}\");\n") 
 			    else
-				output.printf("\t\t\tjava.util.List<Element> tmp=el.elements(\"#{field.name}\");\n")
+				output.printf("\t\t\tjava.util.List<Element> tmp=(java.util.List<Element>)el.elements(\"#{field.name}\");\n")
 		            end
 			    output.printf("\t\t\tfor (int i=0;i<tmp.size();i++) {\n");
 			    output.printf("\t\t\t\tobj._#{field.name}.add(#{field.java_type}.XmlRead(tmp.get(i)));\n");
 			    output.printf("\t\t\t\t}\n");
 			    output.printf("\t\t\t}\n");
+			else raise("Unsupported data qty for #{entry.name}.#{field.name}") if field.attribute != :container
                         end
                     else
                         raise("Unsupported data category for #{entry.name}.#{field.name}");
@@ -71,6 +121,7 @@ module Damage
                 else
                     raise("Unsupported data attribute for #{entry.name}.#{field.name}");
                 end
+	    raise("#{entry.name}.#{field.name} is not manage from java Xml reader [qty:#{field.qty},category:#{field.category};attribute:#{field.attribute}]") if (check == 0)
  	    output.printf("\t\t}\n");
 	    output.printf("\t\tcatch(Exception ex) {}\n");
             }
