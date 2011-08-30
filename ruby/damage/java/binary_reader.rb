@@ -224,7 +224,7 @@ module Damage
                 output.printf("\t\tbyte[] header_dVersion = new byte[40];\n")
                 output.printf("\t\t#{retType} obj = null;\n")
                 output.printf("\t\tByteBuffer in; int nbytes;\n");
-                output.printf("\t\tint val, i;\n\n");
+                output.printf("\t\tint val;\n\n");
                 
                 output.printf("\t\tfChanLock.lock(0, Long.MAX_VALUE, readOnly);\n\n");
                 ByteBuffer(output, "in", "\t\t", "#{params[:bin_header][:size]}", "0")

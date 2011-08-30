@@ -28,8 +28,6 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.*;
 import java.nio.charset.*;
-import java.util.HashMap;
-import java.util.StringTokenizer;
 import org.dom4j.Element;
 
 /** Class #{params[:class]}: #{entry.description} */
@@ -40,7 +38,7 @@ public class #{params[:class]} extends #{uppercaseLibName}Object {
                 case field.attribute
                 when :sort
                     output.printf("\t/** Map of \"#{field.sort_field}\" by #{field.sort_key} */\n")
-                    output.printf("\tpublic HashMap<Integer, #{field.java_type}> _#{field.name}_by_#{field.sort_key};\n")
+                    output.printf("\tpublic java.util.HashMap<Integer, #{field.java_type}> _#{field.name}_by_#{field.sort_key};\n")
                 when :meta,:container,:none
                     case field.category
                     when :simple, :enum, :string

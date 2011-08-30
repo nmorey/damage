@@ -40,7 +40,7 @@ module Damage
     <dependency>
   		<groupId>dom4j</groupId>
   		<artifactId>dom4j</artifactId>
-  		<version>1.6</version>
+  		<version>1.6.1</version>
 	</dependency>
   </dependencies>    
   <build>
