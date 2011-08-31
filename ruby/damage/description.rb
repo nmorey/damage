@@ -487,6 +487,7 @@ module Damage
                 @entries={}
                 input.each_line() { |line|
                     if inStruct == false then
+                        next if line =~ /^struct ___#{prefix}_db_lock\s+\{\s*$/
                         next if line !~ /^struct ___#{prefix}_(.*)\s+\{\s*$/
                         inStruct = $1
                         @entries[inStruct] = {}
