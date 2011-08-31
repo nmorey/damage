@@ -458,7 +458,7 @@ __#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load_partial(FILE*
 ");
 
                 output.printf("__#{libName}_%s* __#{libName}_%s_binary_load_file(const char* file, __#{libName}_options opts)\n{\n", entry.name, entry.name)
-              output.printf("\t__#{libName}_partial_options opt;\n")
+                output.printf("\t__#{libName}_partial_options opt = __#{libName.upcase}_PARTIAL_OPTIONS_INITIALIZER;\n")
                 output.printf("\n")
 
                 output.printf("\t__#{libName}_partial_options_parse_#{entry.name}(&opt);\n");
