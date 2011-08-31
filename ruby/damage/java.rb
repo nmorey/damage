@@ -114,47 +114,60 @@ import java.util.HashMap;
 
 public abstract class #{uppercaseLibName}Object {
 
-  /**
-   * Annotations
-   * Developer can put any Object in this map.
-   */
-  private HashMap<Object, Object> m_annotations;
+	/**
+	 * Annotations
+	 * Developer can put any Object in this map.
+	 */
+	private HashMap<Object, Object> m_annotations;
 
-  /**
-   * Constructor
-   */
-  public #{uppercaseLibName}Object() {
-  }
+	/**
+	 * Constructor
+	 */
+	public #{uppercaseLibName}Object() {
+	}
 
+	/**
+	 * Gets the annotation fir the given key.
+	 */
+	public Object getAnnotation(Object key) {
+		if (m_annotations != null) {
+			return m_annotations.get(key);
+ 		}
+ 		return null;
+	}
 
-  /**
-   * Gets the annotation fir the given key.
-   */
-  public Object getAnnotation(Object key) {
-    if (m_annotations != null) {
-      return m_annotations.get(key);
-    }
-    return null;
-  }
+	/**
+	 * Set an annotation to this #{uppercaseLibName}Object
+	 * @return the previous one, if any.
+	 */
+	public Object setAnnotation(Object key, Object object) {
+		if (m_annotations == null) {
+ 			m_annotations = new HashMap<Object, Object>();
+ 		}
+		return m_annotations.put(key, object);
+	}
 
-  /**
-   * Set an annotation to this #{uppercaseLibName}Object
-   * @return the previous one, if any.
-   */
-  public Object setAnnotation(Object key, Object object) {
-    if (m_annotations == null) {
-      m_annotations = new HashMap<Object, Object>();
-    }
-    return m_annotations.put(key, object);
-  }
-
-
-  /**
-   * Each #{uppercaseLibName}Object must implement this method
-   */
-  public abstract void visit(I#{uppercaseLibName}ObjectVisitor v);
+	/**
+	 * Each #{uppercaseLibName}Object must implement this method
+	 */
+	public abstract void visit(I#{uppercaseLibName}ObjectVisitor v);
 
 
+	/**
+	 * Intendation method, used when dumping objects.
+	 */ 
+	public static void indentToString(int indent, boolean listable, boolean first) {
+		for (int i = 0; i < indent; ++i) {
+                	System.out.print('\\t');
+		}
+		if (listable == true) {
+			if (first == true) {
+				System.out.print(\"- \");
+			} else {
+				System.out.print(\"  \");
+			}
+		}
+	}
 }");
  
             output.close();

@@ -60,18 +60,18 @@ module Damage
                 retType="java.util.List<#{retType}>" if entry.attribute == :listable 
 
                output.puts("
-/**
- * Internal: Read a complete ##{retType} class and its children in binary form from an open file.
- */");
+	/**
+	 * Internal: Read a complete ##{retType} class and its children in binary form from an open file.
+	 */");
                 output.printf("\tpublic static #{retType} loadFromBinary(FileChannel fc, int offset) throws IOException {\n")
                 output.printf("\t\tParserOptions pOpts = new ParserOptions(true);\n")
                 output.printf("\t\treturn loadFromBinaryPartial(fc, offset, pOpts);\n")
                 output.printf("\t}\n\n");
 
                 output.puts("
-/**
- * Internal: Read a partial ##{retType} class and its children in binary form from an open file.
- */");
+	/**
+	 * Internal: Read a partial ##{retType} class and its children in binary form from an open file.
+	 */");
                 output.printf("\tpublic static #{retType} loadFromBinaryPartial(FileChannel fc, int offset, ParserOptions pOpts) throws IOException {\n")
 
                 output.printf("\t\t#{params[:class]} obj;\n")
@@ -197,9 +197,9 @@ module Damage
                 end
                 output.printf("\t}\n\n")
                 output.puts("
-/**
- * Read a complete ##{retType} class and its children in binary form from a file.
- */");
+	/**
+	 * Read a complete ##{retType} class and its children in binary form from a file.
+	 */");
 
                 output.printf("\tpublic static #{retType} createFromBinary(String filename, boolean readOnly) throws IOException {\n")
                 output.printf("\t\tParserOptions pOpts = new ParserOptions(true);\n")
@@ -210,9 +210,9 @@ module Damage
 
 
                 output.puts("
-/**
- * Read a partial ##{retType} class and its children in binary form from a file.
- */");
+	/**
+	 * Read a partial ##{retType} class and its children in binary form from a file.
+	 */");
 
                 output.printf("\tpublic static #{retType} createFromBinaryPartial(String filename, boolean readOnly, ParserOptions pOpts) throws IOException {\n")
                 output.printf("\t\tRandomAccessFile file = new RandomAccessFile( new java.io.File(filename), \"r\");\n")
