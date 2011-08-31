@@ -56,6 +56,8 @@ module Damage
                                     output.printf("\tunsigned int __padding#{field.name};\n")
                                     output.printf("#endif /* __WORDSIZE == 32 */ \n");
 
+                                elsif field.data_type == "double"
+                                    output.printf("\t%s %s __#{libName.upcase}_ALIGN__;\n", field.data_type, field.name)
                                 else
                                     output.printf("\t%s %s;\n", field.data_type, field.name)
                                 end
