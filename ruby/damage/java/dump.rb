@@ -20,8 +20,8 @@ module Damage
             
             def write(output, libName, entry, pahole, params)
                 output.printf("\tprivate void indentToString(int indent, boolean listable, boolean first){\n")
-                output.printf("\t\tfor(int i = 0; i < indent; ++i){;\n")
-                output.printf("\t\t\tSystem.out.print(\"\\t\");\n")
+                output.printf("\t\tfor(int i = 0; i < indent; ++i){\n")
+                output.printf("\t\t\tSystem.out.print('\\t');\n")
                 output.printf("\t\t}\n")
                 output.printf("\t\tif(listable == true){\n")
                 output.printf("\t\t\tif(first == true){\n")

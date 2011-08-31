@@ -44,7 +44,7 @@ module Damage
                     output.printf("\t/** Sort #{field.sort_field}\ by #{field.sort_key} */\n")
                     output.printf("\tpublic void sort_#{field.name}_by_#{field.sort_key}() {\n")
                     output.printf("\t\tif (_#{field.name}_by_#{field.sort_key} == null) {\n")
-                    output.printf("\t\t\t_#{field.name}_by_#{field.sort_key} = new HashMap<Integer, #{field.java_type}>();\n")
+                    output.printf("\t\t\t_#{field.name}_by_#{field.sort_key} = new java.util.HashMap<Integer, #{field.java_type}>();\n")
                     output.printf("\t\t} else {\n")
                     output.printf("\t\t\t_#{field.name}_by_#{field.sort_key}.clear();\n")
                     output.printf("\t\t}\n")
