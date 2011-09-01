@@ -111,8 +111,17 @@ public interface I#{uppercaseLibName}ObjectVisitor {
             output.puts("package #{description.config.package}.#{libName};
 
 import java.util.HashMap;
+import java.io.InputStream;
+import java.io.EOFException;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.charset.Charset;
 
 public abstract class #{uppercaseLibName}Object {
+
+	/** damage_version */
+	public static final String DAMAGE_VERSION = \"#{description.config.damage_version}\";
 
 	/**
 	 * Annotations
@@ -152,6 +161,48 @@ public abstract class #{uppercaseLibName}Object {
 	 */
 	public abstract void visit(I#{uppercaseLibName}ObjectVisitor v);
 
+	/**
+	 * Read from given inputstream until the given array is full.
+	 */
+	public static void readFully(InputStream is, byte[] array) throws IOException {
+		int nbytes = 0;
+		while (nbytes <array.length) {
+			int count = is.read(array, nbytes, array.length - nbytes);
+			if (count < 0) throw new EOFException();
+			nbytes += count;
+		}
+	}
+	
+	/**
+	 * Read from given inputstream until the given array is full,
+	 * and return a ByteBuffer wrapping the byte array
+	 */
+	public static ByteBuffer fillByteBuffer(InputStream is, byte[] array) throws IOException {
+		readFully(is, array);
+		ByteBuffer in = ByteBuffer.wrap(array);
+		in.order(ByteOrder.LITTLE_ENDIAN);
+		return in;
+	}
+	
+	/** 
+	 * Read a string from given inputstream
+	 */
+	public static String readString(InputStream is) throws IOException {
+		ByteBuffer bb = fillByteBuffer(is, new byte[4]);
+		int strLen = bb.getInt(0);
+		String ret = null;
+		if (strLen > 1) {
+			byte[] array = new byte[strLen-1];
+			readFully(is, array);
+			// reads end of String
+			if (is.read() == -1) throw new EOFException();
+			ret = new String(array, Charset.forName(\"UTF-8\"));
+		} else if (strLen == 1) {
+			if (is.read() == -1) throw new EOFException();
+			ret = \"\";
+		}
+		return ret;
+	}
 
 	/**
 	 * Intendation method, used when dumping objects.

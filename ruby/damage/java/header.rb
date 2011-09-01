@@ -23,7 +23,10 @@ module Damage
 package #{params[:package]};
 
 import java.io.IOException;
+import java.io.EOFException;
 import java.io.RandomAccessFile;
+import java.io.FileInputStream;
+import java.util.zip.GZIPInputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.*;

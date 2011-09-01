@@ -44,11 +44,13 @@ package #{params[:package]};
 
 /** Option for partial binary parser */
 public class ParserOptions {
+	/** parse all structures */
+        public boolean _all;
 
 ")
 
                 description.entries.each(){ |name, entry|
-                    output.puts("\t/** Parse #{name} structures */");
+                    output.puts("\t/** Parse #{name} structures - if true, no need to seek when reading database*/");
                     output.puts("\tpublic boolean _#{name};\n");
                 }
                 output.puts("\n\n")
@@ -59,7 +61,7 @@ public class ParserOptions {
                     output.printf("\t/** Configure the #ParserOption to parse ##{params[:class]} objects and all its children */\n")
                     output.printf("\tpublic void parseComplete#{params[:class]}(){\n")
 
-                    output.printf("\t\tthis._#{entry.name} = true;\n\n")
+                    output.printf("\t\tthis._#{entry.name} = true;\n")
 
                     entry.fields.each() { |field|
                         next if field.target != :both
@@ -73,14 +75,14 @@ public class ParserOptions {
                 }
                 output.printf("\t/** Default constructor. Parse Nothing. */\n")
                 output.printf("\tpublic ParserOptions(){\n");
-                description.entries.each(){ |name, entry|
-                    output.puts("\t\t_#{name} = false;\n");
-                }
-                output.printf("\t}\n\n")
+                output.printf("\t	this(false);\n");
+                output.printf("\t}\n");
+
 
 
                 output.printf("\t/** Constructor with default value. */\n")
                 output.printf("\tpublic ParserOptions(boolean val){\n");
+		output.printf("\t\t_all = val;\n");
                 description.entries.each(){ |name, entry|
                     output.puts("\t\t_#{name} = val;\n");
                 }
