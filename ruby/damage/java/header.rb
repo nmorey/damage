@@ -18,7 +18,6 @@ module Damage
   module Java
       module Header
         def write(output, libName, entry, pahole, params)
-         uppercaseLibName = libName.slice(0,1).upcase + libName.slice(1..-1)
          output.puts("
 package #{params[:package]};
 
@@ -26,15 +25,17 @@ import java.io.IOException;
 import java.io.EOFException;
 import java.io.RandomAccessFile;
 import java.io.FileInputStream;
+import java.io.PrintStream;
 import java.util.zip.GZIPInputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.*;
 import java.nio.charset.*;
 import org.dom4j.Element;
+import org.dom4j.dom.DOMElement;
 
 /** Class #{params[:class]}: #{entry.description} */
-public class #{params[:class]} extends #{uppercaseLibName}Object {
+public class #{params[:class]} extends #{params[:uppercase_libname]}Object {
 
 ")
             entry.fields.each() {|field|

@@ -20,7 +20,7 @@ module Damage
             
             def write(output, libName, entry, pahole, params)
 
-                output.printf("\tvoid dumpWithIndent(int indent){\n")
+                output.printf("\tvoid dumpWithIndent(PrintStream ps, int indent){\n")
                 output.printf("\t\tboolean first = true;\n");
 
                 if entry.attribute == :listable then
@@ -34,21 +34,21 @@ module Damage
                     when :single
                         case field.category
                         when :simple, :enum
-                            output.printf("\t\tindentToString(indent, listable, first);\n")
+                            output.printf("\t\tindentToString(ps, indent, listable, first);\n")
                             output.printf("\t\tfirst = false;\n")
-                            output.printf("\t\tSystem.out.println(\"#{field.name}: \" + this._#{field.name});\n");
+                            output.printf("\t\tps.println(\"#{field.name}: \" + this._#{field.name});\n");
                         when :string
                             output.printf("\t\tif(this._#{field.name} != null){\n");
-                            output.printf("\t\t\tindentToString(indent, listable, first);\n")
+                            output.printf("\t\t\tindentToString(ps, indent, listable, first);\n")
                             output.printf("\t\t\tfirst = false;\n")
-                            output.printf("\t\t\tSystem.out.println(\"#{field.name}: \\\"\" + this._#{field.name} + \"\\\"\");\n");
+                            output.printf("\t\t\tps.println(\"#{field.name}: \\\"\" + this._#{field.name} + \"\\\"\");\n");
                             output.printf("\t\t}\n");
                         when :intern
                             output.printf("\t\tif(this._#{field.name} != null){\n");
-                            output.printf("\t\t\tindentToString(indent, listable, first);\n")
+                            output.printf("\t\t\tindentToString(ps, indent, listable, first);\n")
                             output.printf("\t\t\tfirst = false;\n")
-                            output.printf("\t\t\tSystem.out.println(\"#{field.name}: \");\n");
-                            output.printf("\t\t\tthis._#{field.name}.dumpWithIndent(indent+1);\n");
+                            output.printf("\t\t\tps.println(\"#{field.name}: \");\n");
+                            output.printf("\t\t\tthis._#{field.name}.dumpWithIndent(ps, indent+1);\n");
                             output.printf("\t\t}\n");
 
 
@@ -61,31 +61,31 @@ module Damage
                         case field.category
                         when :simple
                             output.printf("\t\t{\n");
-                            output.printf("\t\t\tindentToString(indent, listable, first);\n")
+                            output.printf("\t\t\tindentToString(ps, indent, listable, first);\n")
                             output.printf("\t\t\tfirst = false;\n")
-                            output.printf("\t\t\tSystem.out.println(\"#{field.name}:\");\n");
+                            output.printf("\t\t\tps.println(\"#{field.name}:\");\n");
                             output.printf("\t\t\tfor(int i = 0; i < this._#{field.name}.length; i++){\n");
-                            output.printf("\t\t\t\tindentToString(indent + 1, true, true);\n")
-                            output.printf("\t\t\t\tSystem.out.println(this._#{field.name}[i]);\n");
+                            output.printf("\t\t\t\tindentToString(ps, indent + 1, true, true);\n")
+                            output.printf("\t\t\t\tps.println(this._#{field.name}[i]);\n");
                             output.printf("\t\t\t}\n");
                             output.printf("\t\t}\n");
                         when :string
                             output.printf("\t\t{\n");
-                            output.printf("\t\t\tindentToString(indent, listable, first);\n")
+                            output.printf("\t\t\tindentToString(ps, indent, listable, first);\n")
                             output.printf("\t\t\tfirst = false;\n")
-                            output.printf("\t\t\tSystem.out.println(\"#{field.name}:\");\n");
+                            output.printf("\t\t\tps.println(\"#{field.name}:\");\n");
                             output.printf("\t\t\tfor(int i = 0; i < this._#{field.name}.length; i++){\n");
-                            output.printf("\t\t\t\tindentToString(indent + 1, true, true);\n")
-                            output.printf("\t\t\t\tSystem.out.println(\"\\\"\" + this._#{field.name}[i] + \"\\\"\");\n");
+                            output.printf("\t\t\t\tindentToString(ps, indent + 1, true, true);\n")
+                            output.printf("\t\t\t\tps.println(\"\\\"\" + this._#{field.name}[i] + \"\\\"\");\n");
                             output.printf("\t\t\t}\n");
                             output.printf("\t\t}\n");
                         when :intern
                             output.printf("\t\t{\n");
-                            output.printf("\t\t\tindentToString(indent, listable, first);\n")
+                            output.printf("\t\t\tindentToString(ps, indent, listable, first);\n")
                             output.printf("\t\t\tfirst = false;\n")
-                            output.printf("\t\t\tSystem.out.println(\"#{field.name}:\");\n");
+                            output.printf("\t\t\tps.println(\"#{field.name}:\");\n");
                             output.printf("\t\t\tfor(#{field.java_type} el :  this._#{field.name}){\n");
-                            output.printf("\t\t\t\tel.dumpWithIndent(indent+1);\n");
+                            output.printf("\t\t\t\tel.dumpWithIndent(ps, indent+1);\n");
                             output.printf("\t\t\t}\n");
                             output.printf("\t\t}\n");
                         else
@@ -98,8 +98,11 @@ module Damage
 
                 output.printf("\t}\n\n")
                 output.printf("\tpublic void dump(){\n")
-                output.printf("\t\tSystem.out.println(\"#{entry.name}:\");\n")
-                output.printf("\t\tthis.dumpWithIndent(1);\n")
+                output.printf("\t\tdump(System.out);\n")
+                output.printf("\t}\n\n")
+                output.printf("\tpublic void dump(PrintStream ps){\n")
+                output.printf("\t\tps.println(\"#{entry.name}:\");\n")
+                output.printf("\t\tthis.dumpWithIndent(ps, 1);\n")
                 output.printf("\t}\n\n")
          end
 

@@ -19,7 +19,6 @@ module Damage
         module Alloc
             
             def write(output, libName, entry, pahole, params)
-                uppercaseLibName = libName.slice(0,1).upcase + libName.slice(1..-1)
                 output.printf("\t/** Default constructor */\n")
                 output.printf("\tpublic #{params[:class]}(){\n")
 
@@ -34,7 +33,7 @@ module Damage
 
                 output.printf("\t}\n\n")
                 output.printf("\t@Override\n")
-                output.printf("\tpublic void visit(I#{uppercaseLibName}ObjectVisitor v) {\n")
+                output.printf("\tpublic void visit(I#{params[:uppercase_libname]}ObjectVisitor v) {\n")
                 output.printf("\t\tv.visit(this);\n")
                 output.printf("\t}\n\n")
                 

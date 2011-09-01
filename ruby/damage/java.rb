@@ -19,6 +19,7 @@ module Damage
         require File.dirname(__FILE__) + '/java/header'
         require File.dirname(__FILE__) + '/java/enum'
 	require File.dirname(__FILE__) + '/java/xml_reader'
+	require File.dirname(__FILE__) + '/java/xml_writer'
         require File.dirname(__FILE__) + '/java/alloc'
         require File.dirname(__FILE__) + '/java/binary_reader'
         require File.dirname(__FILE__) + '/java/dump'
@@ -98,6 +99,7 @@ public interface I#{uppercaseLibName}ObjectVisitor {
                 Alloc::write(output, libName, entry, pahole.entries[name], params)
                 BinaryReader::write(output, libName, entry, pahole.entries[name], params)
 		XmlReader::write(output, libName, entry, pahole.entries[name], params)
+		XmlWriter::write(output, libName, entry, pahole.entries[name], params)
                 Dump::write(output, libName, entry, pahole.entries[name], params)
 
                 ParserOptions::write(description)
@@ -112,6 +114,7 @@ public interface I#{uppercaseLibName}ObjectVisitor {
 
 import java.util.HashMap;
 import java.io.InputStream;
+import java.io.PrintStream;
 import java.io.EOFException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -207,15 +210,15 @@ public abstract class #{uppercaseLibName}Object {
 	/**
 	 * Intendation method, used when dumping objects.
 	 */ 
-	public static void indentToString(int indent, boolean listable, boolean first) {
+	public static void indentToString(PrintStream ps, int indent, boolean listable, boolean first) {
 		for (int i = 0; i < indent; ++i) {
-                	System.out.print('\\t');
+                	ps.print('\\t');
 		}
 		if (listable == true) {
 			if (first == true) {
-				System.out.print(\"- \");
+				ps.print(\"- \");
 			} else {
-				System.out.print(\"  \");
+				ps.print(\"  \");
 			}
 		}
 	}
@@ -234,11 +237,12 @@ public abstract class #{uppercaseLibName}Object {
         def nameToParams(description, name)
             params={}
             params[:package] = description.config.package + "." + description.config.libname
+            params[:uppercase_libname] = description.config.libname.slice(0,1).upcase + description.config.libname.slice(1..-1)
             params[:version] = description.config.version
             params[:damage_version] = description.config.damage_version
-
             params[:class] = name.slice(0,1).upcase + name.slice(1..-1)
             params[:bin_header] = description.pahole.entries["binary_header"]
+            params[:name] = name
             return params
         end
         module_function :nameToParams

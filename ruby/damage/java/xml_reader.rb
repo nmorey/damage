@@ -18,7 +18,6 @@ module Damage
   module Java
       module XmlReader
         def write(output, libName, entry, pahole, params)
-         uppercaseLibName = libName.slice(0,1).upcase + libName.slice(1..-1)
          output.puts("
 \t/**
 \t * XML Reader from an Element 
@@ -40,53 +39,58 @@ module Damage
                         case field.qty
                         when :single
 			check = 1
+                        output.printf("\t\t\tString tmp = el.attributeValue(\"#{field.name}\");\n");
+                        output.printf("\t\t\tif (tmp != null) {\n");
 			    if field.category == :enum then
-				output.printf("\t\t\tobj._#{field.name}=StrTo#{field.java_type}(el.attributeValue(\"#{field.name}\"));\n");
+				output.printf("\t\t\t\tobj._#{field.name}=StrTo#{field.java_type}(tmp);\n");
 				else
 					case field.java_type
 					when "String"
-						output.printf("\t\t\tobj._#{field.name}=el.attributeValue(\"#{field.name}\");\n")
+						output.printf("\t\t\t\tobj._#{field.name}=el.attributeValue(\"#{field.name}\");\n")
 					when "int"
-						output.printf("\t\t\tobj._#{field.name}=Integer.parseInt(el.attributeValue(\"#{field.name}\"));\n")
+						output.printf("\t\t\t\tobj._#{field.name}=Integer.parseInt(el.attributeValue(\"#{field.name}\"));\n")
 					when "double"
-						output.printf("\t\t\tobj._#{field.name}=Double.parseDouble(el.attributeValue(\"#{field.name}\"));\n")
+						output.printf("\t\t\t\tobj._#{field.name}=Double.parseDouble(el.attributeValue(\"#{field.name}\"));\n")
 					when "byte"
-						output.printf("\t\t\tobj._#{field.name}=Byte.parseByte(el.attributeValue(\"#{field.name}\"));\n")
+						output.printf("\t\t\t\tobj._#{field.name}=Byte.parseByte(el.attributeValue(\"#{field.name}\"));\n")
 					when "short"
-						output.printf("\t\t\tobj._#{field.name}=Short.parseShort(el.attributeValue(\"#{field.name}\"));\n")
+						output.printf("\t\t\t\tobj._#{field.name}=Short.parseShort(el.attributeValue(\"#{field.name}\"));\n")
 					when "char"
-						output.printf("\t\t\tobj._#{field.name}=el.attributeValue(\"#{field.name}\").charAt(0);\n")
+						output.printf("\t\t\t\tobj._#{field.name}=el.attributeValue(\"#{field.name}\").charAt(0);\n")
 					when "float"
-						output.printf("\t\t\tobj._#{field.name}=Float.parseFloat(el.attributeValue(\"#{field.name}\"));\n")
+						output.printf("\t\t\t\tobj._#{field.name}=Float.parseFloat(el.attributeValue(\"#{field.name}\"));\n")
 					when "long"		
-						output.printf("\t\t\tobj._#{field.name}=Long.parseLong(el.attributeValue(\"#{field.name}\"));\n")
+						output.printf("\t\t\t\tobj._#{field.name}=Long.parseLong(el.attributeValue(\"#{field.name}\"));\n")
 					else
 						raise("Unsupported java-type for #{entry.name}.#{field.name}");
 					end
 				end
+                         output.printf("\t\t\t}\n");
 			when :list
 			check = 1
-				output.printf("\t\t\tjava.util.StringTokenizer ST=new java.util.StringTokenizer(el.elementText(\"#{field.name}\"),\",\");\n");
-				output.printf("\t\t\tobj._#{field.name}=new #{field.java_type}[ST.countTokens()];\n");
-				output.printf("\t\t\tint count=0;\n");
-				output.printf("\t\t\twhile (ST.hasMoreElements()) {\n");
+				output.printf("\t\t\t@SuppressWarnings(\"unchecked\")\n");
+                                output.printf("\t\t\tjava.util.List<Element> tmp=(java.util.List<Element>)el.elements(\"#{field.name}\");\n")
+				output.printf("\t\t\tobj._#{field.name}=new #{field.java_type}[tmp.size()];\n");
+                                output.printf("\t\t\tint count = 0;\n");
+				output.printf("\t\t\tfor (Element #{field.name}Element: tmp) {\n");
+                                output.printf("\t\t\t\tString #{field.name}String = #{field.name}Element.getTextTrim();\n");
 				case field.java_type
 					when "String"
-						output.printf("\t\t\t\tobj._#{field.name}[count++]=el.attributeValue(ST.nextElement().toString());\n")
+						output.printf("\t\t\t\tobj._#{field.name}[count++]=#{field.name}String;\n")
 					when "int"
-						output.printf("\t\t\t\tobj._#{field.name}[count++]=Integer.parseInt(el.attributeValue(ST.nextElement().toString()));\n")
+						output.printf("\t\t\t\tobj._#{field.name}[count++]=Integer.parseInt(#{field.name}String);\n")
 					when "double"
-						output.printf("\t\t\t\tobj._#{field.name}[count++]=Double.parseDouble(el.attributeValue(ST.nextElement().toString()));\n")
+						output.printf("\t\t\t\tobj._#{field.name}[count++]=Double.parseDouble(#{field.name}String);\n")
 					when "byte"
-						output.printf("\t\t\t\tobj._#{field.name}[count++]=Byte.parseByte(el.attributeValue(ST.nextElement().toString()));\n")
+						output.printf("\t\t\t\tobj._#{field.name}[count++]=Byte.parseByte(#{field.name}String);\n")
 					when "short"
-						output.printf("\t\t\t\tobj._#{field.name}[count++]=Short.parseShort(el.attributeValue(ST.nextElement().toString()));\n")
+						output.printf("\t\t\t\tobj._#{field.name}[count++]=Short.parseShort(#{field.name}String);\n")
 					when "char"
-						output.printf("\t\t\t\tobj._#{field.name}[count++]=el.attributeValue(ST.nextElement().toString()).charAt(0);\n")
+						output.printf("\t\t\t\tobj._#{field.name}[count++]=el.attributeValue(#{field.name}String);\n")
 					when "float"
-						output.printf("\t\t\t\tobj._#{field.name}[count++]=Float.parseFloat(el.attributeValue(ST.nextElement().toString()));\n")
+						output.printf("\t\t\t\tobj._#{field.name}[count++]=Float.parseFloat(#{field.name}String);\n")
 					when "long"		
-						output.printf("\t\t\t\tobj._#{field.name}[count++]=Long.parseLong(el.attributeValue(ST.nextElement().toString()));\n")
+						output.printf("\t\t\t\tobj._#{field.name}[count++]=Long.parseLong(#{field.name}String);\n")
 					else
 						raise("Unsupported java-type for #{entry.name}.#{field.name}");
 					end
@@ -98,17 +102,18 @@ module Damage
                         case field.qty
                         when :single
 			check = 1
-			    output.printf("\t\t\tobj._#{field.name}=#{field.java_type}.xmlRead(el.element(\"#{field.name}\"));\n");
+                            output.printf("\t\t\tElement #{field.name}Element = el.element(\"#{field.name}\");\n");
+                            output.printf("\t\t\tif (#{field.name}Element != null)\n");
+			    output.printf("\t\t\t\tobj._#{field.name}=#{field.java_type}.xmlRead(#{field.name}Element);\n");
                         when :list, :container
 			check = 1
-			    
+			    output.printf("\t\t\tobj._#{field.name}=new java.util.ArrayList<#{field.java_type}>();\n");
 			    output.printf("\t\t\t@SuppressWarnings(\"unchecked\")\n");
 			    if field.attribute == :container
 				output.printf("\t\t\tjava.util.List<Element> tmp=(java.util.List<Element>)el.element(\"#{field.name}\").elements(\"#{field.java_type.slice(0,1).downcase}#{field.java_type.slice(1..-1)}\");\n") 
 			    else
 				output.printf("\t\t\tjava.util.List<Element> tmp=(java.util.List<Element>)el.elements(\"#{field.name}\");\n")
 		            end
-			    output.printf("\t\t\tobj._#{field.name}=new java.util.ArrayList<#{field.java_type}>(tmp.size());\n");
 			    output.printf("\t\t\tfor (Element xmlElement: tmp) {\n");
 			    output.printf("\t\t\t\tobj._#{field.name}.add(#{field.java_type}.xmlRead(xmlElement));\n");
 			    output.printf("\t\t\t}\n");
@@ -133,7 +138,7 @@ module Damage
 		end
 	    }
 
-	    output.puts("\t\tCleanupSigmacDBObjectVisitor.instance.visit(obj);\n");
+	    output.puts("\t\tCleanup#{params[:uppercase_libname]}ObjectVisitor.instance.visit(obj);\n");
 	    output.puts("\t\treturn obj;\n");
 	    output.puts("\n\t}\n\n");
         end
