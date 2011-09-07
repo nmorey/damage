@@ -356,13 +356,14 @@ module Damage
                 ByteBuffer(output, "in", "\t\t", "#{params[:bin_header][:size]}", "0")
                 output.printf("\n\t\tval = in.getInt(#{params[:bin_header]["version"][:offset]});\n")
                 output.printf("\t\tif(val  != #{params[:version]})\n");
-                output.printf("\t\t\tthrow new java.io.UnsupportedEncodingException(\"Incompatible #{libName} format\");\n\n")
+                output.printf("\t\t\tthrow new java.io.UnsupportedEncodingException(\"Incompatible #{libName} format (got version \" + val + \", expecting #{params[:version]})\");\n\n")
+
                 output.printf("\t\tin.position(#{params[:bin_header]["damage_version[41]"][:offset]});\n")
                 output.printf("\t\tin.get(header_dVersion);\n")
                 output.printf("\t\tString damage_versionStr = new String(header_dVersion, Charset.forName(\"UTF-8\"));\n")
 
                 output.printf("\t\tif(!DAMAGE_VERSION.equals(damage_versionStr))\n")
-                output.printf("\t\t\tthrow new java.io.UnsupportedEncodingException(\"Incompatible #{libName} format\");\n\n")
+                output.printf("\t\t\tthrow new java.io.UnsupportedEncodingException(\"Incompatible #{libName} format (got damage_version \" + damage_versionStr + \", expecting \" + DAMAGE_VERSION);\n\n")
 
                 output.printf("\t\tval = in.getInt(#{params[:bin_header]["length"][:offset]});\n")
                 output.printf("\t\tif(val  != file.length())\n");
