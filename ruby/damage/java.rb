@@ -90,6 +90,38 @@ public interface I#{uppercaseLibName}ObjectVisitor {
   public class Default#{uppercaseLibName}ObjectVisitor implements I#{uppercaseLibName}ObjectVisitor {
     ");
 
+            delegateVisitorOutput = Damage::Files.createAndOpen(outdir, "Delegate#{uppercaseLibName}ObjectVisitor.java")
+            delegateVisitorOutput.puts("package #{description.config.package}.#{libName};
+            
+  /**
+   * Delegate Visitor implementation (see http://en.wikipedia.org/wiki/Visitor_pattern)
+   * @author xraynaud@kalray.eu
+   *
+   */
+  public class Delegate#{uppercaseLibName}ObjectVisitor extends Default#{uppercaseLibName}ObjectVisitor {
+	
+	private I#{uppercaseLibName}ObjectVisitor delegateVisitor;
+
+	public Delegate#{uppercaseLibName}ObjectVisitor() {
+	}
+
+	/**
+	 * @return the delegateVisitor
+	 */
+	public ISigmacDBObjectVisitor getDelegateVisitor() {
+		return delegateVisitor;
+	}
+
+	/**
+	 * @param delegateVisitor the delegateVisitor to set
+	 */
+	public void setDelegateVisitor(ISigmacDBObjectVisitor delegateVisitor) {
+		this.delegateVisitor = delegateVisitor;
+	}
+
+    ");
+
+
             description.entries.each(){ |name, entry|
                 raise("Missing size info") if pahole.entries[name] == nil
                 params = nameToParams(description, name)
@@ -108,6 +140,10 @@ public interface I#{uppercaseLibName}ObjectVisitor {
                 ivisitorOutput.printf("\tpublic void visit(%s obj);\n\n", "#{params[:class]}")
                 visitorOutput.printf("\t@Override\n")
                 visitorOutput.printf("\tpublic void visit(%s obj) {}\n\n", "#{params[:class]}")
+		delegateVisitorOutput.printf("\t@Override\n")
+		delegateVisitorOutput.printf("\tpublic void visit(%s obj) {\n", "#{params[:class]}")
+		delegateVisitorOutput.printf("\t\tif (delegateVisitor != null) delegateVisitor.visit(obj);\n")
+		delegateVisitorOutput.printf("\t}\n\n")
             }
             output = Damage::Files.createAndOpen(outdir, "#{uppercaseLibName}Object.java") 
             output.puts("package #{description.config.package}.#{libName};
@@ -228,9 +264,10 @@ public abstract class #{uppercaseLibName}Object {
 
             ivisitorOutput.puts("}\n");
             visitorOutput.puts("}\n");
+            delegateVisitorOutput.puts("}\n");
             ivisitorOutput.close();
             visitorOutput.close();
-            
+            delegateVisitorOutput.close();
         end
         module_function :generate
 
