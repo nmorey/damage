@@ -20,6 +20,15 @@ module Damage
             module MethodCompare
 
                 def write(output, entry, libName, params, rowip)
+                    output.puts("
+/*
+ * call-seq:
+ *   #{params[:name]}1 == #{params[:name]}2 -> true or false
+ *
+ * Compare two #{params[:className]} objects.
+ * Returns true if both objects and children are equals.
+ *
+ */")
                     output.puts("static VALUE #{params[:funcPrefix]}_compare_list(VALUE self, VALUE other) {")
                     output.puts("\tint ret;")
                     output.puts("\tif (rb_type(self) != rb_type(other)) {\n")

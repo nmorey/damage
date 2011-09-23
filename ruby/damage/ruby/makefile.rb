@@ -35,6 +35,7 @@ LIBDIR64  := $(shell if [ -f /etc/debian_version -a -d /usr/lib32/ ]; then echo 
 
 
 srcs     := $(wildcard src/*.c)
+r_srcs     := $(wildcard ruby/*.c)
 headers  := $(wildcard include/*.h include/#{libName}/*.h)
 lib      := obj/i686/lib#{libName}.a
 lib64    := obj/x86_64/lib#{libName}.a
@@ -59,7 +60,7 @@ else
 endif
 
 
-all: ruby/lib#{libName}_ruby.so 
+all: ruby/lib#{libName}_ruby.so doc/ruby/index.html
 
 $(lib): $(srcs) $(headers)
 	+make -f Makefile
@@ -70,12 +71,18 @@ $(lib64):  $(srcs) $(headers)
 ruby/lib#{libName}_ruby.so: ruby/ruby_#{libName}.c $(libs) 
 	+cd ruby; ruby extconf.rb; make $(MFLAGS)
 
+doc/ruby/index.html: ruby/ruby_#{libName}.c $(r_srcs)
+	@mkdir -p obj/ doc/; rm -Rf doc/ruby
+	@cat $(r_srcs) > obj/#{libName}.c
+	rdoc --quiet -o doc/ruby obj/#{libName}.c
+
 install: ruby/lib#{libName}_ruby.so
 	mkdir -p $(PREFIX)/share/$(SUFFIX)
 	install ruby/lib#{libName}_ruby.so $(PREFIX)/share/$(SUFFIX)
 
 clean:
 	if [ -f ruby/Makefile ]; then cd ruby; make $(MFLAGS) clean; fi
+	[ -d doc ] && rm -Rf doc/ruby
 
 "
       end

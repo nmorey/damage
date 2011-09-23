@@ -21,18 +21,27 @@ module Damage
                 def write(output, entry, libName, params, rowip)
                     entry.fields.each() {|field|
                         next if field.target != :both
-                        setStr="
+                         retType=(field.qty == :list || field.qty == :container) ? ((field.category == :intern) ? (field.ruby_type + "List") : (field.ruby_type + "[]" )): field.ruby_type
+                       setStr="
 /*
- * Set the #{field.name} field of a #{params[:className]}
+ * call-seq:
+ *   #{params[:name]}.#{field.name} = #{retType}
+ *
+ * Store a #{retType} in the field #{field.name} of a #{params[:className]}
  * 
  * #{field.description}
+ *
  */
 static VALUE #{params[:funcPrefix]}_#{field.name}_set(VALUE self, VALUE val)"
                         setStrRowip="
 /*
- * Set the #{field.name} field of a #{params[:className]} in ROWIP
+ * call-seq:
+ *   #{params[:name]}.#{field.name} = #{retType}
+ *
+ * Store a #{retType} in the field #{field.name} of a #{params[:classNameRowip]}
  * 
  * #{field.description}
+ *
  */
 static VALUE #{params[:funcPrefix]}_#{field.name}_setRowip(VALUE self, VALUE val)"
                         aliasFunc="#define #{params[:funcPrefix]}_#{field.name}_setRowip #{params[:funcPrefix]}_#{field.name}_set"

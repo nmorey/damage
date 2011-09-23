@@ -21,18 +21,27 @@ module Damage
 
                 def write(output, entry, libName, params, rowip)
                     entry.fields.each() {|field|
+                        retType=(field.qty == :list || field.qty == :container) ? ((field.category == :intern) ? (field.ruby_type + "List") : (field.ruby_type + "[]" )): field.ruby_type
                         getStr="
 /*
- * Get the #{field.name} field of a #{params[:className]}
+ * Get the #{retType} located at the field #{field.name} of a #{params[:className]}
  * 
  * #{field.description}
+ *
+ * call-seq:
+ *   #{params[:name]}.#{field.name} -> #{retType}
+ *
  */
 static VALUE #{params[:funcPrefix]}_#{field.name}_get(VALUE self)"
                         getStrRowip="
 /*
- * Get the #{field.name} field of a #{params[:className]} in ROWIP
+ * Get the #{retType} located at the field #{field.name} of a #{params[:classNameRowip]}
  * 
  * #{field.description}
+ *
+ * call-seq:
+ *   #{params[:name]}.#{field.name} -> #{retType}
+ *
  */
 static VALUE #{params[:funcPrefix]}_#{field.name}_getRowip(VALUE self)"
 

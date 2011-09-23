@@ -20,7 +20,19 @@ module Damage
       module NewFile
         def write(output, entry, libName, params, rowip)
          output.puts("
-/** Load from XML */
+/*
+ * call-seq:
+ *   #{params[:className]}.load_xml(filename, options) -> #{params[:className]}
+ *
+ * Load a #{params[:className]} from a XML file
+ *
+ * Options can be:
+ *   :readonly => File is open in read only mode
+ *
+ * Usage:
+ *   #{params[:className]}.load_xml(\"file.xml\", { :readonly => true }) -> #{params[:className]}
+ *   
+ */
 static VALUE #{params[:funcPrefix]}_load_xml(VALUE klass, VALUE filePath, VALUE mode){
 
     __#{libName}_options opts;
@@ -37,7 +49,19 @@ static VALUE #{params[:funcPrefix]}_load_xml(VALUE klass, VALUE filePath, VALUE 
 }
 ")
          output.puts("
-/** Load from Binary */
+/*
+ * call-seq:
+ *   #{params[:className]}.load_binary(filename, options) -> #{params[:className]}
+ *
+ * Load a #{params[:className]} from a binary file
+ *
+ * Options can be:
+ *   :readonly => File is open in read only mode
+ *   :gzipped  => Binary file is gzipped
+ *
+ * Usage:
+ *   #{params[:className]}.load_binary(\"file.db\", {:gzipped => true}) -> #{params[:className]}
+ */
 static VALUE #{params[:funcPrefix]}_load_binary(VALUE klass, VALUE filePath, VALUE mode){
 
     __#{libName}_options opts;
@@ -56,7 +80,18 @@ static VALUE #{params[:funcPrefix]}_load_binary(VALUE klass, VALUE filePath, VAL
 }
 ")
          output.puts("
-/** Load from Binary ROWIP*/
+/*
+ * call-seq:
+ *   #{params[:className]}.load_binary_rowip(filename, options) -> #{params[:className]}
+ *
+ * Load a #{params[:className]} from a binary file in place
+ *
+ * Options can be:
+ *   
+ *   
+ * Usage:
+ *   #{params[:className]}.load_binary_rowip(\"file.db\", nil) -> #{params[:className]}
+ */
 static VALUE #{params[:funcPrefix]}_load_binary_rowip(VALUE klass, VALUE filePath, VALUE mode){
 
      __#{libName}_options opts;

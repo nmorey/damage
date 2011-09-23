@@ -31,6 +31,8 @@ module Damage
             attr_accessor :data_type
             # Java data type
             attr_accessor :java_type
+            # Ruby type return or used for get/set
+            attr_accessor :ruby_type
             # Type size on file (of rsimple types only)
             attr_accessor :type_size
             # Default value set after allocation
@@ -159,6 +161,7 @@ module Damage
                 when "String"
                     @data_type = "char*"
                     @java_type = "String"
+                    @ruby_type = "string"
                     @category = :string
                     @is_attribute = true if @qty == :single
                     if @default_val == nil then
@@ -168,6 +171,7 @@ module Damage
                 when "UL"
                     @data_type="unsigned long long"
                     @java_type = "long"
+                    @ruby_type = "integer"
                     @category = :simple
                     @printf = "llu"
                     @val2ruby = "ULL2NUM"
@@ -181,6 +185,7 @@ module Damage
                 when "SL"
                     @data_type="signed long long"
                     @java_type = "long"
+                    @ruby_type = "integer"
                     @category = :simple
                     @printf="lld"
                     @val2ruby = "LL2NUM"
@@ -194,6 +199,7 @@ module Damage
                 when "DL"
                     @data_type="double"
                     @java_type = "double"
+                    @ruby_type = "float"
                     @category = :simple
                     @type_size = 8
                     if @qty == :single then
@@ -211,6 +217,8 @@ module Damage
                 when "UI"
                     @data_type = "unsigned int"
                     @java_type = "int"
+                    @ruby_type = "integer"
+
                     @type_size = 4
                     @category = :simple
                     @is_attribute = true if @qty == :single
@@ -223,6 +231,7 @@ module Damage
                 when "SI"
                     @data_type = "signed int"
                     @java_type = "int"
+                    @ruby_type = "integer"
                     @type_size = 4
                     @category = :simple
                     @is_attribute = true if @qty == :single
@@ -235,6 +244,7 @@ module Damage
                 when /ENUM\(([^)]*)\)/
                     @data_type = "unsigned int"
                     @java_type = @name.slice(0,1).upcase + @name.slice(1..-1)
+                    @ruby_type = ":label"
                     @category = :enum
                     @type_size = 4
                     @enumPrefix="__#{libName.upcase}_#{entry.name.upcase}_#{@name.upcase}"
@@ -259,6 +269,7 @@ module Damage
                 when /(S|STRUCT)\(([\w+ ]*)\)/
                     @data_type = $2
                     @java_type = @data_type.slice(0,1).upcase + @data_type.slice(1..-1)
+                    @ruby_type = @java_type
                     @category = :intern
                     if @default_val == nil then 
                         @default_val = "NULL"
@@ -285,6 +296,7 @@ module Damage
                 when nil
                     @data_type = @name
                     @java_type = @data_type.slice(0,1).upcase + @data_type.slice(1..-1)
+                    @ruby_type = @java_type
 
                     @category = :intern
                     if @default_val == nil then 

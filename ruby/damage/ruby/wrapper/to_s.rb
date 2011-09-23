@@ -144,6 +144,12 @@ VALUE #{params[:funcPrefix]}_xml_to_string(VALUE self, int indent){
     return string;
 }
 
+/*
+ * call-seq:
+ *   #{params[:name]}.to_s -> string
+ *
+ * Returns a #{params[:className]} as a string
+ */
 static VALUE #{params[:funcPrefix]}_to_s(VALUE self){
     return rb_str_concat(rb_str_new2(strdup(\"#{entry.name}:\\n\")), #{params[:funcPrefix]}_xml_to_string(self, 1));
 }
@@ -277,6 +283,12 @@ VALUE #{params[:funcPrefix]}_xml_to_stringRowip(VALUE self, int indent){
     return string;
 }
 
+/*
+ * call-seq:
+ *   #{params[:classNameRowip]}.to_s -> string
+ *
+ * Returns a #{params[:classNameRowip]} as a string
+ */
 static VALUE #{params[:funcPrefix]}_to_sRowip(VALUE self){
     return rb_str_concat(rb_str_new2(strdup(\"#{entry.name}:\\n\")), #{params[:funcPrefix]}_xml_to_stringRowip(self, 1));
 }

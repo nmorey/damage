@@ -106,6 +106,7 @@ typedef struct ___#{libName}_partial_options {
 \tchar #{entry.name};")
                 }
                 output.puts("} __#{libName}_partial_options;")
+                output.printf("/** Initializer to set a partial option to 0 */\n")
                 output.printf("#define __#{libName.upcase}_PARTIAL_OPTIONS_INITIALIZER \\\n { 0")
                 
                 description.entries.each() {|name, entry|

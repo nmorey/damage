@@ -134,14 +134,12 @@ void #{params[:funcPrefixList]}_free(#{params[:cTypeList]} *ptr) {
         end
         def allocator(output, entry, params)
           output.puts("
-/**  Class allocator */
 static VALUE #{params[:funcPrefix]}_alloc(VALUE klass) {
     return Data_Wrap_Struct(klass, #{params[:funcPrefix]}_mark, #{params[:funcPrefix]}_free, NULL);
 }
 ")
           if entry.attribute == :listable
           output.puts("
-/**  Class allocator */
 static VALUE #{params[:funcPrefixList]}_alloc(VALUE klass) {
     return Data_Wrap_Struct(klass, #{params[:funcPrefixList]}_mark, #{params[:funcPrefixList]}_free, NULL);
 }
@@ -150,8 +148,13 @@ static VALUE #{params[:funcPrefixList]}_alloc(VALUE klass) {
         end
         def initializer(output, entry, params)
           output.puts("
-/** Object initializer */
-static VALUE #{params[:funcPrefix]}_initialize(int argc, VALUE *argv, VALUE self) {
+/*
+ * call-seq:
+ *   #{params[:className]}.new -> #{params[:className]}
+ *
+ * Returns a new #{params[:className]}
+ */
+static VALUE #{params[:funcPrefix]}_initialize(VALUE self) {
     #{params[:cType]} *ptr = #{params[:cType]}_alloc();
     ptr->_private = (void*) self;
     DATA_PTR(self) = ptr;
@@ -160,21 +163,18 @@ static VALUE #{params[:funcPrefix]}_initialize(int argc, VALUE *argv, VALUE self
 ")
           if entry.attribute == :listable
             output.puts("
-/** Object initializer */
-static VALUE #{params[:funcPrefixList]}_initialize(int argc, VALUE *argv, VALUE self) {
-    VALUE parentAdr;
+/*
+ * call-seq:
+ *   #{params[:classNameList]}.new -> #{params[:classNameList]}
+ *
+ * Returns a new #{params[:classNameList]}
+ */
+static VALUE #{params[:funcPrefixList]}_initialize(VALUE self) {
     #{params[:cTypeList]} *ptr;
-    #{params[:cType]} *elnt;
-    rb_scan_args(argc, argv, \"1\", &parentAdr);
 
     ptr = malloc(sizeof(*ptr));
     ptr->first = ptr->last = NULL;
-    ptr->parent = (#{params[:cType]}**)(NUM2ULONG(parentAdr));
-    if(*ptr->parent != NULL){
-        ptr->first = *ptr->parent;
-        for(elnt = ptr->first; elnt->next; elnt = elnt->next){}
-        ptr->last = elnt;
-    }
+    ptr->parent = NULL;
     ptr->_private = self;
     DATA_PTR(self) = ptr;
     return self;

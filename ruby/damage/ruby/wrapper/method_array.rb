@@ -21,6 +21,15 @@ module Damage
         def write(output, entry, libName, params, rowip)
           if entry.attribute == :listable
             output.puts("
+/*
+ * call-seq:
+ *   #{params[:name]}List[val] -> #{params[:className]}
+ *
+ * Get the a #{params[:name]} of a #{params[:classNameList]}
+ * 
+ * #{entry.description}
+ *
+ */
 static VALUE #{params[:funcPrefixList]}_arrayGet(VALUE self, VALUE idx){
     #{params[:cTypeList]} *ptr;
     #{params[:cType]} *elnt;
@@ -37,7 +46,15 @@ static VALUE #{params[:funcPrefixList]}_arrayGet(VALUE self, VALUE idx){
     return Qnil;
 }
 
-
+/*
+ * call-seq:
+ *   #{params[:name]}List << #{params[:className]}
+ *
+ * Add a #{params[:name]} to a #{params[:classNameList]}
+ * 
+ * #{entry.description}
+ *
+ */
 static VALUE #{params[:funcPrefixList]}_arrayAdd(VALUE self, VALUE obj){
     #{params[:cTypeList]} *ptr;
     #{params[:cType]} *elnt;
@@ -58,6 +75,15 @@ static VALUE #{params[:funcPrefixList]}_arrayAdd(VALUE self, VALUE obj){
 
 }
 
+/*
+ * call-seq:
+ *   #{params[:name]}List.each () { |#{params[:name]}| }
+ *
+ * Iterate on the #{params[:name]} of a #{params[:classNameList]}
+ * 
+ * #{entry.description}
+ *
+ */
 static VALUE #{params[:funcPrefixList]}_arrayEach(VALUE self){
     #{params[:cTypeList]} *ptr;
     #{params[:cType]} *elnt, *next;
@@ -75,6 +101,15 @@ static VALUE #{params[:funcPrefixList]}_arrayEach(VALUE self){
 
 }
 
+/*
+ * call-seq:
+ *   #{params[:name]}List.length -> integer
+ *
+ * Get the length of a #{params[:classNameList]}
+ * 
+ * #{entry.description}
+ *
+ */
 static VALUE #{params[:funcPrefixList]}_arrayLength(VALUE self){
     #{params[:cTypeList]} *ptr;
     #{params[:cType]} *elnt;
@@ -89,6 +124,15 @@ static VALUE #{params[:funcPrefixList]}_arrayLength(VALUE self){
 }
 ")
               output.puts("
+/*
+ * call-seq:
+ *   #{params[:name]}List[val] -> #{params[:className]}
+ *
+ * Get the a #{params[:name]} of a #{params[:classNameListRowip]}
+ * 
+ * #{entry.description}
+ *
+ */
 static VALUE #{params[:funcPrefixList]}_arrayGetRowip(VALUE self, VALUE idx){
     #{params[:cTypeList]} *ptr;
     #{params[:cType]} *elnt;
@@ -105,6 +149,15 @@ static VALUE #{params[:funcPrefixList]}_arrayGetRowip(VALUE self, VALUE idx){
     return Qnil;
 }
 
+/*
+ * call-seq:
+ *   #{params[:name]}List.each () { |#{params[:name]}| }
+ *
+ * Iterate on the #{params[:name]} of a #{params[:classNameListRowip]}
+ * 
+ * #{entry.description}
+ *
+ */
 static VALUE #{params[:funcPrefixList]}_arrayEachRowip(VALUE self){
     #{params[:cTypeList]} *ptr;
     #{params[:cType]} *elnt, *next;
@@ -122,6 +175,15 @@ static VALUE #{params[:funcPrefixList]}_arrayEachRowip(VALUE self){
 
 }
 
+/*
+ * call-seq:
+ *   #{params[:name]}List.length -> integer
+ *
+ * Get the length of a #{params[:classNameListRowip]}
+ * 
+ * #{entry.description}
+ *
+ */
 static VALUE #{params[:funcPrefixList]}_arrayLengthRowip(VALUE self){
     #{params[:cTypeList]} *ptr;
     #{params[:cType]} *elnt;

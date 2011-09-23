@@ -39,6 +39,7 @@ module Damage
         def nameToParams(libName, name)
             params={}
             params[:moduleName] = libName.slice(0,1).upcase + libName.slice(1..-1)
+            params[:name] = name
             params[:className] = name.slice(0,1).upcase + name.slice(1..-1)
             params[:classNameRowip] = name.slice(0,1).upcase + name.slice(1..-1) + "Rowip"
             params[:classNameList] = name.slice(0,1).upcase + name.slice(1..-1) + "List"

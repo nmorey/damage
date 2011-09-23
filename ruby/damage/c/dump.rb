@@ -169,7 +169,7 @@ module Damage
  **/
 ");
 
-                output.printf("\tvoid __#{libName}_#{entry.name}_dump(FILE* file, __#{libName}_#{entry.name} *ptr, __#{libName}_options opts #{entry.attribute == :listable ? "" : "__attribute__((unused))"}){\n")
+                output.printf("\tvoid __#{libName}_#{entry.name}_dump(FILE* file, __#{libName}_#{entry.name} *ptr, __#{libName}_options opts #{entry.attribute == :listable ? "" : ("__" + libName.upcase + "_UNUSED__")}){\n")
                 
                 output.printf("\t\tfprintf(file, \"#{entry.name}:\\n\");\n")
                 output.printf("\t\tdo {\n")
@@ -201,6 +201,14 @@ module Damage
 /** \\addtogroup dump Dump API
  * @{
  **/
+
+/**
+ * We define wrapper functions with options even for elements which are not listable.
+ * We need to define parameters as unused to remove warning but it needs
+ * a little trick to work correctly with doxygen.
+ */
+#define __#{libName.upcase}_UNUSED__ __attribute__((unused))
+
 ");
                 description.entries.each() { |name, entry|
                     output.puts("

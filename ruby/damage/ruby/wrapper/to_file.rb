@@ -20,6 +20,20 @@ module Damage
             module ToFile
                 def write(output, entry, libName, params, rowip)
                     output.puts("
+/*
+ * call-seq:
+ *   #{params[:name]}.to_xml(filename, options)
+ *
+ * Write the #{params[:className]} to a XML file 
+ *
+ * Options can be:
+ *   :gzipped    => File will be gzipped
+ *   :keeplocked => Keep file locked after writing
+ *
+ * Usage:
+ *   #{params[:name]}.to_xml(\"file.xml\", { :gzipped => true })
+ *   
+ */
 static VALUE #{params[:funcPrefix]}_to_xml(VALUE self, VALUE filePath, VALUE mode){
     int ret;
      __#{libName}_options opts;
@@ -36,6 +50,20 @@ static VALUE #{params[:funcPrefix]}_to_xml(VALUE self, VALUE filePath, VALUE mod
 ")        
 
                     output.puts("
+/*
+ * call-seq:
+ *   #{params[:name]}.to_binary(filename, options)
+ *
+ * Write the #{params[:className]} to a binary file
+ *
+ * Options can be:
+ *   :gzipped    => File will be gzipped
+ *   :keeplocked => Keep file locked after writing
+ *
+ * Usage:
+ *   #{params[:name]}.to_binary(\"file.db\", { :gzipped => true, :keeplocked => true })
+ *   
+ */
 static VALUE #{params[:funcPrefix]}_to_binary(VALUE self, VALUE filePath, VALUE mode){
     int ret;
      __#{libName}_options opts;
@@ -52,6 +80,19 @@ static VALUE #{params[:funcPrefix]}_to_binary(VALUE self, VALUE filePath, VALUE 
 ")
 
                     output.puts("
+/*
+ * call-seq:
+ *   #{params[:name]}.to_binary_rowip(filename, options)
+ *
+ * Write the #{params[:classNameRowip]} to a binary file
+ *
+ * Options can be:
+ *   :keeplocked => Keep file locked after writing
+ *
+ * Usage:
+ *   #{params[:name]}.to_binary_rowip(\"file.db\", { :keeplocked => true })
+ *   
+ */
 static VALUE #{params[:funcPrefix]}_to_binary_rowip(int argc, VALUE *argv, VALUE self){
     int ret;
     VALUE mode;
