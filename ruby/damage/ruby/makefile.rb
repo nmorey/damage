@@ -76,9 +76,10 @@ doc/ruby/index.html: ruby/ruby_#{libName}.c $(r_srcs)
 	@cat $(r_srcs) > obj/#{libName}.c
 	rdoc --quiet -o doc/ruby obj/#{libName}.c
 
-install: ruby/lib#{libName}_ruby.so
+install: ruby/lib#{libName}_ruby.so doc/ruby/index.html
 	mkdir -p $(PREFIX)/share/$(SUFFIX)
 	install ruby/lib#{libName}_ruby.so $(PREFIX)/share/$(SUFFIX)
+	cp -R doc/ruby $(PREFIX)/share/$(SUFFIX)/
 
 clean:
 	if [ -f ruby/Makefile ]; then cd ruby; make $(MFLAGS) clean; fi
