@@ -403,13 +403,13 @@ module Damage
 		}
 		val = in.getInt(#{params[:bin_header]["version"][:offset]});
 		if(val  != #{params[:version]})
-			throw new java.io.UnsupportedEncodingException(\"Incompatible #{libName} format\");
+			throw new java.io.UnsupportedEncodingException(\"Incompatible #{libName} format: found \" + val + \", expecting #{params[:version]}\");
 		in.position(#{params[:bin_header]["damage_version[41]"][:offset]});
 		in.get(header_dVersion);
 		String damage_versionStr = new String(header_dVersion, Charset.forName(\"UTF-8\"));
 
 		if(!DAMAGE_VERSION.equals(damage_versionStr))
-			throw new java.io.UnsupportedEncodingException(\"Incompatible #{libName} format\");
+			throw new java.io.UnsupportedEncodingException(\"Incompatible #{libName} format: found \" + damage_versionStr + \", expecting \" + DAMAGE_VERSION);
 
 		val = in.getInt(#{params[:bin_header]["length"][:offset]});
 		//deactivate this check for zip file - how to resolve it ?
