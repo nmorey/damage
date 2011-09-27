@@ -66,8 +66,9 @@ module Damage
     $CFLAGS = $CFLAGS + " -I../include/ " + `xml2-config --cflags`
     arch=`uname -m`.chomp
     $LIBS = $LIBS + " ../obj/#{arch}/lib%s.a " + `xml2-config --libs`
+    $config_h=`find ../include -name "*.h"`.gsub(/\n/, " ").chomp() + " ../obj/#{arch}/lib%s.a "
     create_makefile("lib%s_ruby")
-    ', libName, libName);
+    ', libName, libName, libName);
             output.close()
         end
         module_function :genExtConf
