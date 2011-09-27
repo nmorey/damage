@@ -18,10 +18,36 @@ module Damage
   module Files
 
     require 'fileutils'
-    
+    class DFile < File
+        attr_accessor :dir, :name
+        attr_accessor :copyOnClose
+
+        def initialize(dir, name, mode="w")
+            FileUtils.mkdir_p dir
+            @dir = dir
+            @name = name
+            if File.exists?("#{dir}/#{name}") then
+                super("#{dir}/#{name}_", mode);
+                @copyOnClose = true
+            else
+                super("#{dir}/#{name}", mode);
+                @copyOnClose = false
+            end
+        end
+
+        def close()
+            super
+            if @copyOnClose == true then
+                if FileUtils.compare_file("#{dir}/#{name}_", "#{dir}/#{name}") == true
+                    FileUtils.rm("#{dir}/#{name}_")
+                else
+                    FileUtils.mv("#{dir}/#{name}_",  "#{dir}/#{name}")
+                end
+            end
+        end
+    end
     def createAndOpen(dir, name, mode="w")
-       FileUtils.mkdir_p dir
-      return File.open("#{dir}/#{name}", mode)
+        return DFile.new(dir, name, mode)
     end
     module_function :createAndOpen
   end
