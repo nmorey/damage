@@ -46,6 +46,49 @@ static VALUE #{params[:funcPrefix]}_#{field.name}_get(VALUE self)"
 static VALUE #{params[:funcPrefix]}_#{field.name}_getRowip(VALUE self)"
 
                         aliasFunc="#define #{params[:funcPrefix]}_#{field.name}_getRowip #{params[:funcPrefix]}_#{field.name}_get"
+
+
+
+                        if field.target == :mem && field.attribute == :sort then
+                        getStr="
+/*
+ * Get the array of #{retType} located at the field #{field.sort_field} of a #{params[:className]} indexed by #{field.sort_key}
+ * 
+ * #{field.description}
+ *
+ * call-seq:
+ *   #{params[:name]}.s_#{field.name} -> #{retType}
+ *
+ */
+static VALUE #{params[:funcPrefix]}_s_#{field.name}_get(VALUE self)"
+                        getStrRowip="
+/*
+ * Get the array of #{retType} located at the field #{field.sort_field} of a #{params[:classNameRowip]} indexed by #{field.sort_key}
+ * 
+ * #{field.description}
+ *
+ * call-seq:
+ *   #{params[:name]}.s_#{field.name} -> #{retType}
+ *
+ */
+static VALUE #{params[:funcPrefix]}_s_#{field.name}_getRowip(VALUE self)"
+
+
+                                output.puts("
+#{getStr}{
+    #{params[:cType]}* ptr;
+    __#{libName}_#{field.data_type} *elnt;
+    VALUE array = rb_ary_new();
+    Data_Get_Struct(self, #{params[:cType]}, ptr);
+    assert(ptr);
+    for(elnt = ptr->#{field.sort_field}; elnt; elnt = elnt->next){
+        rb_ary_store(array, elnt->#{field.sort_key}, (VALUE)elnt->_private);
+    }
+    return array;
+}
+")           
+                            next
+                        end
                         next if field.target != :both
 
                         case field.qty
