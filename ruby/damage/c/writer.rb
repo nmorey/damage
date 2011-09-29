@@ -75,7 +75,7 @@ module Damage
  * @param[in] ptr Structure to write
  * @return node
  */");
-                    output.printf("xmlNodePtr __#{libName}_create_%s_xml_node(xmlNodePtr node, __#{libName}_%s *ptr);\n", entry.name, entry.name);
+                    output.printf("xmlNodePtr __#{libName}_create_%s_xml_node(xmlNodePtr node, const __#{libName}_%s *ptr);\n", entry.name, entry.name);
                     output.puts("
 /**
  * Write a complete #__#{libName}_#{entry.name} structure and its children in XML form to a file
@@ -86,7 +86,7 @@ module Damage
  * @retval 0 Success
  * @retval -1 in case of error
  */");
-                    output.printf("int __#{libName}_%s_xml_dump_file(const char* file, __#{libName}_%s *ptr, __#{libName}_options opts);\n\n", entry.name, entry.name)
+                    output.printf("int __#{libName}_%s_xml_dump_file(const char* file, const __#{libName}_%s *ptr, __#{libName}_options opts);\n\n", entry.name, entry.name)
                 }
                 output.printf("\n\n");
 
@@ -115,7 +115,7 @@ module Damage
 ");
 
 
-                output.printf("xmlNodePtr __#{libName}_create_%s_xml_node(xmlNodePtr node, __#{libName}_%s *ptr)\n{\n",
+                output.printf("xmlNodePtr __#{libName}_create_%s_xml_node(xmlNodePtr node, const __#{libName}_%s *ptr)\n{\n",
                               entry.name, entry.name)
 
                 if entry.enums.length > 0 then
@@ -231,7 +231,7 @@ module Damage
  * @{
  **/
 ");
-                output.printf("int __#{libName}_%s_xml_dump_file(const char* file, __#{libName}_%s *ptr, __#{libName}_options opts)\n{\n", entry.name, entry.name)
+                output.printf("int __#{libName}_%s_xml_dump_file(const char* file, const __#{libName}_%s *ptr, __#{libName}_options opts)\n{\n", entry.name, entry.name)
                 output.printf("\txmlDocPtr doc = NULL;\n")
                 output.printf("\txmlNodePtr node = NULL;\n")
                 output.printf("\txmlSaveCtxtPtr ctx = NULL;\n")
