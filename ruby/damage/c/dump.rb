@@ -60,7 +60,7 @@ module Damage
  **/
 ");
 
-                output.printf("\tvoid __#{libName}_#{entry.name}_dumpWithIndent(FILE* file, __#{libName}_#{entry.name} *ptr, int indent){\n")
+                output.printf("\tvoid __#{libName}_#{entry.name}_dumpWithIndent(FILE* file, const __#{libName}_#{entry.name} *ptr, int indent){\n")
                 output.printf("\t\tint first = 1;\n");
 
                 if entry.attribute == :listable then
@@ -169,7 +169,7 @@ module Damage
  **/
 ");
 
-                output.printf("\tvoid __#{libName}_#{entry.name}_dump(FILE* file, __#{libName}_#{entry.name} *ptr, __#{libName}_options opts #{entry.attribute == :listable ? "" : ("__" + libName.upcase + "_UNUSED__")}){\n")
+                output.printf("\tvoid __#{libName}_#{entry.name}_dump(FILE* file, const __#{libName}_#{entry.name} *ptr, __#{libName}_options opts #{entry.attribute == :listable ? "" : ("__" + libName.upcase + "_UNUSED__")}){\n")
                 
                 output.printf("\t\tfprintf(file, \"#{entry.name}:\\n\");\n")
                 output.printf("\t\tdo {\n")
@@ -219,7 +219,7 @@ module Damage
  * @param[in] indent Number of header tabs
  * @return A valid pointer to a #__#{libName}_#{entry.name}. Exit with an error message if alloc failed.
 */")
-                    output.printf("\tvoid __#{libName}_#{entry.name}_dumpWithIndent(FILE* file, __#{libName}_#{entry.name} *ptr, int indent);") 
+                    output.printf("\tvoid __#{libName}_#{entry.name}_dumpWithIndent(FILE* file, const __#{libName}_#{entry.name} *ptr, int indent);") 
 
                     output.puts("
 /**
@@ -229,7 +229,7 @@ module Damage
  * @param[in] opts Options to dumper (dump simblings, etc)
  * @return A valid pointer to a #__#{libName}_#{entry.name}. Exit with an error message if alloc failed.
 */")
-                    output.printf("\tvoid __#{libName}_#{entry.name}_dump(FILE* file, __#{libName}_#{entry.name} *ptr, __#{libName}_options opts);\n")
+                    output.printf("\tvoid __#{libName}_#{entry.name}_dump(FILE* file, const __#{libName}_#{entry.name} *ptr, __#{libName}_options opts);\n")
                 }
 
                 output.puts("

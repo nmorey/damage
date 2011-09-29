@@ -63,14 +63,14 @@ module Damage
                 
                 hasNext = (entry.attribute == :listable) ? ", int siblings" : ""
 
-                output.printf("__#{libName}_%s* __#{libName}_%s_duplicate(__#{libName}_%s *ptr#{hasNext}){\n", 
+                output.printf("__#{libName}_%s* __#{libName}_%s_duplicate(const __#{libName}_%s *ptr#{hasNext}){\n", 
                               entry.name, entry.name, entry.name)
                 output.printf("\t__#{libName}_%s *first = NULL;\n", entry.name);
                 source="ptr"
                 dest="first"
                 indent="\t"
                 if entry.attribute == :listable then
-                    output.printf("\t__#{libName}_%s *el, **last=&first, *new;\n\tfor(el = ptr; el != NULL; el = el->next) {\n",entry.name)
+                    output.printf("\tconst __#{libName}_%s *el;\n\t__#{libName}_%s *new, **last=&first;\n\tfor(el = ptr; el != NULL; el = el->next) {\n",entry.name,entry.name)
                     source="el"
                     dest="new"
                     indent="\t\t"
@@ -179,7 +179,7 @@ output.puts(" * @param[in] siblings Copy siblings")                     if entry
 output.puts(" * @return A valid pointer to a #__#{libName}_#{entry.name}. Exit with an error message if duplicate failed.
 */")
                     hasNext = (entry.attribute == :listable) ? ", int siblings" : ""
-                    output.printf("__#{libName}_%s *__#{libName}_%s_duplicate(__#{libName}_%s *ptr#{hasNext});\n", entry.name, entry.name, entry.name)
+                    output.printf("__#{libName}_%s *__#{libName}_%s_duplicate(const __#{libName}_%s *ptr#{hasNext});\n", entry.name, entry.name, entry.name)
                 }
                 output.puts("
 /** @} */

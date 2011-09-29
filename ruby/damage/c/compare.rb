@@ -64,10 +64,10 @@ module Damage
 ");
                 offset = "\t"
                 if (entry.comparable == false)
-                    output.printf("int __#{libName}_%s_compare_single(__#{libName}_%s *ptr1 __#{libName.upcase}_UNUSED__, __#{libName}_%s *ptr2 __#{libName.upcase}_UNUSED__) {\n", entry.name, entry.name, entry.name)
+                    output.printf("int __#{libName}_%s_compare_single(const __#{libName}_%s *ptr1 __#{libName.upcase}_UNUSED__, const __#{libName}_%s *ptr2 __#{libName.upcase}_UNUSED__) {\n", entry.name, entry.name, entry.name)
                     output.printf("#{offset}return 1;\n}\n\n")
                 else
-                    output.printf("int __#{libName}_%s_compare_single(__#{libName}_%s *ptr1, __#{libName}_%s *ptr2 ) {\n", entry.name, entry.name, entry.name)
+                    output.printf("int __#{libName}_%s_compare_single(const __#{libName}_%s *ptr1, const __#{libName}_%s *ptr2 ) {\n", entry.name, entry.name, entry.name)
 
 
                     output.printf("#{offset}if (ptr1 == ptr2) {\n")
@@ -187,13 +187,13 @@ module Damage
                 offset = "\t"
 
                 if (entry.comparable == false)
-                    output.printf("int __#{libName}_%s_compare_list(__#{libName}_%s *ptr1 __#{libName.upcase}_UNUSED__, __#{libName}_%s *ptr2 __#{libName.upcase}_UNUSED__) {\n", 
+                    output.printf("int __#{libName}_%s_compare_list(const __#{libName}_%s *ptr1 __#{libName.upcase}_UNUSED__, const __#{libName}_%s *ptr2 __#{libName.upcase}_UNUSED__) {\n", 
                               entry.name, entry.name, entry.name)
                     output.printf("#{offset}return 1;\n}\n\n")
                 else
-                    output.printf("int __#{libName}_%s_compare_list(__#{libName}_%s *ptr1, __#{libName}_%s *ptr2) {\n", 
+                    output.printf("int __#{libName}_%s_compare_list(const __#{libName}_%s *ptr1, const __#{libName}_%s *ptr2) {\n", 
                               entry.name, entry.name, entry.name)
-                    output.printf("#{offset}__#{libName}_%s *el1, *el2;\n", entry.name)
+                    output.printf("#{offset}const __#{libName}_%s *el1, *el2;\n", entry.name)
                     output.printf("#{offset}el1 = ptr1;\n")
                     output.printf("#{offset}el2 = ptr2;\n")
                     if (entry.attribute == :listable)
@@ -254,13 +254,8 @@ module Damage
  * @return int 1 if both structures are equal, 0 if not equal.
 */")
 
-                    if (entry.comparable == false)
-                        output.printf("int __#{libName}_%s_compare_list(__#{libName}_%s *ptr1 __#{libName.upcase}_UNUSED__, __#{libName}_%s *ptr2 __#{libName.upcase}_UNUSED__);\n", entry.name, entry.name, entry.name)
-                        output.printf("\n")
-                    else
-                        output.printf("int __#{libName}_%s_compare_list(__#{libName}_%s *ptr1, __#{libName}_%s *ptr2);\n", entry.name, entry.name, entry.name)
-                        output.printf("\n")
-                    end
+                    output.printf("int __#{libName}_%s_compare_list(const __#{libName}_%s *ptr1, const __#{libName}_%s *ptr2);\n", entry.name, entry.name, entry.name)
+                    output.printf("\n")
 
                     output.puts("
 /**
@@ -269,13 +264,8 @@ module Damage
  * @param[in] ptr2 Pointer to the second structure to compare
  * @return int 1 if both structures are equal, 0 if not equal.
 */")
-                    if (entry.comparable == false)
-                        output.printf("int __#{libName}_%s_compare_single(__#{libName}_%s *ptr1 __#{libName.upcase}_UNUSED__, __#{libName}_%s *ptr2 __#{libName.upcase}_UNUSED__);\n", entry.name, entry.name, entry.name)
-                        output.printf("\n")
-                    else
-                        output.printf("int __#{libName}_%s_compare_single(__#{libName}_%s *ptr1, __#{libName}_%s *ptr2);\n", entry.name, entry.name, entry.name)
-                        output.printf("\n")
-                    end
+                    output.printf("int __#{libName}_%s_compare_single(const __#{libName}_%s *ptr1, const __#{libName}_%s *ptr2);\n", entry.name, entry.name, entry.name)
+                    output.printf("\n")
                 }
 
                 output.puts("
