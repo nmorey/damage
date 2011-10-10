@@ -122,9 +122,9 @@ module Damage
                 @required = true if field["required"] != nil
 
                 case field["comparable"]
-                when "YES", nil
+                when true, nil
                     @comparable=true
-                when "NO"
+                when false
                     @comparable=false
                 else
                     raise("Unknown comparable value #{field["comparable"]}")
