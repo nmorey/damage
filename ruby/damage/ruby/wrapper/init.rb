@@ -31,6 +31,7 @@ void Init_#{params[:className]}(void){
     #{params[:classValue]} = rb_define_class_under(#{params[:moduleName]}, \"#{params[:className]}\", rb_cObject);
     rb_define_alloc_func(#{params[:classValue]}, #{params[:funcPrefix]}_alloc);
     rb_define_method(#{params[:classValue]}, \"initialize\", #{params[:funcPrefix]}_initialize, 0);
+    rb_define_method(#{params[:classValue]}, \"duplicate\", #{params[:funcPrefix]}_duplicate, 0);
     rb_define_method(#{params[:classValue]}, \"to_binary\", #{params[:funcPrefix]}_to_binary, 2);
     rb_define_method(#{params[:classValue]}, \"to_xml\", #{params[:funcPrefix]}_to_xml, 2);
     rb_define_method(#{params[:classValue]}, \"==\", #{params[:funcPrefix]}_compare_list, 1);
@@ -104,6 +105,7 @@ void Init_#{params[:classNameList]}(){
 
     rb_define_alloc_func(#{params[:classValueList]}, #{params[:funcPrefixList]}_alloc);
     rb_define_method(#{params[:classValueList]}, \"initialize\", #{params[:funcPrefixList]}_initialize, 0);
+    rb_define_method(#{params[:classValueList]}, \"duplicate\", #{params[:funcPrefixList]}_duplicate, 0);
 
     rb_include_module(#{params[:classValueList]}, rb_mEnumerable);
     rb_define_method(#{params[:classValueList]}, \"[]\", #{params[:funcPrefixList]}_arrayGet, 1);

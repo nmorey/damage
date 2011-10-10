@@ -202,26 +202,20 @@ static VALUE #{params[:funcPrefix]}_#{field.name}_setRowip(VALUE self, VALUE val
 }
 ") if rowip == true                 
                             when :intern
+                                subParams = Damage::Ruby::nameToParams(libName, field.data_type)
+                                
                                 output.puts("
+extern VALUE #{subParams[:classValueList]};
 #{setStr}{
     #{params[:cType]}* ptr;
-    __#{libName}_#{field.data_type} *elnt, **last;
+    #{subParams[:cTypeList]}* list;
+
 
     Data_Get_Struct(self, #{params[:cType]}, ptr);
     assert(ptr);
-    Check_Type(val, T_ARRAY); 
-    if(!ptr->#{field.name}){
-        last = &(ptr->#{field.name});
-    } else {
-        for(elnt = ptr->#{field.name}; elnt->next != NULL; elnt = elnt->next){}
-        last = &(elnt->next);
-    }
-    while(RARRAY_LEN(val) != 0){
-        VALUE aElnt = rb_ary_shift(val);
-        Data_Get_Struct(aElnt, __#{libName}_#{field.data_type}, elnt);
-        *last = elnt;
-        last = &(elnt->next);
-    }
+    Check_Type(val, rb_type(#{subParams[:classValueList]})); 
+    Data_Get_Struct(val, #{subParams[:cTypeList]}, list);
+    ptr->#{field.name} = list->first;
     return self;
 }
 ");
