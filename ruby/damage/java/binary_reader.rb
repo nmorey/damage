@@ -345,14 +345,12 @@ module Damage
 
                 output.printf("\tpublic static #{retType} createFromBinaryPartial(String filename, boolean readOnly, ParserOptions pOpts) throws IOException {\n")
                 output.printf("\t\tRandomAccessFile file = new RandomAccessFile( new java.io.File(filename), \"r\");\n")
-                output.printf("\t\tjava.io.File fileLock = new java.io.File(filename + \".lock\");\n")
                 output.printf("\t\tFileChannel fc = file.getChannel();\n");
-                output.printf("\t\tFileChannel fChanLock = new RandomAccessFile( fileLock, \"rws\").getChannel();\n");
                 output.printf("\t\tbyte[] header_dVersion = new byte[40];\n")
                 output.printf("\t\tByteBuffer in; int nbytes;\n");
                 output.printf("\t\tint val;\n\n");
                 
-                output.printf("\t\tfChanLock.lock(0, Long.MAX_VALUE, readOnly);\n\n");
+                output.printf("\t\tfc.lock(0, Long.MAX_VALUE, readOnly);\n\n");
                 ByteBuffer(output, "in", "\t\t", "#{params[:bin_header][:size]}", "0")
                 output.printf("\n\t\tval = in.getInt(#{params[:bin_header]["version"][:offset]});\n")
                 output.printf("\t\tif(val  != #{params[:version]})\n");
@@ -371,11 +369,6 @@ module Damage
 
                 output.printf("\t\t#{retType} obj = loadFromBinaryPartial(fc, #{params[:bin_header][:size]}, pOpts) ;\n")
                 output.printf("\t\tfc.close();\n\n");
-
-                output.printf("\t\tif(readOnly){\n");
-                output.printf("\t\t\tfChanLock.close();\n");
-                output.printf("\t\t\tfileLock.delete();\n");
-                output.printf("\t\t}\n")
                 output.printf("\t\treturn obj;\n")
                 output.printf("\t}\n\n")
 
@@ -388,13 +381,12 @@ module Damage
 	 */
 	public static #{retType} createFromZip(String filename) throws IOException {
 		java.io.File file = new java.io.File(filename);
-		GZIPInputStream zip = new GZIPInputStream(new FileInputStream(file));
-		java.io.File fileLock = new java.io.File(filename + \".lock\");
-		FileChannel fChanLock = new RandomAccessFile( fileLock, \"rws\").getChannel();
+		FileInputStream fileInputStream = new FileInputStream(file);
+		fileInputStream.getChannel().lock(0, Long.MAX_VALUE, true);
+		GZIPInputStream zip = new GZIPInputStream(fileInputStream);
 		byte[] header_dVersion = new byte[40];
 		int val;
 
-		fChanLock.lock(0, Long.MAX_VALUE, true);
 		ByteBuffer in = null;
 		try {
 			in = fillByteBuffer(zip, new byte[#{params[:bin_header][:size]}]);
@@ -418,8 +410,7 @@ module Damage
 
 		#{retType} obj = loadFromZip(zip) ;
 
-		fChanLock.close();
-		fileLock.delete();
+		zip.close();
 		return obj;
 	}"
 );
