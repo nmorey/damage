@@ -58,9 +58,9 @@ module Damage
                             raise("Unsupported data category for #{entry.name}.#{field.name}");
                         end
                     when :list, :container
+                        output.printf("\t\tif (this._#{field.name} != null) {\n");
                         case field.category
                         when :simple
-                            output.printf("\t\t{\n");
                             output.printf("\t\t\tindentToString(ps, indent, listable, first);\n")
                             output.printf("\t\t\tfirst = false;\n")
                             output.printf("\t\t\tps.println(\"#{field.name}:\");\n");
@@ -68,9 +68,7 @@ module Damage
                             output.printf("\t\t\t\tindentToString(ps, indent + 1, true, true);\n")
                             output.printf("\t\t\t\tps.println(this._#{field.name}[i]);\n");
                             output.printf("\t\t\t}\n");
-                            output.printf("\t\t}\n");
                         when :string
-                            output.printf("\t\t{\n");
                             output.printf("\t\t\tindentToString(ps, indent, listable, first);\n")
                             output.printf("\t\t\tfirst = false;\n")
                             output.printf("\t\t\tps.println(\"#{field.name}:\");\n");
@@ -78,19 +76,17 @@ module Damage
                             output.printf("\t\t\t\tindentToString(ps, indent + 1, true, true);\n")
                             output.printf("\t\t\t\tps.println(\"\\\"\" + this._#{field.name}[i] + \"\\\"\");\n");
                             output.printf("\t\t\t}\n");
-                            output.printf("\t\t}\n");
                         when :intern
-                            output.printf("\t\t{\n");
                             output.printf("\t\t\tindentToString(ps, indent, listable, first);\n")
                             output.printf("\t\t\tfirst = false;\n")
                             output.printf("\t\t\tps.println(\"#{field.name}:\");\n");
                             output.printf("\t\t\tfor(#{field.java_type} el :  this._#{field.name}){\n");
                             output.printf("\t\t\t\tel.dumpWithIndent(ps, indent+1);\n");
                             output.printf("\t\t\t}\n");
-                            output.printf("\t\t}\n");
                         else
                             raise("Unsupported data category for #{entry.name}.#{field.name}");
                         end                  
+			output.printf("\t\t}\n");
                     else
                         raise("Unsupported quantitiy for #{entry.name}.{field.name}")
                     end
