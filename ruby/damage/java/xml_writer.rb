@@ -24,6 +24,7 @@ module Damage
 \t * @return a DOM Element
 \t */
 ")
+	    output.printf("\t@Override\n");
             output.printf("\tpublic DOMElement xmlWrite() {\n");
             output.printf("\t\tDOMElement ret = new DOMElement(\"#{params[:name]}\");\n");
             entry.fields.each() {|field|

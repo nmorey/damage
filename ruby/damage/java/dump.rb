@@ -93,9 +93,7 @@ module Damage
                 }
 
                 output.printf("\t}\n\n")
-                output.printf("\tpublic void dump(){\n")
-                output.printf("\t\tdump(System.out);\n")
-                output.printf("\t}\n\n")
+		output.printf("\t@Override\n");
                 output.printf("\tpublic void dump(PrintStream ps){\n")
                 output.printf("\t\tps.println(\"#{entry.name}:\");\n")
                 output.printf("\t\tthis.dumpWithIndent(ps, 1);\n")

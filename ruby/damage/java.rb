@@ -156,6 +156,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.Charset;
+import org.dom4j.dom.DOMElement;
 
 public abstract class #{uppercaseLibName}Object {
 
@@ -258,6 +259,25 @@ public abstract class #{uppercaseLibName}Object {
 			}
 		}
 	}
+	
+	/**
+	 * Dumps a human readable description of this object in console
+         */
+	public void dump(){
+		dump(System.out);
+	}
+
+	/**
+         * Dumps a human readable description of this object in given PrintStream
+         */
+	public abstract void dump(PrintStream ps);
+
+	/**
+	 * XML Writer
+	 * @return a DOM Element
+	 */
+	public abstract DOMElement xmlWrite();
+
 }");
  
             output.close();
