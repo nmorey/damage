@@ -81,7 +81,7 @@ ruby-doc.mk: doc/ruby/index.html
 
 include ruby-doc.mk
 
-install: ruby/lib#{libName}_ruby.so install-rdoc
+install: $(PREFIX)/share/$(SUFFIX)/lib#{libName}_ruby.so install-rdoc
 
 $(PREFIX)/share/$(SUFFIX)/lib#{libName}_ruby.so: ruby/lib#{libName}_ruby.so
 	@mkdir -p $$(dirname $@) || true
