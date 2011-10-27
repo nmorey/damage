@@ -76,10 +76,16 @@ doc/ruby/index.html: ruby/ruby_#{libName}.c $(r_srcs)
 	@cat $(r_srcs) > obj/#{libName}.c
 	rdoc --quiet -o doc/ruby obj/#{libName}.c
 
-install: ruby/lib#{libName}_ruby.so doc/ruby/index.html
-	mkdir -p $(PREFIX)/share/$(SUFFIX)
-	install ruby/lib#{libName}_ruby.so $(PREFIX)/share/$(SUFFIX)
-	cp -R doc/ruby $(PREFIX)/share/$(SUFFIX)/
+ruby-doc.mk: doc/ruby/index.html
+	ruby -e 'list=\"\";files=`find doc/ruby -type f`.split(\"\\n\").each() { |file| _file=file; targ=\"$(PREFIX)/share/$(SUFFIX)/\" + _file + \" \"; list=list + targ; puts targ + \":\" + file +\"\\n\\t@mkdir -p $$$$(dirname $$@) || true\\n\\tinstall $$< $$@\\n\"}; puts \"install-rdoc: \" + list + \"\\n\"' > $@
+
+include ruby-doc.mk
+
+install: ruby/lib#{libName}_ruby.so install-rdoc
+
+$(PREFIX)/share/$(SUFFIX)/lib#{libName}_ruby.so: ruby/lib#{libName}_ruby.so
+	@mkdir -p $$(dirname $@) || true
+	install $< $@
 
 clean:
 	if [ -f ruby/Makefile ]; then cd ruby; make $(MFLAGS) clean; fi

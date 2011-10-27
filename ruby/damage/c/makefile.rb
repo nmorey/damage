@@ -75,6 +75,7 @@ tests: $(tests)
 doc:doc/doxygen/man/man3/#{libName}.3
 
 doc/doxygen/man/man3/#{libName}.3: $(headers) doc/Doxyfile
+	@mkdir -p obj || true
 	doxygen doc/Doxyfile > obj/doxygen.log
 
 doc/doxygen/latex/refman.pdf:doc/doxygen/man/man3/#{libName}.3
@@ -108,23 +109,36 @@ obj/x86_64/%.o:src/%.c $(headers)
 	@if [ ! -d obj/x86_64/ ]; then mkdir -p obj/x86_64/; fi
 	$(CC) $(CFLAGS) -o $@ -c $<
 
-install: $(install-libs) install-doc 
-	mkdir -p $(PREFIX)/include/$(SUFFIX)/#{libName}
-	install $(main_header) $(PREFIX)/include/$(SUFFIX)
-	install $(install_headers) $(PREFIX)/include/$(SUFFIX)/#{libName}
+install: $(install-libs) install-doc $(patsubst include/%.h, $(PREFIX)/include/$(SUFFIX)/%.h, $(main_header) $(install_headers))
 
-install-lib: $(lib) $(dlib)
-	mkdir -p $(PREFIX)/$(LIBDIR32)/$(SUFFIX)
-	install $(lib) $(dlib) $(PREFIX)/$(LIBDIR32)/$(SUFFIX)
+$(PREFIX)/include/$(SUFFIX)/%.h: include/%.h
+	@mkdir -p $$(dirname $@) || true
+	install $< $@
 
-install-lib64: $(lib64) $(dlib64)
-	mkdir -p $(PREFIX)/$(LIBDIR)/$(SUFFIX)
-	install $(lib64) $(dlib64) $(PREFIX)/$(LIBDIR)/$(SUFFIX)
+install-lib: $(PREFIX)/$(LIBDIR32)/$(SUFFIX)/$(lib) $(PREFIX)/$(LIBDIR32)/$(SUFFIX)/$(dlib)
 
-install-doc: doc
-	mkdir -p $(PREFIX)/share/$(SUFFIX)
-	cp -R doc/doxygen/man doc/doxygen/html doc/#{libName}.dot doc/#{libName}.dtd $(PREFIX)/share/$(SUFFIX)/
+$(PREFIX)/$(LIBDIR32)/$(SUFFIX)/$(lib): $(lib)
+	@mkdir -p $$(dirname $@) || true
+	install $< $@
 
+$(PREFIX)/$(LIBDIR32)/$(SUFFIX)/$(dlib): $(dlib)
+	@mkdir -p $$(dirname $@) || true
+	install $< $@
+
+install-lib64: $(PREFIX)/$(LIBDIR)/$(SUFFIX)/$(lib64) $(PREFIX)/$(LIBDIR)/$(SUFFIX)/$(dlib64)
+
+$(PREFIX)/$(LIBDIR)/$(SUFFIX)/$(lib64): $(lib64)
+	@mkdir -p $$(dirname $@) || true
+	install $< $@
+
+$(PREFIX)/$(LIBDIR)/$(SUFFIX)/$(dlib64): $(dlib64)
+	@mkdir -p $$(dirname $@) || true
+	install $< $@
+
+doc.mk: doc
+	ruby -e 'list=\"\";files=`find doc/doxygen/man doc/doxygen/html doc/#{libName}.dot doc/#{libName}.dtd -type f`.split(\"\\n\").each() { |file| _file=file.gsub(/doc\\/doxygen\\//, \"\").gsub(/doc\\//, \"\"); targ=\"$(PREFIX)/share/$(SUFFIX)/doc/\" + _file + \" \"; list=list + targ; puts targ + \":\" + file +\"\\n\\t@mkdir -p $$$$(dirname $$@) || true\\n\\tinstall $$< $$@\\n\"}; puts \"install-doc: \" + list + \"\\n\"' > $@
+
+include doc.mk
 
 clean:
 	rm -Rf .commit/
