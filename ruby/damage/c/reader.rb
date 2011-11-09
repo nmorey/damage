@@ -538,7 +538,7 @@ module Damage
                 output.printf("\t}\n\n");
                 
                 output.printf("\tif((fd = __#{libName}_open_fd(file, opts & __#{libName.upcase}_OPTION_READONLY)) == -1)\n");
-                output.printf("\t\t__#{libName}_error(\"Failed to lock output file %%s: %%s\", ENOENT, file, strerror(errno));\n");
+                output.printf("\t\t__#{libName}_error(\"Failed to lock input file %%s: %%s\", ENOENT, file, strerror(errno));\n");
                 output.printf("\tdocument = xmlReadFd(fd, NULL, NULL, 0);\n\n");
                 
                 output.printf("\tif (document == NULL) {\n");
