@@ -228,7 +228,7 @@ static inline void __#{libName}_rowip_header_free(__#{libName}_rowip_header* ptr
                 output.printf("\n\n") 
 
                 output.puts("
-
+extern void* __#{libName}_acquire_flock(const char* filename, int rdonly);
 /** \\addtogroup #{libName} DAMAGE #{libName} Library
  * @{
 **/
