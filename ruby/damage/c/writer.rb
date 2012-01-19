@@ -123,8 +123,8 @@ module Damage
                         output.printf("\tconst char *#{field.name}_enum_str[] =\n\t{"); 
                         # Enumerate allowed keyword
                         output.printf("\"N_A\", ");
-                        field.enum.each() {|str, enum|
-                            output.printf("\"%s\", ", str) ;
+                        field.enum.each() {|enum|
+                            output.printf("\"%s\", ", enum[:str]);
                         }
                         output.printf("NULL };\n");
                     }

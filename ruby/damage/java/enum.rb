@@ -30,7 +30,7 @@ module Damage
                 output.printf("\t\tswitch(value){\n")
                 output.printf("\t\t\tcase 0: return #{field.java_type}.N_A;\n")
                 count = 1;
-                field.enum.each() { |str, val|
+                field.enum.each() { |val|
                     output.printf("\t\t\tcase #{val[:count]}: return #{field.java_type}.#{val[:label]};\n")
                     count+=1
                 }
@@ -45,8 +45,8 @@ module Damage
 ")
                 output.printf("\tpublic static #{field.java_type} StrTo#{field.java_type}(String value) "+
                               "throws IndexOutOfBoundsException{\n");
-                field.enum.each() { |str, val|
-                    output.printf("\t\t\tif (\"#{str}\".equals(value)) return #{field.java_type}.#{val[:label]};\n")
+                field.enum.each() { |val|
+                    output.printf("\t\t\tif (\"#{val[:str]}\".equals(value)) return #{field.java_type}.#{val[:label]};\n")
                 }
                 output.printf("\t\t\tthrow new IndexOutOfBoundsException();\n")
                 output.printf("\t}\n\n");
@@ -62,7 +62,7 @@ module Damage
                 output.printf("\t\tswitch(value){\n")
                 output.printf("\t\t\tcase N_A: return 0;\n")
                 count = 1;
-                field.enum.each() { |str, val|
+                field.enum.each() { |val|
                     output.printf("\t\t\tcase #{val[:label]}: return #{val[:count]};\n")
                     count+=1
                 }

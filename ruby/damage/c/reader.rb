@@ -209,8 +209,8 @@ module Damage
                         output.printf("\tconst char *#{field.name}_enum_str[] =\n\t{"); 
                         # Enumerate allowed keyword
                         output.printf("\"N_A\", ");
-                        field.enum.each() {|str, enum|
-                            output.printf("\"%s\", ", str) ;
+                        field.enum.each() {|enum|
+                            output.printf("\"%s\", ", enum[:str]) ;
                         }
                         output.printf("NULL };\n");
                     }
@@ -264,9 +264,9 @@ module Damage
                                 output.printf("\t\t\tname =  __#{libName}_read_value_str_attr_nocopy(attribute);\n\n");
                                 output.printf("\t\t\tswitch (__#{libName}_compare(name, #{field.name}_enum_str)) {\n");
                                 subCaseCount=1
-                                field.enum.each() {|str, enum|
+                                field.enum.each() {|enum|
                                     output.printf("\t\t\t\tcase %d:\n", subCaseCount);
-                                    output.printf("\t\t\t\t\t/* %s */\n", str);
+                                    output.printf("\t\t\t\t\t/* %s */\n", enum[:str]);
                                     output.printf("\t\t\t\t\tptr->%s = #{field.enumPrefix}_#{enum[:label]};\n", field.name) ;
                                     output.printf("\t\t\t\t\tbreak;\n");
                                     subCaseCount+=1

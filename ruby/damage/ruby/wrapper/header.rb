@@ -57,8 +57,8 @@ VALUE #{params[:classValueListRowip]};
                 output.puts("
 static const char* #{entry.name}_#{field.name}_enum[] = {
 \t\"N_A\",")
-                field.enum.each() {|str, enum|
-                    output.puts("\t\"#{str.sub(/[^[:alnum:]]/, "_")}\",")
+                field.enum.each() {|enum|
+                    output.puts("\t\"#{enum[:rubLabel]}\",")
                     count +=1
                 }                     
 output.puts("};

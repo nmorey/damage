@@ -44,8 +44,8 @@ module Damage
 /** Enum for the #{field.name} field of a #__#{libName}_#{entry.name} structure */");
                         output.printf("typedef enum {\n");
                         output.printf("\t#{field.enumPrefix}_N_A /** Undefined */= 0")
-                        field.enum.each() { |str, val|
-                            output.printf(",\n\t#{field.enumPrefix}_#{val[:label]} /** #{field.name} = \"#{str}\"*/ = #{val[:count]}")
+                        field.enum.each() { |val|
+                            output.printf(",\n\t#{field.enumPrefix}_#{val[:label]} /** #{field.name} = \"#{val[:str]}\"*/ = #{val[:count]}")
                         }
                         output.printf("\n} __#{libName}_#{entry.name}_#{field.name};\n");
                         output.puts("
@@ -99,8 +99,8 @@ module Damage
                         if field.category == :enum then
                             output.printf("const char*__#{libName}_#{entry.name}_#{field.name}_strings[#{field.enum.length+1}] = {\n");
                             output.printf("\t\"N/A\"")
-                            field.enum.each() { |str, val|
-                                output.printf(",\n\t\"#{str}\"")
+                            field.enum.each() { |val|
+                                output.printf(",\n\t\"#{val[:str]}\"")
                             } 
                             output.printf("\n};\n");
                         end

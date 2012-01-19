@@ -53,8 +53,8 @@ public class #{params[:class]} extends #{params[:uppercase_libname]}Object {
                                 output.printf("\tpublic enum #{field.java_type} {\n");
                                 output.printf("\t\tN_A (\"N/A\")/** Undefined */")
                                 count = 1;
-                                field.enum.each() { |str, val|
-                                    output.printf(",\n\t\t#{val[:label]} (\"#{str}\")")
+                                field.enum.each() { |val|
+                                    output.printf(",\n\t\t#{val[:label]} (\"#{val[:str]}\")")
                                     count+=1
                                 }
                                 output.printf(";\n");
