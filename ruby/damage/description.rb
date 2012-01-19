@@ -486,10 +486,13 @@ module Damage
             attr_accessor :entries
             def to_s
                 str=""
-                entries.each(){ |name, vals|
+                @order.each(){ |name|
+                    vals = @entries[name]
+
                     str+= "Struct: #{name} - Size: #{vals[:size]}\n"
-                    vals.each(){|field, params|
-                        next if field == :size
+
+                    vals[:order].each(){|field|
+                        params = vals[field]
                         str += "\tField: #{field} - Offset/Size: #{params[:offset]}/#{params[:size]}\n"
                     }
                     
@@ -499,12 +502,15 @@ module Damage
             def initialize(prefix, input)
                 inStruct = false
                 @entries={}
+                @order=[]
                 input.each_line() { |line|
                     if inStruct == false then
                         next if line =~ /^struct ___#{prefix}_db_lock\s+\{\s*$/
                         next if line !~ /^struct ___#{prefix}_(.*)\s+\{\s*$/
                         inStruct = $1
                         @entries[inStruct] = {}
+                        @entries[inStruct][:order] = []
+                        @order << inStruct
                     else
                         if line =~ /^\};.*$/ then
                             inStruct = false
@@ -516,6 +522,7 @@ module Damage
                             @entries[inStruct][field]={}
                             @entries[inStruct][field][:offset] = offset
                             @entries[inStruct][field][:size] = size
+                            @entries[inStruct][:order] << field
                         elsif line =~ /^\s*\/\*\s+size:\s+([0-9]+), .*\*\/\s*$/
                             @entries[inStruct][:size] = $1
                         else
