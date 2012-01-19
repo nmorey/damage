@@ -255,8 +255,10 @@ module Damage
                     @ruby2val = "NUM2UINT"
                     @enumList="(#{$1})"
                     @enum={}
+                    count = 1
                     $1.split('|').each() {|e|
-                        @enum[e] = e.sub(/[^[:alnum:]]/, "_").upcase
+                        @enum[e] = { :label => e.sub(/[^[:alnum:]]/, "_").upcase, :count => count}
+                        count +=1
                     }
                     if @default_val == nil then 
                         @default_val = "0"  

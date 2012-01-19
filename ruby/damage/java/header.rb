@@ -54,7 +54,7 @@ public class #{params[:class]} extends #{params[:uppercase_libname]}Object {
                                 output.printf("\t\tN_A (\"N/A\")/** Undefined */")
                                 count = 1;
                                 field.enum.each() { |str, val|
-                                    output.printf(",\n\t\t#{val} (\"#{str}\")")
+                                    output.printf(",\n\t\t#{val[:label]} (\"#{str}\")")
                                     count+=1
                                 }
                                 output.printf(";\n");

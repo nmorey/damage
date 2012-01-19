@@ -44,10 +44,8 @@ module Damage
 /** Enum for the #{field.name} field of a #__#{libName}_#{entry.name} structure */");
                         output.printf("typedef enum {\n");
                         output.printf("\t#{field.enumPrefix}_N_A /** Undefined */= 0")
-                        count = 1;
                         field.enum.each() { |str, val|
-                            output.printf(",\n\t#{field.enumPrefix}_#{val} /** #{field.name} = \"#{str}\"*/ = #{count}")
-                            count+=1
+                            output.printf(",\n\t#{field.enumPrefix}_#{val[:label]} /** #{field.name} = \"#{str}\"*/ = #{val[:count]}")
                         }
                         output.printf("\n} __#{libName}_#{entry.name}_#{field.name};\n");
                         output.puts("

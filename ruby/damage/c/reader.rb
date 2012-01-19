@@ -267,7 +267,7 @@ module Damage
                                 field.enum.each() {|str, enum|
                                     output.printf("\t\t\t\tcase %d:\n", subCaseCount);
                                     output.printf("\t\t\t\t\t/* %s */\n", str);
-                                    output.printf("\t\t\t\t\tptr->%s = #{field.enumPrefix}_#{enum};\n", field.name) ;
+                                    output.printf("\t\t\t\t\tptr->%s = #{field.enumPrefix}_#{enum[:label]};\n", field.name) ;
                                     output.printf("\t\t\t\t\tbreak;\n");
                                     subCaseCount+=1
                                 }
