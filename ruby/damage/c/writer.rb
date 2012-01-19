@@ -28,8 +28,13 @@ module Damage
                     output = Damage::Files.createAndOpen("gen/#{description.config.libname}/src/", "xml_writer__#{name}.c")
                     genWriter(output, description, entry)
                     output.close()
+
                     output = Damage::Files.createAndOpen("gen/#{description.config.libname}/src/", "xml_writer_wrapper__#{name}.c")
                     genWriterWrapper(output, description, entry)
+                    output.close()
+
+                    output = Damage::Files.createAndOpen("gen/#{description.config.libname}/src/", "xml_writer_wrapper_unlocked__#{name}.c")
+                    genWriterWrapperUnlocked(output, description, entry)
                     output.close()
                 }
             end
@@ -87,6 +92,18 @@ module Damage
  * @retval -1 in case of error
  */");
                     output.printf("int __#{libName}_%s_xml_dump_file(const char* file, const __#{libName}_%s *ptr, __#{libName}_options opts);\n\n", entry.name, entry.name)
+
+                    output.puts("
+/**
+ * Write a complete #__#{libName}_#{entry.name} structure and its children in XML form to a file. File locking is not supported
+ * @param[in] file File descriptor
+ * @param[in] ptr Structure to write
+ * @param[in] opts Options to writer (compression, read-only, etc)
+ * @return Status
+ * @retval 0 Success
+ * @retval -1 in case of error
+ */");
+                    output.printf("int __#{libName}_%s_xml_dump_file_unlocked(FILE* file, const __#{libName}_%s *ptr, __#{libName}_options opts);\n\n", entry.name, entry.name)
                 }
                 output.printf("\n\n");
 
@@ -271,7 +288,61 @@ module Damage
 /** @} */
 ")
             end
-            module_function :genWriter,:genWriterWrapper, :addXmlElt
+
+            def genWriterWrapperUnlocked(output, description, entry)
+                libName = description.config.libname
+
+                output.printf("#include \"#{libName}.h\"\n")
+                output.printf("#include \"_#{libName}/_common.h\"\n")
+                output.printf("#include <unistd.h>\n")
+                output.printf("#include <libxml/xmlsave.h>\n")
+                output.printf("\n")
+                output.printf("\n\n")
+                output.puts("
+
+/** \\addtogroup #{libName} DAMAGE #{libName} Library
+ * @{
+**/
+/** \\addtogroup xml_write XML Writer API
+ * @{
+ **/
+");
+                output.printf("int __#{libName}_%s_xml_dump_file_unlocked(FILE* file, const __#{libName}_%s *ptr, __#{libName}_options opts)\n{\n", entry.name, entry.name)
+                output.printf("\txmlDocPtr doc = NULL;\n")
+                output.printf("\txmlNodePtr node = NULL;\n")
+                output.printf("\txmlSaveCtxtPtr ctx = NULL;\n")
+                output.printf("\tuint32_t ret;\n")
+                output.printf("\n")
+                output.printf("\tret = setjmp(__#{libName}_error_happened);\n");
+                output.printf("\tif (ret != 0) {\n");
+                output.printf("\t\terrno = ret;\n");
+                output.printf("\t\treturn -1;\n");
+                output.printf("\t}\n\n");
+
+                output.printf("\tdoc = xmlNewDoc(BAD_CAST \"1.0\");\n")
+                output.printf("\tif(opts & __#{libName.upcase}_OPTION_GZIPPED)\n")
+                output.printf("\t\txmlSetDocCompressMode(doc, 9);\n")
+                output.printf("\tnode = __#{libName}_create_%s_xml_node(NULL, ptr);\n", entry.name)
+                output.printf("\txmlDocSetRootElement(doc, node);\n")
+                output.printf("\n")
+                output.printf("\tif(ftruncate(fileno(file), 0) != 0)\n");
+                output.printf("\t\t__#{libName}_error(\"Failed to truncate output file: %%s\", ENOENT, strerror(errno));\n\n");
+
+                output.printf("\tif((ctx = xmlSaveToFd(fileno(file), NULL, XML_SAVE_FORMAT)) == NULL)\n");
+                output.printf("\t\t__#{libName}_error(\"Failed to write to output file: %%s\", ENOENT, strerror(errno));\n\n");
+                output.printf("\txmlSaveDoc(ctx, doc);\n");
+                output.printf("\txmlSaveFlush(ctx);\n\n");
+                output.printf("\txmlSaveClose(ctx);\n");
+                output.printf("\txmlFreeDoc(doc);\n\n");
+                output.printf("\treturn 0;\n");
+                output.printf("}\n");
+
+                output.puts("
+/** @} */
+/** @} */
+")
+            end
+            module_function :genWriter,:genWriterWrapper,:genWriterWrapperUnlocked,:addXmlElt
         end
     end
 end
