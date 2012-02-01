@@ -294,8 +294,8 @@ __#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load_partial(FILE*
                     
                     output.printf("#{indent}prev = el;\n") 
                     output.printf("#{indent}offset = (uint32_t)(unsigned long)el->next;\n");
+                    output.printf("#{indent}#{entry.cleanup}(el);\n") if entry.cleanup != nil 
                     output.printf("\t} while (el->next != NULL);\n") 
-                    output.printf("\t#{entry.cleanup}(first);\n") if entry.cleanup != nil 
 
                     output.puts "\treturn first;"
                 else
