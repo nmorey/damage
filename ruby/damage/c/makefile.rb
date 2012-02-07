@@ -30,6 +30,8 @@ module Damage
       def genMakefile(output, description)
         libName = description.config.libname
         output.puts "
+#Big ugly hack because gcc on FC16 outputs debug information not compatible with pahole in O3 mode
+OPT_FLAG  := $(shell ((uname --kernel-release | grep fc16  > /dev/null) || (echo '-O3'; exit 1)) && echo '-O0')
 LIBDIR32  := $(shell if [ -f /etc/debian_version -a -d /usr/lib32/ ]; then echo \"lib32\"; else echo \"lib\"; fi)
 LIBDIR64  := $(shell if [ -f /etc/debian_version -a -d /usr/lib32/ ]; then echo \"lib\"; else echo \"lib64\"; fi)
 
@@ -53,7 +55,7 @@ PREFIX  := /usr
 SUFFIX  := #{libName}
 
 CC=gcc
-CFLAGS  := -Iinclude/ $(cflags) -Wall -Wextra -Werror -g -I/usr/include/libxml2 -Werror -O3 -fPIC
+CFLAGS  := -Iinclude/ $(cflags) -Wall -Wextra -Werror -g -I/usr/include/libxml2 -Werror $(OPT_FLAG) -fPIC
 
 ifeq ($(ARCH), x86_64)
 	libs := $(lib) $(lib64) $(dlib) $(dlib64)
