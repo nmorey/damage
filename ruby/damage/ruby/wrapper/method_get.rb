@@ -104,7 +104,7 @@ static VALUE #{params[:funcPrefix]}_s_#{field.name}_getRowip(VALUE self)"
     #{params[:cType]}* ptr;
     Data_Get_Struct(self, #{params[:cType]}, ptr);
     assert(ptr);
-    return #{field.val2ruby}((long)ptr->#{field.name});
+    return #{field.val2ruby}(ptr->#{field.name});
 }
 ")           
 
