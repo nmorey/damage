@@ -132,10 +132,9 @@ $(PREFIX)/$(LIBDIR)/$(SUFFIX)/$(dlib64): $(dlib64)
 	@mkdir -p $$(dirname $@) || true
 	install $< $@
 
-doc.mk: doc
-	ruby -e 'list=\"\";files=`find doc/doxygen/man doc/doxygen/html doc/#{libName}.dot doc/#{libName}.dtd -type f`.split(\"\\n\").each() { |file| _file=file.gsub(/doc\\/doxygen\\//, \"\").gsub(/doc\\//, \"\"); targ=\"$(PREFIX)/share/$(SUFFIX)/doc/\" + _file + \" \"; list=list + targ; puts targ + \":\" + file +\"\\n\\t@mkdir -p $$$$(dirname $$@) || true\\n\\tinstall $$< $$@\\n\"}; puts \"install-doc: \" + list + \"\\n\"' > $@
-
-include doc.mk
+install-doc: doc
+	mkdir -p $(PREFIX)/share/$(SUFFIX)
+	cp -R doc/doxygen/man doc/doxygen/html doc/#{libName}.dot doc/#{libName}.dtd $(PREFIX)/share/$(SUFFIX)/
 
 clean:
 	rm -Rf .commit/
