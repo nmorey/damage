@@ -26,9 +26,6 @@ module Damage
                     outputC = Damage::Files.createAndOpen("gen/#{description.config.libname}/src", "compare__#{name}.c")
                     self.genC(outputC, description, entry)
                     outputC.close()
-                    outputC = Damage::Files.createAndOpen("gen/#{description.config.libname}/src", "compare_list__#{name}.c")
-                    self.genCList(outputC, description, entry)
-                    outputC.close()
                 }
 
                 outputH = Damage::Files.createAndOpen("gen/#{description.config.libname}/include/#{description.config.libname}", @OUTFILE_H)
@@ -153,37 +150,6 @@ module Damage
 
                     output.print("}\n\n")
                 end
-            output.puts("
-/** @} */
-/** @} */
-") 
-            end
-
-            def genCList(output, description, entry)
-                libName = description.config.libname
-
-                output.printf("#include <assert.h>\n")
-                output.printf("#include <errno.h>\n")
-                output.printf("#include <stdlib.h>\n")
-                output.printf("#include <stdio.h>\n")
-                output.printf("#include <string.h>\n")
-                output.printf("#include <setjmp.h>\n")
-                output.printf("#include <libxml/xmlreader.h>\n")
-                output.printf("#include \"#{libName}.h\"\n")
-                output.printf("#include \"_#{libName}/_common.h\"\n")
-                output.printf("\n\n") 
-
-                output.puts("
-
-/** \\addtogroup #{libName} DAMAGE #{libName} Library
- * @{
-**/
-/** \\addtogroup compare Comparison API
- * @{
- **/
-");
-
-                
                 offset = "\t"
 
                 if (entry.comparable == false)
@@ -219,11 +185,13 @@ module Damage
                     end
                     output.print("}\n\n")
                 end
-                output.puts("
+
+            output.puts("
 /** @} */
 /** @} */
 ") 
             end
+
 
             def genH(output, description)
                 libName = description.config.libname
@@ -274,7 +242,7 @@ module Damage
 ")
                 output.printf("#endif /* __#{libName}_compare_h__ */\n")
             end
-            module_function :genC, :genCList, :genH
+            module_function :genC, :genH
         end
     end
 end

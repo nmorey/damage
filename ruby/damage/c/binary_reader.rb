@@ -32,18 +32,6 @@ module Damage
                                                           "binary_reader_wrapper__#{name}.c")
                     self.genBinaryReaderWrapper(outputC, description, entry)
                     outputC.close()
-                    outputC = Damage::Files.createAndOpen("gen/#{description.config.libname}/src", 
-                                                          "binary_reader_partial__#{name}.c")
-                    self.genBinaryReaderPartial(outputC, description, entry, false)
-                    outputC.close()
-                    outputC = Damage::Files.createAndOpen("gen/#{description.config.libname}/src", 
-                                                          "binary_reader_partial_gz__#{name}.c")
-                    self.genBinaryReaderPartial(outputC, description, entry, true)
-                    outputC.close()
-                    outputC = Damage::Files.createAndOpen("gen/#{description.config.libname}/src", 
-                                                          "binary_reader_wrapper_partial__#{name}.c")
-                    self.genBinaryReaderWrapperPartial(outputC, description, entry)
-                    outputC.close()
                 }
                 outputH = Damage::Files.createAndOpen("gen/#{description.config.libname}/include/#{description.config.libname}/",
                                                       "binary_reader.h")
@@ -160,7 +148,7 @@ module Damage
             end
             module_function :cRead
 
-            def genBinaryReaderPartial(output, description, entry, zipped)
+            def genBinaryReader(output, description, entry, zipped)
                 libName = description.config.libname
                 fExt= (zipped == true) ? "_gz" : ""
 
@@ -305,34 +293,6 @@ __#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load_partial(FILE*
 
                 output.puts "}"
 
-                output.puts("
-/** @} */
-/** @} */
-")
-
-
-            end
-            module_function :genBinaryReaderPartial
-
-            def genBinaryReader(output, description, entry, zipped)
-                libName = description.config.libname
-                fExt= (zipped == true) ? "_gz" : ""
-
-                output.printf("#include \"#{libName}.h\"\n")
-                output.printf("#include \"_#{libName}/_common.h\"\n")
-                output.printf("#include <stdint.h>\n")
-                output.printf("#include <sys/stat.h>\n")
-                output.printf("\n\n") 
-
-                output.puts("
-
-/** \\addtogroup #{libName} DAMAGE #{libName} Library
- * @{
-**/
-/** \\addtogroup binary_reader Binary Reader API
- * @{
- **/
-");
                 output.puts "__#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load#{fExt}(#{(zipped == true) ? "gzFile" : "FILE*"} file, uint32_t offset){\n"
                 output.printf("\t__#{libName}_partial_options opt;\n")
                 output.printf("\n")
@@ -340,17 +300,17 @@ __#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load_partial(FILE*
                 output.printf("\t__#{libName}_partial_options_parse_#{entry.name}(&opt);\n");
                 output.printf("\treturn __#{libName}_#{entry.name}_binary_load_partial#{fExt}(file, offset, &opt);\n")
                 output.printf("}\n");
-
                 output.puts("
 /** @} */
 /** @} */
 ")
+
+
             end
             module_function :genBinaryReader
 
 
-
-            def genBinaryReaderWrapperPartial(output, description, entry)
+            def genBinaryReaderWrapper(output, description, entry)
                 libName = description.config.libname
 
                 output.printf("#include \"#{libName}.h\"\n")
@@ -428,36 +388,7 @@ __#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load_partial(FILE*
 
                 output.printf("\treturn ptr;\n");
                 output.printf("}\n");
-
-                output.puts("
-/** @} */
-/** @} */
-")
-
-
-            end
-            module_function :genBinaryReaderWrapperPartial
-
-            def genBinaryReaderWrapper(output, description, entry)
-                libName = description.config.libname
-
-                output.printf("#include \"#{libName}.h\"\n")
-                output.printf("#include \"_#{libName}/_common.h\"\n")
-                output.printf("#include <stdint.h>\n")
-                output.printf("#include <sys/stat.h>\n")
-                output.printf("\n\n") 
-
-                output.puts("
-
-/** \\addtogroup #{libName} DAMAGE #{libName} Library
- * @{
-**/
-/** \\addtogroup binary_reader Binary Reader API
- * @{
- **/
-");
-
-                output.printf("__#{libName}_%s* __#{libName}_%s_binary_load_file(const char* file, __#{libName}_options opts)\n{\n", entry.name, entry.name)
+              output.printf("__#{libName}_%s* __#{libName}_%s_binary_load_file(const char* file, __#{libName}_options opts)\n{\n", entry.name, entry.name)
                 output.printf("\t__#{libName}_partial_options opt = __#{libName.upcase}_PARTIAL_OPTIONS_INITIALIZER;\n")
                 output.printf("\n")
 
@@ -473,6 +404,7 @@ __#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load_partial(FILE*
 
             end
             module_function :genBinaryReaderWrapper
+
         end
     end
 end

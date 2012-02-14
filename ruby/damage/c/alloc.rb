@@ -23,11 +23,8 @@ module Damage
             def write(description)
                 outputH = Damage::Files.createAndOpen("gen/#{description.config.libname}/include/#{description.config.libname}", @OUTFILE_H)
                 description.entries.each() { |name, entry|
-                    outputC = Damage::Files.createAndOpen("gen/#{description.config.libname}/src", "alloc__#{name}.c")
+                    outputC = Damage::Files.createAndOpen("gen/#{description.config.libname}/src", "alloc_free__#{name}.c")
                     self.genAlloc(outputC, description, entry)
-                    outputC.close()
-                    outputC = Damage::Files.createAndOpen("gen/#{description.config.libname}/src", "free__#{name}.c")
-                    self.genFree(outputC, description, entry)
                     outputC.close()
                 }
 
@@ -86,37 +83,6 @@ module Damage
                 output.printf("\treturn ptr;\n")
                 output.printf("}\n\n")
 
-
-                output.puts("
-/** @} */
-/** @} */
-") 
-            end
-
-            def genFree(output, description, entry)
-                libName = description.config.libname
-
-                output.printf("#include <assert.h>\n")
-                output.printf("#include <errno.h>\n")
-                output.printf("#include <stdlib.h>\n")
-                output.printf("#include <stdio.h>\n")
-                output.printf("#include <string.h>\n")
-                output.printf("#include <setjmp.h>\n")
-                output.printf("#include <libxml/xmlreader.h>\n")
-                output.printf("#include \"#{libName}.h\"\n")
-                output.printf("#include \"_#{libName}/_common.h\"\n")
-                output.printf("\n\n") 
-
-                output.puts("
-
-/** \\addtogroup #{libName} DAMAGE #{libName} Library
- * @{
-**/
-/** \\addtogroup alloc Allocation API
- * @{
- **/
-");
-                
 
                 output.printf("void __#{libName}_%s_free(__#{libName}_%s *ptr){\n", 
                               entry.name, entry.name)
@@ -193,6 +159,8 @@ module Damage
                 output.printf("\treturn;\n")
                 output.printf("}\n\n")
 
+
+
                 output.puts("
 /** @} */
 /** @} */
@@ -236,7 +204,7 @@ module Damage
 ")
                 output.printf("#endif /* __#{libName}_alloc_h__ */\n")
             end
-            module_function :genAlloc, :genFree, :genH
+            module_function :genAlloc, :genH
         end
     end
 end

@@ -28,9 +28,6 @@ module Damage
                     self.genBinaryWriter(outputC, description, entry, true)
                     outputC.close()
 
-                    outputC = Damage::Files.createAndOpen("gen/#{description.config.libname}/src", "binary_writer_size_comp__#{name}.c")
-                    self.genBinarySizeComp(outputC, description, entry)
-                    outputC.close()
                     outputC = Damage::Files.createAndOpen("gen/#{description.config.libname}/src", "binary_writer_wrapper__#{name}.c")
                     self.genBinaryWriterWrapper(outputC, description, entry)
                     outputC.close()
@@ -277,13 +274,14 @@ uint32_t __#{libName}_#{entry.name}_binary_dump(__#{libName}_#{entry.name}* ptr,
             end
             module_function :genBinaryWriter
 
-
-            def genBinarySizeComp(output, description, entry)
+            def genBinaryWriterWrapper(output, description, entry)
                 libName = description.config.libname
 
+                nextParam = (entry.attribute == :listable) ? ", opts & __#{libName.upcase}_OPTION_NO_SIBLINGS " : ""
                 output.printf("#include \"#{libName}.h\"\n")
                 output.printf("#include \"_#{libName}/_common.h\"\n")
                 output.printf("#include <stdint.h>\n")
+                output.printf("#include <unistd.h>\n")
                 output.printf("\n\n") 
                 output.puts("
 
@@ -294,6 +292,47 @@ uint32_t __#{libName}_#{entry.name}_binary_dump(__#{libName}_#{entry.name}* ptr,
  * @{
  **/
 ");
+
+
+                output.printf("\n\n") 
+
+
+                output.printf("unsigned long __#{libName}_%s_binary_dump_file(const char* file, __#{libName}_%s *ptr, __#{libName}_options opts)\n{\n", entry.name, entry.name)
+                output.printf("\tuint32_t ret;\n")
+                output.printf("\tFILE* output;\n")
+                output.printf("\tgzFile outputGz;\n")
+                output.printf("\t__#{libName}_binary_header header = { __#{libName.upcase}_DB_FORMAT, 0, __#{libName.upcase}_DAMAGE_VERSION};\n")
+                output.printf("\n")
+
+                output.printf("\tret = setjmp(__#{libName}_error_happened);\n");
+                output.printf("\tif (ret != 0) {\n");
+                output.printf("\t\terrno = ret;\n");
+                output.printf("\t\treturn 0UL;\n");
+                output.printf("\t}\n\n");
+
+                output.printf("\theader.length = __#{libName}_%s_binary_comp_offset(ptr, sizeof(header)#{nextParam});\n", entry.name)
+   
+
+                output.printf("\tif(opts & __#{libName.upcase}_OPTION_GZIPPED){\n")
+                output.printf("\t\tif((outputGz = __#{libName}_open_gzFile(file, __#{libName.upcase}_OPTION_NONE, \"w\")) == NULL)\n")
+                output.printf("\t\t\t__#{libName}_error(\"Failed to open output file %%s: %%s\", ENOENT, file, strerror(errno));\n\n");
+                cWrite(output, libName, true, "\t\t", "&header", "sizeof(header)", "1", "outputGz")
+                output.printf("\t\t__#{libName}_%s_binary_dump_gz(ptr, outputGz#{nextParam});\n", entry.name)
+                output.printf("\t\tgzflush(outputGz, Z_FINISH);\n")
+                output.printf("\t} else {\n")
+                 output.printf("\t\tif((output = __#{libName}_open_FILE(file, __#{libName.upcase}_OPTION_NONE, \"w\")) == NULL)\n")
+                output.printf("\t\t\t__#{libName}_error(\"Failed to open output file %%s: %%s\", ENOENT, file, strerror(errno));\n\n");
+
+                cWrite(output, libName, false, "\t\t", "&header", "sizeof(header)", "1", "output")
+                output.printf("\t\t__#{libName}_%s_binary_dump(ptr, output#{nextParam});\n", entry.name)
+                output.printf("\t\tfflush(output);\n")
+                output.printf("\t\tif(ftruncate(fileno(output), header.length) != 0)\n");
+                output.printf("\t\t\t__#{libName}_error(\"Failed to truncate output file %%s: %%s\", ENOENT, file, strerror(errno));\n\n");
+                output.printf("\t}\n")
+                output.printf("\tif((opts & __#{libName.upcase}_OPTION_KEEPLOCKED) == 0)\n");
+                output.printf("\t\t__#{libName}_release_flock(file);\n");
+                output.printf("\treturn (unsigned long)header.length;\n");
+                output.printf("}\n");
 
                 hasNext = (entry.attribute == :listable) ? ", int siblings" : ""
 
@@ -378,73 +417,6 @@ uint32_t __#{libName}_#{entry.name}_binary_comp_offset(__#{libName}_#{entry.name
                 output.puts "\treturn child_offset;"
                 output.puts "}"
 
-                output.puts("
-/** @} */
-/** @} */
-")
-                
-            end
-            module_function :genBinarySizeComp
-
-            def genBinaryWriterWrapper(output, description, entry)
-                libName = description.config.libname
-
-                nextParam = (entry.attribute == :listable) ? ", opts & __#{libName.upcase}_OPTION_NO_SIBLINGS " : ""
-                output.printf("#include \"#{libName}.h\"\n")
-                output.printf("#include \"_#{libName}/_common.h\"\n")
-                output.printf("#include <stdint.h>\n")
-                output.printf("#include <unistd.h>\n")
-                output.printf("\n\n") 
-                output.puts("
-
-/** \\addtogroup #{libName} DAMAGE #{libName} Library
- * @{
-**/
-/** \\addtogroup binary_writer Binary Writer API
- * @{
- **/
-");
-
-
-                output.printf("\n\n") 
-
-
-                output.printf("unsigned long __#{libName}_%s_binary_dump_file(const char* file, __#{libName}_%s *ptr, __#{libName}_options opts)\n{\n", entry.name, entry.name)
-                output.printf("\tuint32_t ret;\n")
-                output.printf("\tFILE* output;\n")
-                output.printf("\tgzFile outputGz;\n")
-                output.printf("\t__#{libName}_binary_header header = { __#{libName.upcase}_DB_FORMAT, 0, __#{libName.upcase}_DAMAGE_VERSION};\n")
-                output.printf("\n")
-
-                output.printf("\tret = setjmp(__#{libName}_error_happened);\n");
-                output.printf("\tif (ret != 0) {\n");
-                output.printf("\t\terrno = ret;\n");
-                output.printf("\t\treturn 0UL;\n");
-                output.printf("\t}\n\n");
-
-                output.printf("\theader.length = __#{libName}_%s_binary_comp_offset(ptr, sizeof(header)#{nextParam});\n", entry.name)
-   
-
-                output.printf("\tif(opts & __#{libName.upcase}_OPTION_GZIPPED){\n")
-                output.printf("\t\tif((outputGz = __#{libName}_open_gzFile(file, __#{libName.upcase}_OPTION_NONE, \"w\")) == NULL)\n")
-                output.printf("\t\t\t__#{libName}_error(\"Failed to open output file %%s: %%s\", ENOENT, file, strerror(errno));\n\n");
-                cWrite(output, libName, true, "\t\t", "&header", "sizeof(header)", "1", "outputGz")
-                output.printf("\t\t__#{libName}_%s_binary_dump_gz(ptr, outputGz#{nextParam});\n", entry.name)
-                output.printf("\t\tgzflush(outputGz, Z_FINISH);\n")
-                output.printf("\t} else {\n")
-                 output.printf("\t\tif((output = __#{libName}_open_FILE(file, __#{libName.upcase}_OPTION_NONE, \"w\")) == NULL)\n")
-                output.printf("\t\t\t__#{libName}_error(\"Failed to open output file %%s: %%s\", ENOENT, file, strerror(errno));\n\n");
-
-                cWrite(output, libName, false, "\t\t", "&header", "sizeof(header)", "1", "output")
-                output.printf("\t\t__#{libName}_%s_binary_dump(ptr, output#{nextParam});\n", entry.name)
-                output.printf("\t\tfflush(output);\n")
-                output.printf("\t\tif(ftruncate(fileno(output), header.length) != 0)\n");
-                output.printf("\t\t\t__#{libName}_error(\"Failed to truncate output file %%s: %%s\", ENOENT, file, strerror(errno));\n\n");
-                output.printf("\t}\n")
-                output.printf("\tif((opts & __#{libName.upcase}_OPTION_KEEPLOCKED) == 0)\n");
-                output.printf("\t\t__#{libName}_release_flock(file);\n");
-                output.printf("\treturn (unsigned long)header.length;\n");
-                output.printf("}\n");
                 output.puts("
 /** @} */
 /** @} */

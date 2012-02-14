@@ -33,9 +33,6 @@ module Damage
                     genWriterWrapper(output, description, entry)
                     output.close()
 
-                    output = Damage::Files.createAndOpen("gen/#{description.config.libname}/src/", "xml_writer_wrapper_unlocked__#{name}.c")
-                    genWriterWrapperUnlocked(output, description, entry)
-                    output.close()
                 }
             end
             module_function :write
@@ -282,32 +279,7 @@ module Damage
                 output.printf("\t\t__#{libName}_release_flock(file);\n");
                 output.printf("\treturn 0;\n");
                 output.printf("}\n");
-
-                output.puts("
-/** @} */
-/** @} */
-")
-            end
-
-            def genWriterWrapperUnlocked(output, description, entry)
-                libName = description.config.libname
-
-                output.printf("#include \"#{libName}.h\"\n")
-                output.printf("#include \"_#{libName}/_common.h\"\n")
-                output.printf("#include <unistd.h>\n")
-                output.printf("#include <libxml/xmlsave.h>\n")
-                output.printf("\n")
-                output.printf("\n\n")
-                output.puts("
-
-/** \\addtogroup #{libName} DAMAGE #{libName} Library
- * @{
-**/
-/** \\addtogroup xml_write XML Writer API
- * @{
- **/
-");
-                output.printf("int __#{libName}_%s_xml_dump_file_unlocked(FILE* file, const __#{libName}_%s *ptr, __#{libName}_options opts)\n{\n", entry.name, entry.name)
+               output.printf("int __#{libName}_%s_xml_dump_file_unlocked(FILE* file, const __#{libName}_%s *ptr, __#{libName}_options opts)\n{\n", entry.name, entry.name)
                 output.printf("\txmlDocPtr doc = NULL;\n")
                 output.printf("\txmlNodePtr node = NULL;\n")
                 output.printf("\txmlSaveCtxtPtr ctx = NULL;\n")
@@ -342,7 +314,9 @@ module Damage
 /** @} */
 ")
             end
-            module_function :genWriter,:genWriterWrapper,:genWriterWrapperUnlocked,:addXmlElt
+
+  
+            module_function :genWriter,:genWriterWrapper,:addXmlElt
         end
     end
 end
