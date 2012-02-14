@@ -65,7 +65,8 @@ module Damage
 
                 output.printf("__#{libName}_%s* __#{libName}_%s_duplicate(const __#{libName}_%s *ptr#{hasNext}){\n", 
                               entry.name, entry.name, entry.name)
-                output.printf("\t__#{libName}_%s *first = NULL;\n", entry.name);
+                output.printf("\t__#{libName}_%s *first = NULL;\n\n", entry.name);
+                output.printf("\tif(ptr == NULL) { return NULL;}\n");
                 source="ptr"
                 dest="first"
                 indent="\t"
