@@ -167,7 +167,7 @@ public abstract class #{uppercaseLibName}Object {
 	 * Annotations
 	 * Developer can put any Object in this map.
 	 */
-	private HashMap<Object, Object> m_annotations;
+	private java.util.Map<Object, Object> m_annotations;
 
 	/**
 	 * Constructor
@@ -186,15 +186,25 @@ public abstract class #{uppercaseLibName}Object {
 	}
 
 	/**
-	 * Set an annotation to this #{uppercaseLibName}Object
+	 * Set an annotation to this #{uppercaseLibName}Object.
+   * Note: method optimized to use the better Map instance, according to the number of elements stored.
 	 * @return the previous one, if any.
 	 */
-	public Object setAnnotation(Object key, Object object) {
-		if (m_annotations == null) {
- 			m_annotations = new HashMap<Object, Object>();
- 		}
-		return m_annotations.put(key, object);
-	}
+  public Object setAnnotation(Object key, Object value) {
+    if (m_annotations == null || m_annotations.size() == 0) {
+      m_annotations = java.util.Collections.singletonMap(key, value);
+      return null;
+    } else if (m_annotations.size() == 1) {
+      java.util.Map.Entry<Object, Object> entry = m_annotations.entrySet().iterator().next();
+      if (key.equals(entry.getKey())) {
+        m_annotations = java.util.Collections.singletonMap(key, value);
+        return entry.getValue();
+      } else {
+        m_annotations = new java.util.HashMap<Object, Object>(m_annotations);
+      }
+    }
+    return m_annotations.put(key, value);
+  }
 
 	/**
 	 * Each #{uppercaseLibName}Object must implement this method
@@ -236,7 +246,7 @@ public abstract class #{uppercaseLibName}Object {
 			readFully(is, array);
 			// reads end of String
 			if (is.read() == -1) throw new EOFException();
-			ret = new String(array, Charset.forName(\"UTF-8\"));
+			ret = new String(array, Charset.forName(\"UTF-8\")).intern();
 		} else if (strLen == 1) {
 			if (is.read() == -1) throw new EOFException();
 			ret = \"\";
@@ -267,6 +277,18 @@ public abstract class #{uppercaseLibName}Object {
 		dump(System.out);
 	}
 
+ /**
+  * Dumps a human readable description of this object in console
+  */
+  public org.dom4j.QName createQName(String s, java.util.Map<String, org.dom4j.QName> map){
+    org.dom4j.QName ret = map.get(s);
+    if (ret == null) {
+      ret = new org.dom4j.QName(s);
+      map.put(s, ret);
+    }
+    return ret;
+  }
+            
 	/**
          * Dumps a human readable description of this object in given PrintStream
          */
