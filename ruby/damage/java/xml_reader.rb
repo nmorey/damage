@@ -42,7 +42,7 @@ module Damage
                         output.printf("\t\t\tString tmp = el.attributeValue(\"#{field.name}\");\n");
                         output.printf("\t\t\tif (tmp != null) {\n");
 			    if field.category == :enum then
-				output.printf("\t\t\t\tobj._#{field.name}=StrTo#{field.java_type}(tmp);\n");
+				output.printf("\t\t\t\tobj._#{field.name}=#{field.java_type}.valueOf(tmp);\n");
 				else
 					case field.java_type
 					when "String"
