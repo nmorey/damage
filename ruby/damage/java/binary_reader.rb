@@ -163,7 +163,7 @@ module Damage
                             output.printf("#{indent}if((pOpts._#{field.data_type} != false) && (obj._#{field.name}_offset != 0)){\n")
                             output.printf("#{indent}\tobj._#{field.name} = #{field.java_type}.loadFromBinaryPartial(fc, obj._#{field.name}_offset, pOpts);\n")
                             output.printf("#{indent}} else {\n")
-                            output.printf("#{indent}\tobj._#{field.name} = new java.util.ArrayList<#{field.java_type}>();\n")
+                            output.printf("#{indent}\tobj._#{field.name} = new java.util.ArrayList<#{field.java_type}>(0);\n")
                             output.printf("#{indent}}\n")
                         else
                             raise("Unsupported data category for #{entry.name}.#{field.name}");
@@ -295,7 +295,7 @@ module Damage
                             output.printf("#{indent}if (obj._#{field.name}_offset != 0) {\n")
                             output.printf("#{indent}\tobj._#{field.name} = #{field.java_type}.loadFromZip(zip);\n")
                             output.printf("#{indent}} else {\n")
-                            output.printf("#{indent}\tobj._#{field.name} = new java.util.ArrayList<#{field.java_type}>();\n")
+                            output.printf("#{indent}\tobj._#{field.name} = new java.util.ArrayList<#{field.java_type}>(0);\n")
                             output.printf("#{indent}}\n")
                         else
                             raise("Unsupported data category for #{entry.name}.#{field.name}");

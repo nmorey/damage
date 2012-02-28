@@ -26,6 +26,10 @@ module Damage
 ")
 	    output.printf("\t@Override\n");
             output.printf("\tpublic DOMElement xmlWrite() {\n");
+            output.printf("\t\treturn xmlWrite(new java.util.HashMap<String, org.dom4j.QName>());\n");
+           output.printf("\t}\n");
+           output.printf("\t\n");
+            output.printf("\tprotected DOMElement xmlWrite(java.util.Map<String, org.dom4j.QName> qNameMap) {\n");
             output.printf("\t\tDOMElement ret = new DOMElement(\"#{params[:name]}\");\n");
             entry.fields.each() {|field|
                case field.attribute
@@ -37,13 +41,13 @@ module Damage
                            output.printf("\t\t/** Writing #{field.name} */\n");
                            if field.category == :enum then
                                 output.printf("\t\tif (_#{field.name} != #{field.java_type}.N_A)\n");
-                                output.printf("\t\t\tret.add(new org.dom4j.dom.DOMAttribute(new org.dom4j.QName(\"#{field.name}\"), _#{field.name}.toString()));\n");
+                                output.printf("\t\t\tret.add(new org.dom4j.dom.DOMAttribute(createQName(\"#{field.name}\", qNameMap), _#{field.name}.toString()));\n");
                            else 
                                if field.java_type == "String" then
                                    output.printf("\t\tif (_#{field.name} != null)\n");
-                                   output.printf("\t\t\tret.add(new org.dom4j.dom.DOMAttribute(new org.dom4j.QName(\"#{field.name}\"), _#{field.name}));\n");
+                                   output.printf("\t\t\tret.add(new org.dom4j.dom.DOMAttribute(createQName(\"#{field.name}\", qNameMap), _#{field.name}.intern()));\n");
                                else
-                                   output.printf("\t\tret.add(new org.dom4j.dom.DOMAttribute(new org.dom4j.QName(\"#{field.name}\"), String.valueOf(_#{field.name})));\n");
+                                   output.printf("\t\tret.add(new org.dom4j.dom.DOMAttribute(createQName(\"#{field.name}\", qNameMap), String.valueOf(_#{field.name}).intern()));\n");
                                end
                            end
                      when :list
@@ -52,7 +56,7 @@ module Damage
                            output.printf("\t\t\tfor (#{field.java_type} i: _#{field.name}) {\n");
                            output.printf("\t\t\t\tDOMElement dom_#{field.name} = new DOMElement(\"#{field.name}\");\n");
                            output.printf("\t\t\t\tret.add(dom_#{field.name});\n");
-                           output.printf("\t\t\t\tdom_#{field.name}.add(new org.dom4j.dom.DOMCDATA(String.valueOf(i)));\n");
+                           output.printf("\t\t\t\tdom_#{field.name}.add(new org.dom4j.dom.DOMCDATA(String.valueOf(i).intern()));\n");
                            output.printf("\t\t\t}\n");
                            output.printf("\t\t}\n");
                      end
@@ -61,7 +65,7 @@ module Damage
                      when :single
                         output.printf("\t\t/** Writing #{field.name} */\n");
 			output.printf("\t\tif (_#{field.name} != null) {\n");
-			output.printf("\t\t\tDOMElement dom_#{field.name} = _#{field.name}.xmlWrite();\n");
+			output.printf("\t\t\tDOMElement dom_#{field.name} = _#{field.name}.xmlWrite(qNameMap);\n");
 			output.printf("\t\t\tret.add(dom_#{field.name});\n");
 			output.printf("\t\t}\n");
                      when :list, :container
@@ -70,14 +74,14 @@ module Damage
                            output.printf("\t\t\tDOMElement dom_#{field.name} = new DOMElement(\"#{field.name}\");\n");
                            output.printf("\t\t\tret.add(dom_#{field.name});\n");
                            output.printf("\t\t\tfor (#{field.java_type} i: _#{field.name}) {\n");
-                           output.printf("\t\t\t\tDOMElement ei = i.xmlWrite();\n");
+                           output.printf("\t\t\t\tDOMElement ei = i.xmlWrite(qNameMap);\n");
                            output.printf("\t\t\t\tdom_#{field.name}.add(ei);\n");
                            output.printf("\t\t\t}\n");
                            output.printf("\t\t}\n");
                         else
                            output.printf("\t\tif (_#{field.name} != null) {\n");
                            output.printf("\t\t\tfor (#{field.java_type} i: _#{field.name}) {\n");
-                           output.printf("\t\t\t\tDOMElement dom = i.xmlWrite();\n");
+                           output.printf("\t\t\t\tDOMElement dom = i.xmlWrite(qNameMap);\n");
                            output.printf("\t\t\t\tret.add(dom);\n");
                            output.printf("\t\t\t}\n");
                            output.printf("\t\t}\n");
