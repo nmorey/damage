@@ -31,7 +31,6 @@ module Damage
         libName = description.config.libname
         output.puts "
 #Big ugly hack because gcc on FC16 outputs debug information not compatible with pahole in O3 mode
-OPT_FLAG  := $(shell ((uname --kernel-release | grep fc16  > /dev/null) || (echo '-O3'; exit 1)) && echo '-O0')
 LIBDIR32  := $(shell if [ -f /etc/debian_version -a -d /usr/lib32/ ]; then echo \"lib32\"; else echo \"lib\"; fi)
 LIBDIR64  := $(shell if [ -f /etc/debian_version -a -d /usr/lib32/ ]; then echo \"lib\"; else echo \"lib64\"; fi)
 
@@ -55,15 +54,17 @@ PREFIX  := /usr
 SUFFIX  := #{libName}
 
 CC=gcc
-CFLAGS  := -Iinclude/ $(cflags) -Wall -Wextra -Werror -g -I/usr/include/libxml2 -Werror $(OPT_FLAG) -fPIC
+CFLAGS_COMMON  := -Iinclude/ $(cflags) -Wall -Wextra -Werror -g -I/usr/include/libxml2 -Werror -fPIC
+CFLAGS         := $(CFLAGS_COMMON) -O3
+
 
 ifeq ($(ARCH), x86_64)
-	libs := $(lib) $(lib64) $(dlib) $(dlib64)
+	libs := $(lib) $(lib64) $(dlib) $(dlib64) obj/i686/big.o obj/x86_64/big.o
 	install-libs := install-lib install-lib64
 	libdir := obj/x86_64/
     LIBDIR := $(LIBDIR64)
 else
-	libs := $(lib) $(dlib)
+	libs := $(lib) $(dlib) obj/i686/big.o
 	install-libs := install-lib
 	libdir := obj/i686/
     LIBDIR := $(LIBDIR32)
@@ -110,6 +111,17 @@ obj/i686/%.o:src/%.c $(headers)
 obj/x86_64/%.o:src/%.c $(headers)
 	@if [ ! -d obj/x86_64/ ]; then mkdir -p obj/x86_64/; fi
 	$(CC) $(CFLAGS) -o $@ -c $<
+
+obj/i686/big.o:obj/big.c $(headers)
+	@if [ ! -d obj/i686/ ]; then mkdir -p obj/i686/; fi
+	$(CC) $(CFLAGS_COMMON) -O0 -m32 -o $@ -c $<
+
+obj/x86_64/big.o:obj/big.c $(headers)
+	@if [ ! -d obj/x86_64/ ]; then mkdir -p obj/x86_64/; fi
+	$(CC) $(CFLAGS_COMMON) -O0 -o $@ -c $<
+
+obj/big.c: $(srcs) $(headers)
+	cat  $(srcs) > $@
 
 install: $(install-libs) install-doc $(patsubst include/%.h, $(PREFIX)/include/$(SUFFIX)/%.h, $(main_header) $(install_headers))
 
