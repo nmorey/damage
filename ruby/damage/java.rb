@@ -156,6 +156,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.Charset;
+import java.nio.channels.*;
 import org.dom4j.dom.DOMElement;
 
 public abstract class #{uppercaseLibName}Object {
@@ -254,6 +255,43 @@ public abstract class #{uppercaseLibName}Object {
 		}
 		return ret;
 	}
+
+  /** 
+   * Read a string from given inputstream
+   */
+  public static String readString(FileChannel fc) throws IOException {
+    int nbytes;
+    String ret = null;
+    ByteBuffer bb = ByteBuffer.allocate(4);
+    bb.order(ByteOrder.LITTLE_ENDIAN);
+    do {
+      nbytes = fc.read(bb);
+    } while(nbytes != -1 && bb.hasRemaining());
+    if(nbytes == -1 && bb.hasRemaining())
+      throw new EOFException(\"Unexpected EOF at offset \" + fc.position());
+    int strLen = bb.getInt(0);
+    if (strLen > 1) {
+      byte[] strCopy = new byte[strLen - 1];
+      bb = ByteBuffer.allocate(strLen);
+      bb.order(ByteOrder.LITTLE_ENDIAN);
+      do {
+        nbytes = fc.read(bb);
+      } while(nbytes != -1 && bb.hasRemaining());
+
+      if(nbytes == -1 && bb.hasRemaining())
+        throw new EOFException(\"Unexpected EOF at offset \" + fc.position());
+      bb.position(0);
+      bb.get(strCopy);
+      ret = new String(strCopy, UTF8_CHARSET).intern();
+    } else if (strLen == 1) {
+      ret = \"\";
+      bb = ByteBuffer.allocate(1);
+      do {
+        nbytes = fc.read(bb);
+      } while(nbytes != -1 && bb.hasRemaining());
+    }
+    return ret;
+  }
 
 	/**
 	 * Intendation method, used when dumping objects.

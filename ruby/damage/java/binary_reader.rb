@@ -31,28 +31,7 @@ module Damage
                 output.printf("#{indent}\tthrow new EOFException(\"Unexpected EOF at offset \" + fc.position());\n")
             end
             module_function :ByteBuffer
-
-            def ParseString(output, indent, dest)
-                output.printf("#{indent}{\n")
-                output.printf("#{indent}\tByteBuffer str;\n")
-                ByteBuffer(output, "str", "#{indent}\t", "4", nil)
-                output.printf("#{indent}\tint strLen = str.getInt(0);\n")
-                output.printf("#{indent}\tif(strLen > 1){\n")
-                output.printf("#{indent}\t\tbyte[] strCopy = new byte[strLen - 1];\n")
-                ByteBuffer(output, "str", "#{indent}\t\t", "strLen", nil)
-                output.printf("#{indent}\t\tstr.position(0);\n")
-                output.printf("#{indent}\t\tstr.get(strCopy);\n")
-                output.printf("#{indent}\t\t#{dest} = new String(strCopy, UTF8_CHARSET);\n")
-                output.printf("#{indent}\t\t#{dest} = #{dest}.intern();\n")
-                output.printf("#{indent}\t} else if (strLen == 1) {\n")
-                output.printf("#{indent}\t\t#{dest} = \"\";\n")
-                output.printf("#{indent}\t} else {\n")
-                output.printf("#{indent}\t\t#{dest} = null;\n")
-                output.printf("#{indent}\t}\n")
-                output.printf("#{indent}}\n")
-            end
-            module_function :ParseString
-
+            
 
             def write(output, libName, entry, pahole, params)
                 retType=params[:class]
@@ -111,7 +90,7 @@ module Damage
                             output.printf("#{indent}}\n")
 
                         when :string
-                            ParseString(output, indent, "obj._#{field.name}")
+                            output.printf("#{indent}obj._#{field.name} = readString(fc);\n")
                         when :intern
                             output.printf("#{indent}obj._#{field.name}_offset = in.getInt(#{pahole[field.name][:offset]});\n")
                             output.printf("#{indent}if((pOpts._#{field.data_type} != false) && (obj._#{field.name}_offset != 0))\n")
@@ -151,7 +130,7 @@ module Damage
                             output.printf("#{indent}\tif(_len != 0){\n")
                             output.printf("#{indent}\t\tobj._#{field.name} = new #{field.java_type}[_len];\n")
                             output.printf("#{indent}\t\tfor(int i = 0; i < _len; i++){\n")
-                            ParseString(output, "#{indent}\t\t\t", "obj._#{field.name}[i]")
+                            output.printf("#{indent}\t\t\tobj._#{field.name}[i] = readString(fc);\n")
                             output.printf("#{indent}\t\t}\n")
                             output.printf("#{indent}\t} else {\n")
                             output.printf("#{indent}\t\tobj._#{field.name} = null;\n")
