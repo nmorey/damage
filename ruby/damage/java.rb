@@ -162,6 +162,7 @@ public abstract class #{uppercaseLibName}Object {
 
 	/** damage_version */
 	public static final String DAMAGE_VERSION = \"#{description.config.damage_version}\";
+  public static final Charset UTF8_CHARSET = Charset.forName(\"UTF-8\");
 
 	/**
 	 * Annotations
@@ -246,7 +247,7 @@ public abstract class #{uppercaseLibName}Object {
 			readFully(is, array);
 			// reads end of String
 			if (is.read() == -1) throw new EOFException();
-			ret = new String(array, Charset.forName(\"UTF-8\")).intern();
+			ret = new String(array, UTF8_CHARSET).intern();
 		} else if (strLen == 1) {
 			if (is.read() == -1) throw new EOFException();
 			ret = \"\";
