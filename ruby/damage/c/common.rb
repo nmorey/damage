@@ -484,9 +484,12 @@ static __#{libName}_db_lock* lockedDBs = NULL;;
 static inline void __#{libName}_free_dblock(__#{libName}_db_lock* dbLock)
 {
     int i;
-    for(i = 0; i < dbLock->oFilesCount; ++i){
-        fclose(dbLock->oFiles[i]);
+
+    if(dbLock->oFilesCount){
+/* This one will close the underlying fd, libc cleans up the others at exit, so free'ing them now is bad. */
+        fclose(dbLock->oFiles[0]);
     }
+
     for(i = 0; i < dbLock->oGzFilesCount; ++i){
         gzclose(dbLock->oGzFiles[i]);
     }
