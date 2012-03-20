@@ -143,8 +143,8 @@ module Damage
                     output.printf("\tchar* filename;\n");
                     output.printf("\t/** Source file length */\n");
                     output.printf("\tunsigned long len;\n");
-                    output.printf("\t/** Source FILE* */\n");
-                    output.printf("\tFILE* file;\n");
+                    output.printf("\t/** Source file descriptor */\n");
+                    output.printf("\tint file;\n");
                     output.printf("\t/** Base memory address */\n");
                     output.printf("\tvoid* base_adr;\n");
                     output.printf("} __#{libName}_rowip_header;\n\n");

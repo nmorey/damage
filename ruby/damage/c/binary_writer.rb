@@ -298,9 +298,9 @@ uint32_t __#{libName}_#{entry.name}_binary_dump(__#{libName}_#{entry.name}* ptr,
 
 
                 output.printf("unsigned long __#{libName}_%s_binary_dump_file(const char* file, __#{libName}_%s *ptr, __#{libName}_options opts)\n{\n", entry.name, entry.name)
-                output.printf("\tuint32_t ret;\n")
-                output.printf("\tFILE* output;\n")
-                output.printf("\tgzFile outputGz;\n")
+                output.printf("\n\tuint32_t ret = 0;\n")
+                output.printf("\tFILE* output = NULL;\n")
+                output.printf("\tgzFile outputGz = NULL;\n")
                 output.printf("\t__#{libName}_binary_header header = { __#{libName.upcase}_DB_FORMAT, 0, __#{libName.upcase}_DAMAGE_VERSION};\n")
                 output.printf("\n")
 

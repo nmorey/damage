@@ -25,12 +25,16 @@ module Damage
                 outputC = Damage::Files.createAndOpen("gen/#{description.config.libname}/src", "binary_rowip.h")
                 self.genBinaryHeader(outputC, description)
                 outputC.close()
-                outputC = Damage::Files.createAndOpen("gen/#{description.config.libname}/src", "binary_writer_rowip.c")
-                self.genBinaryWriter(outputC, description)
-                outputC.close()
-                outputC = Damage::Files.createAndOpen("gen/#{description.config.libname}/src", "binary_reader_rowip.c")
-                self.genBinaryReader(outputC, description)
-                outputC.close()
+                description.entries.each() { |name, entry|
+                    outputC = Damage::Files.createAndOpen("gen/#{description.config.libname}/src", 
+                                                          "binary_writer_rowip__#{name}.c")
+                    self.genBinaryWriter(outputC, description, entry)
+                    outputC.close()
+                    outputC = Damage::Files.createAndOpen("gen/#{description.config.libname}/src", 
+                                                          "binary_reader_rowip__#{name}.c")
+                    self.genBinaryReader(outputC, description, entry)
+                    outputC.close()
+                }
 
             end
             module_function :write
@@ -134,37 +138,37 @@ module Damage
                 libName = description.config.libname
                 output.puts "
 
-
+#ifndef ___#{libName}_binary_rowip_internals
+#define ___#{libName}_binary_rowip_internals
 static inline __#{libName}_rowip_header* __#{libName}_rowip_header_alloc(){
 \t__#{libName}_rowip_header* ptr = __#{libName}_malloc(sizeof(*ptr));
 \tptr->filename = NULL;
-\tptr->file = NULL;
+\tptr->file = -1;
 \tptr->base_adr = NULL;
 \tptr->len = 0UL;
 \treturn ptr;
 }
 
 static inline void __#{libName}_rowip_header_free(__#{libName}_rowip_header* ptr){
-\tif(ptr->file != NULL)
-\t\tfclose(ptr->file);
 \tif(ptr->filename != NULL)
 \t\t__#{libName}_free(ptr->filename);
 
 \t__#{libName}_free(ptr);
 \treturn;
 }
+#endif /* ___#{libName}_binary_rowip_internals */
 "
             end
             module_function :genBinaryHeader
-            def genBinaryWriter(output, description)
+            def genBinaryWriter(output, description, entry)
                 libName = description.config.libname
 
                 output.printf("#include <sys/mman.h>\n")
 
                 output.printf("#include \"#{libName}.h\"\n")
                 output.printf("#include \"_#{libName}/_common.h\"\n")
-                output.printf("#include \"binary_rowip.h\"\n")
-                output.printf("\n\n") 
+                output.printf("#include \"src/binary_rowip.h\"\n")
+               output.printf("\n\n") 
 
                 output.puts("
 
@@ -176,35 +180,33 @@ static inline void __#{libName}_rowip_header_free(__#{libName}_rowip_header* ptr
  **/
 ");
                 
-                description.entries.each() { | name, entry|
-                    output.printf("unsigned long __#{libName}_%s_binary_dump_file_rowip(__#{libName}_%s *ptr, __#{libName}_options opts)\n{\n", entry.name, entry.name)
-                    output.printf("\tunsigned long ret; int r;\n")
-                    output.printf("\t__#{libName}_rowip_header *header = (__#{libName}_rowip_header*)ptr->_rowip;\n");
-                    output.printf("\n")
-                    output.printf("\tif(ptr->_rowip == NULL)\n");
-                    output.printf("\t\treturn 0UL;\n\n");
+                output.printf("unsigned long __#{libName}_%s_binary_dump_file_rowip(__#{libName}_%s *ptr, __#{libName}_options opts)\n{\n", entry.name, entry.name)
+                output.printf("\tunsigned long ret; int r;\n")
+                output.printf("\t__#{libName}_rowip_header *header = (__#{libName}_rowip_header*)ptr->_rowip;\n");
+                output.printf("\n")
+                output.printf("\tif(ptr->_rowip == NULL)\n");
+                output.printf("\t\treturn 0UL;\n\n");
 
-                    output.printf("\tr = setjmp(__#{libName}_error_happened);\n");
-                    output.printf("\tif (r != 0) {\n");
-                    output.printf("\t\terrno = r;\n");
-                    output.printf("\t\treturn 0UL;\n");
-                    output.printf("\t}\n\n");
+                output.printf("\tr = setjmp(__#{libName}_error_happened);\n");
+                output.printf("\tif (r != 0) {\n");
+                output.printf("\t\terrno = r;\n");
+                output.printf("\t\treturn 0UL;\n");
+                output.printf("\t}\n\n");
 
-                    output.printf("\tif((r = msync(header->base_adr, header->len, MS_SYNC)) != 0)\n", entry.name)
-                    output.printf("\t\t__#{libName}_error(\"Failed to sync output file %%s\", errno, header->filename);\n");
+                output.printf("\tif((r = msync(header->base_adr, header->len, MS_SYNC)) != 0)\n", entry.name)
+                output.printf("\t\t__#{libName}_error(\"Failed to sync output file %%s\", errno, header->filename);\n");
 
-                    output.printf("\tif((r = munmap(header->base_adr, header->len)) != 0)\n", entry.name)
-                    output.printf("\t\t__#{libName}_error(\"Failed to unmap output file %%s\", errno, header->filename);\n");
+                output.printf("\tif((r = munmap(header->base_adr, header->len)) != 0)\n", entry.name)
+                output.printf("\t\t__#{libName}_error(\"Failed to unmap output file %%s\", errno, header->filename);\n");
 
-                    output.printf("\tret = header->len;\n")
+                output.printf("\tret = header->len;\n")
 
-                    output.printf("\tif((opts & __#{libName.upcase}_OPTION_KEEPLOCKED) == 0){\n");
-                    output.printf("\t\t__#{libName}_release_flock(header->filename);\n");
-                    output.printf("\t\t__#{libName}_rowip_header_free(header);\n")
-                    output.printf("\t}\n");
-                    output.printf("\treturn ret;\n");
-                    output.printf("}\n");
-                }
+                output.printf("\tif((opts & __#{libName.upcase}_OPTION_KEEPLOCKED) == 0){\n");
+                output.printf("\t\t__#{libName}_release_flock(header->filename);\n");
+                output.printf("\t\t__#{libName}_rowip_header_free(header);\n")
+                output.printf("\t}\n");
+                output.printf("\treturn ret;\n");
+                output.printf("}\n");
 
                 output.puts("
 /** @} */
@@ -214,7 +216,7 @@ static inline void __#{libName}_rowip_header_free(__#{libName}_rowip_header* ptr
             end
             module_function :genBinaryWriter
             
-            def genBinaryReader(output, description)
+            def genBinaryReader(output, description, entry)
                 libName = description.config.libname
 
                 output.printf("#include <sys/mman.h>\n")
@@ -224,11 +226,10 @@ static inline void __#{libName}_rowip_header_free(__#{libName}_rowip_header* ptr
 
                 output.printf("#include \"#{libName}.h\"\n")
                 output.printf("#include \"_#{libName}/_common.h\"\n")
-                output.printf("#include \"binary_rowip.h\"\n")
-                output.printf("\n\n") 
+                output.printf("#include \"src/binary_rowip.h\"\n")
+               output.printf("\n\n") 
 
                 output.puts("
-extern void* __#{libName}_acquire_flock(const char* filename, int rdonly);
 /** \\addtogroup #{libName} DAMAGE #{libName} Library
  * @{
 **/
@@ -238,51 +239,45 @@ extern void* __#{libName}_acquire_flock(const char* filename, int rdonly);
 ");
 
 
-                description.entries.each() { | name, entry|
-                    output.printf("__#{libName}_%s* __#{libName}_%s_binary_load_file_rowip(const char* file, __#{libName}_options opts)\n{\n", entry.name, entry.name)
-                    output.printf("\tint ret;\n")
-                    output.printf("\t__#{libName}_rowip_header *header = NULL;\n");
-                    output.printf("\t__#{libName}_%s *ptr = NULL;\n", entry.name);
-                    output.printf("\tvoid *mapped = NULL;\n");
-                    output.printf("\tstruct stat buf;\n");
-                    output.printf("\tFILE* output;\n")
-                    output.printf("\n")
+                output.printf("__#{libName}_%s* __#{libName}_%s_binary_load_file_rowip(const char* file, __#{libName}_options opts)\n{\n", entry.name, entry.name)
+                output.printf("\tint ret;\n")
+                output.printf("\t__#{libName}_rowip_header *header = NULL;\n");
+                output.printf("\t__#{libName}_%s *ptr = NULL;\n", entry.name);
+                output.printf("\tvoid *mapped = NULL;\n");
+                output.printf("\tstruct stat buf;\n");
+                output.printf("\tint output;\n")
+                output.printf("\n")
 
-                    output.printf("\tret = setjmp(__#{libName}_error_happened);\n");
-                    output.printf("\tif (ret != 0) {\n");
-                    output.printf("\t\tif (header != NULL)\n");
-                    output.printf("\t\t\t__#{libName}_rowip_header_free(header);\n");
-                    output.printf("\t\terrno = ret;\n");
-                    output.printf("\t\treturn NULL;\n");
-                    output.printf("\t}\n\n");
+                output.printf("\tret = setjmp(__#{libName}_error_happened);\n");
+                output.printf("\tif (ret != 0) {\n");
+                output.printf("\t\tif (header != NULL)\n");
+                output.printf("\t\t\t__#{libName}_rowip_header_free(header);\n");
+                output.printf("\t\terrno = ret;\n");
+                output.printf("\t\treturn NULL;\n");
+                output.printf("\t}\n\n");
 
-                    output.printf("\theader = __#{libName}_rowip_header_alloc();\n\n");
-                    output.printf("\theader->filename = strdup(file);\n");
-                    output.printf("\tif(__#{libName}_acquire_flock(file, (opts & __#{libName.upcase}_OPTION_READONLY)))\n");
-                    output.printf("\t\t__#{libName}_error(\"Failed to lock output file %%s: %%s\", ENOENT, header->filename, strerror(errno));\n");
-                    output.printf("\tif((output = fopen(header->filename, \"r+\")) == NULL)\n");
-                    output.printf("\t\t__#{libName}_error(\"Failed to open %%s\", errno, header->filename);\n");
-                    output.printf("\theader->file = output;\n");
+                output.printf("\theader = __#{libName}_rowip_header_alloc();\n\n");
+                output.printf("\theader->filename = strdup(file);\n");
+                output.printf("\tif((output = __sigmacDB_open_fd(header->filename, opts & __#{libName.upcase}_OPTION_READONLY)) == -1)\n");
+                output.printf("\t\t__#{libName}_error(\"Failed to open %%s\", errno, header->filename);\n");
+                output.printf("\theader->file = output;\n");
 
-                    output.printf("\tfstat(fileno(header->file), &buf);\n\n");
-                    output.printf("\theader->len = buf.st_size;\n");
-                    output.printf("\tif(header->len == 0UL)\n");
-                    output.printf("\t\t__#{libName}_error(\"File %%s is empty\", EINVAL, header->filename);\n");
-                    output.printf("\tif((mapped = mmap(NULL, header->len, PROT_READ|PROT_WRITE, MAP_SHARED, fileno(header->file), 0)) == MAP_FAILED)\n");
-                    output.printf("\t\t__#{libName}_error(\"Failed to map %%s: %%s\", errno, header->filename, strerror(errno));\n");
-                    output.printf("\theader->base_adr = mapped;\n");
-                    output.printf("\tfclose(header->file);\n")
+                output.printf("\tfstat(header->file, &buf);\n\n");
+                output.printf("\theader->len = buf.st_size;\n");
+                output.printf("\tif(header->len == 0UL)\n");
+                output.printf("\t\t__#{libName}_error(\"File %%s is empty\", EINVAL, header->filename);\n");
+                output.printf("\tif((mapped = mmap(NULL, header->len, PROT_READ|PROT_WRITE, MAP_SHARED, header->file, 0)) == MAP_FAILED)\n");
+                output.printf("\t\t__#{libName}_error(\"Failed to map %%s: %%s\", errno, header->filename, strerror(errno));\n");
+                output.printf("\theader->base_adr = mapped;\n");
 
-                    output.printf("\theader->file = NULL;\n");
-                    output.printf("\tif ((opts & __#{libName.upcase}_OPTION_READONLY)) {\n");
-                    output.printf("\t__#{libName}_release_flock(file);\n");
-                    output.printf("\t}\n");
+                output.printf("\tif ((opts & __#{libName.upcase}_OPTION_READONLY)) {\n");
+                output.printf("\t__#{libName}_release_flock(file);\n");
+                output.printf("\t}\n");
 
-                    output.printf("\tptr = (__#{libName}_%s*)(mapped + sizeof(uint32_t));\n", entry.name)
-                    output.printf("\tptr->_rowip = header;\n")
-                    output.printf("\treturn ptr;\n");
-                    output.printf("}\n");
-                }
+                output.printf("\tptr = (__#{libName}_%s*)(mapped + sizeof(uint32_t));\n", entry.name)
+                output.printf("\tptr->_rowip = header;\n")
+                output.printf("\treturn ptr;\n");
+                output.printf("}\n");
 
 
                 output.puts("
