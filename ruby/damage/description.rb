@@ -261,6 +261,7 @@ module Damage
                             :str => e, :count => count}
                         count += 1
                     }
+                    @enumList = nil if @enumList =~ /\//
                     if @default_val == nil then 
                         @default_val = "0"  
                         @java_default_val = "#{@java_type}.N_A"
