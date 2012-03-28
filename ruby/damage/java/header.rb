@@ -89,7 +89,8 @@ public class #{params[:class]} extends #{params[:uppercase_libname]}Object {
                     raise("Unsupported data attribute for #{entry.name}.#{field.name}");
                 end
             }
-            output.puts("\n\n");
+            output.printf("\tpublic int __binary_offset;\n");
+          output.puts("\n\n");
         end
         module_function :write
         

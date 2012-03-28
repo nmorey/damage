@@ -20,6 +20,7 @@ module Damage
         require File.dirname(__FILE__) + '/java/enum'
 	require File.dirname(__FILE__) + '/java/xml_reader'
 	require File.dirname(__FILE__) + '/java/xml_writer'
+	require File.dirname(__FILE__) + '/java/offset'
         require File.dirname(__FILE__) + '/java/alloc'
         require File.dirname(__FILE__) + '/java/binary_reader'
         require File.dirname(__FILE__) + '/java/dump'
@@ -130,8 +131,9 @@ public interface I#{uppercaseLibName}ObjectVisitor {
                 Enum::write(output, libName, entry, pahole.entries[name], params)
                 Alloc::write(output, libName, entry, pahole.entries[name], params)
                 BinaryReader::write(output, libName, entry, pahole.entries[name], params)
-		XmlReader::write(output, libName, entry, pahole.entries[name], params)
-		XmlWriter::write(output, libName, entry, pahole.entries[name], params)
+                XmlReader::write(output, libName, entry, pahole.entries[name], params)
+                XmlWriter::write(output, libName, entry, pahole.entries[name], params)
+                Offset::write(output, libName, entry, pahole.entries[name], params)
                 Dump::write(output, libName, entry, pahole.entries[name], params)
 
                 ParserOptions::write(description)
