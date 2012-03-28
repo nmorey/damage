@@ -24,7 +24,7 @@ module Damage
         require File.dirname(__FILE__) + '/c/sort'
         require File.dirname(__FILE__) + '/c/duplicate'
         require File.dirname(__FILE__) + '/c/reader'
-        require File.dirname(__FILE__) + '/c/writer'
+        require File.dirname(__FILE__) + '/c/xml_writer'
         require File.dirname(__FILE__) + '/c/binary_reader'
         require File.dirname(__FILE__) + '/c/binary_writer'
         require File.dirname(__FILE__) + '/c/binary_rowip'
@@ -45,7 +45,7 @@ module Damage
             Sort::write(description)
             Duplicate::write(description)
             Reader::write(description)
-            Writer::write(description)
+            XMLWriter::write(description)
             BinaryReader::write(description)
             BinaryWriter::write(description)
             BinaryRowip::write(description) if description.config.rowip == true

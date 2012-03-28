@@ -69,10 +69,11 @@ module Damage
                 output.puts("#include <#{libName}/binary_rowip.h>") if description.config.rowip == true
                 output.puts("#include <#{libName}/compare.h>")
                 output.puts("#include <#{libName}/dump.h>")
+                output.puts("#include <#{libName}/xml_writer.h>")
+
                 output.puts("\n#ifndef __#{libName.upcase}_NO_XML__");
                 output.puts("#include <libxml/tree.h>")
                 output.puts("#include <#{libName}/xml_reader.h>")
-                output.puts("#include <#{libName}/xml_writer.h>")
                 output.puts("#endif /* __#{libName.upcase}_NO_XML__ */\n");
                 description.config.hfiles.each() {|hfile|
                     output.puts("#include <#{libName}/#{hfile}>");

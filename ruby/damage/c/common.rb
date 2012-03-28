@@ -108,6 +108,7 @@ int __#{libName}_release_flock(const char* filename);
 #include <setjmp.h>
 #include <libxml/xmlreader.h>
 #include <zlib.h>
+extern int vasprintf(char **strp, const char *fmt, va_list ap);
 
 void *__#{libName}_malloc(unsigned long size);
 char *__#{libName}_strdup(const char* str);
@@ -138,6 +139,8 @@ void __#{libName}_gzwrite(gzFile output, void* buf, size_t size);
 void __#{libName}_gzseek(gzFile stream, long offset, int whence);
 
 void __#{libName}_paddOutput(FILE* file, int indent, int listable, int first);
+void __#{libName}_paddOutputGz(gzFile file, int indent, int listable, int first);
+int __sigmacDB_gzPrintf(gzFile file, const char* format, ...);
 
 #define __#{libName}_error(str, err, arg...) {								\\
 		fprintf(stderr, \"error: #{libName}:\" str \"\\n\", ##arg);			\\
@@ -153,6 +156,7 @@ extern int __#{libName}_line;
             def genCommonC(output, description)
                 libName = description.config.libname
                 output.puts "
+#define _GNU_SOURCE
 #include <assert.h>
 #include <errno.h>
 #include <setjmp.h>
@@ -217,6 +221,22 @@ void *__#{libName}_realloc(void *ptr, unsigned long size)
 	}
 	return nptr;
 }
+int __sigmacDB_gzPrintf(gzFile file, const char* fmt, ...){
+    char* buf;
+    va_list argp;
+    va_start(argp, fmt);
+    int ret = vasprintf(&buf, fmt, argp);
+   	if (ret < 0) {
+		fprintf(stderr, \"Failed to allocate memory: %s\\n\", strerror(errno));
+        exit(1);
+	} 
+    va_end(argp);
+    fprintf(stdout, \"%s\\n\", buf);
+    gzputs(file, buf);
+    free(buf);
+    return ret;
+
+}
 
 void __#{libName}_free(void *ptr)
 {
@@ -261,13 +281,26 @@ void __#{libName}_gzread(gzFile input, void* buf, size_t size){
 void __#{libName}_paddOutput(FILE* file, int indent, int listable, int first){
     int i;
     for(i = 0; i < indent; i++){
-        fprintf(file, \"\\t\");
+        fputs(\"\\t\", file);
     }
     if(listable){
         if(first){
-            fprintf(file, \"- \");
+            fputs(\"- \", file);
         } else {
-            fprintf(file, \"  \");
+            fputs(\"  \", file);
+        }
+    }
+}
+void __#{libName}_paddOutputGz(gzFile file, int indent, int listable, int first){
+    int i;
+    for(i = 0; i < indent; i++){
+        gzputs(file, \"\\t\");
+    }
+    if(listable){
+        if(first){
+            gzputs(file, \"- \");
+        } else {
+            gzputs(file, \"  \");
         }
     }
 }
