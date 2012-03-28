@@ -45,6 +45,7 @@ module Damage
                 output.printf("#include <stdio.h>\n")
                 output.printf("#include <string.h>\n")
                 output.printf("#include <setjmp.h>\n")
+                output.printf("#include <math.h>\n")
                 output.printf("#include <libxml/xmlreader.h>\n")
                 output.printf("#include \"#{libName}.h\"\n")
                 output.printf("#include \"_#{libName}/_common.h\"\n")
@@ -97,7 +98,11 @@ module Damage
                                         output.printf("#{offset}\t\t\treturn 0;\n#{offset}\t\t}\n")
                                         output.printf("#{offset}\t}\n#{offset}}\n")
                                     when :simple, :enum, :id, :idref
-                                        output.printf("#{offset}if (ptr1->%s != ptr2->%s) {\n", field.name, field.name)
+                                        if field.data_type == "double" then 
+                                            output.printf("#{offset}if ((fabs(ptr1->%s - ptr2->%s) /ptr1->%s) > 1e-13 ){\n", field.name, field.name, field.name)
+                                        else
+                                            output.printf("#{offset}if (ptr1->%s != ptr2->%s) {\n", field.name, field.name)
+                                        end
                                         output.printf("#{offset}\treturn 0;\n#{offset}}\n")
                                     else
                                         raise("Unsupported data category for #{entry.name}.#{field.name}");

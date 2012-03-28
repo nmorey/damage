@@ -211,7 +211,7 @@ module Damage
                         @default_val = "0.0"
                         @java_default_val = "0.0d"
                     end
-                    @printf="e"
+                    @printf=".16e"
                     @val2ruby = "rb_float_new"
                     @ruby2val = "NUM2DBL"
                 when "UI"
