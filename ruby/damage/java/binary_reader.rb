@@ -53,6 +53,7 @@ module Damage
 	 */
 	public static #{retType} loadFromBinaryPartial(FileChannel fc, int offset, ParserOptions pOpts) throws IOException {
 		int nbytes;
+		int field_offset;
 		ByteBuffer in;
 ");
 
@@ -92,9 +93,9 @@ module Damage
                         when :string
                             output.printf("#{indent}obj._#{field.name} = readString(fc);\n")
                         when :intern
-                            output.printf("#{indent}obj._#{field.name}_offset = in.getInt(#{pahole[field.name][:offset]});\n")
-                            output.printf("#{indent}if((pOpts._#{field.data_type} != false) && (obj._#{field.name}_offset != 0))\n")
-                            output.printf("#{indent}\tobj._#{field.name} = #{field.java_type}.loadFromBinaryPartial(fc, obj._#{field.name}_offset, pOpts);\n")
+                            output.printf("#{indent}field_offset = in.getInt(#{pahole[field.name][:offset]});\n")
+                            output.printf("#{indent}if((pOpts._#{field.data_type} != false) && (field_offset != 0))\n")
+                            output.printf("#{indent}\tobj._#{field.name} = #{field.java_type}.loadFromBinaryPartial(fc, field_offset, pOpts);\n")
                         else
                             raise("Unsupported data category for #{entry.name}.#{field.name}");
                         end
@@ -138,9 +139,9 @@ module Damage
                             output.printf("#{indent}}\n")
 
                         when :intern
-                            output.printf("#{indent}obj._#{field.name}_offset = in.getInt(#{pahole[field.name][:offset]});\n")
-                            output.printf("#{indent}if((pOpts._#{field.data_type} != false) && (obj._#{field.name}_offset != 0)){\n")
-                            output.printf("#{indent}\tobj._#{field.name} = #{field.java_type}.loadFromBinaryPartial(fc, obj._#{field.name}_offset, pOpts);\n")
+                            output.printf("#{indent}field_offset = in.getInt(#{pahole[field.name][:offset]});\n")
+                            output.printf("#{indent}if((pOpts._#{field.data_type} != false) && (field_offset != 0)){\n")
+                            output.printf("#{indent}\tobj._#{field.name} = #{field.java_type}.loadFromBinaryPartial(fc, field_offset, pOpts);\n")
                             output.printf("#{indent}} else {\n")
                             output.printf("#{indent}\tobj._#{field.name} = new java.util.ArrayList<#{field.java_type}>(0);\n")
                             output.printf("#{indent}}\n")
@@ -179,6 +180,7 @@ module Damage
 	 * Internal: Read a ##{retType} class and its children in binary form from an open zip file.
 	 */
 	public static #{retType} loadFromZip(GZIPInputStream zip) throws IOException {
+		int field_offset;
 ");
                 indent="\t\t"
                 if (entry.attribute == :listable) then
@@ -221,8 +223,8 @@ module Damage
                         when :string
                             output.printf("#{indent}obj._#{field.name} = readString(zip);\n")
                         when :intern
-                            output.printf("#{indent}obj._#{field.name}_offset = in.getInt(#{pahole[field.name][:offset]});\n")
-                            output.printf("#{indent}if(obj._#{field.name}_offset != 0)\n")
+                            output.printf("#{indent}field_offset = in.getInt(#{pahole[field.name][:offset]});\n")
+                            output.printf("#{indent}if(field_offset != 0)\n")
                             output.printf("#{indent}\tobj._#{field.name} = #{field.java_type}.loadFromZip(zip);\n")
                         else
                             raise("Unsupported data category for #{entry.name}.#{field.name}");
@@ -270,8 +272,8 @@ module Damage
                             output.printf("#{indent}}\n")
 
                         when :intern
-                            output.printf("#{indent}obj._#{field.name}_offset = in.getInt(#{pahole[field.name][:offset]});\n")
-                            output.printf("#{indent}if (obj._#{field.name}_offset != 0) {\n")
+                            output.printf("#{indent}field_offset = in.getInt(#{pahole[field.name][:offset]});\n")
+                            output.printf("#{indent}if (field_offset != 0) {\n")
                             output.printf("#{indent}\tobj._#{field.name} = #{field.java_type}.loadFromZip(zip);\n")
                             output.printf("#{indent}} else {\n")
                             output.printf("#{indent}\tobj._#{field.name} = new java.util.ArrayList<#{field.java_type}>(0);\n")
