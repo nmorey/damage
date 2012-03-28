@@ -539,6 +539,20 @@ module Damage
                 
                 output.printf("\tif((fd = __#{libName}_open_fd(file, opts & __#{libName.upcase}_OPTION_READONLY)) == -1)\n");
                 output.printf("\t\t__#{libName}_error(\"Failed to lock input file %%s: %%s\", ENOENT, file, strerror(errno));\n");
+                output.printf("\tif (opts & __#{libName.upcase}_OPTION_GZIPPED) {\n");
+                output.printf("\t\tint nbytes;\n");
+                output.printf("\t\tchar buf[8192];\n");
+                output.printf("\t\tint unzippedFd = mkstemp(strdup(\"/tmp/#{libName}.uz.XXXXXX\"));\n");
+                output.printf("\t\tgzFile gzFd = gzdopen(fd, \"r\");\n");
+                output.printf("\t\twhile(1){\n");
+                output.printf("\t\t\tnbytes =  gzread(gzFd, &buf, sizeof(buf));\n");
+                output.printf("\t\t\tif(nbytes <= 0) break;\n");
+                output.printf("\t\t\twrite(unzippedFd, &buf, nbytes);\n");
+                output.printf("\t\t}\n");
+                output.printf("\t\tlseek(unzippedFd, 0, SEEK_SET);\n");
+                output.printf("\t\tfd = unzippedFd;\n");
+                output.printf("\t}\n");
+
                 output.printf("\tdocument = xmlReadFd(fd, NULL, NULL, 0);\n\n");
                 
                 output.printf("\tif (document == NULL) {\n");
