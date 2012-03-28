@@ -84,9 +84,9 @@ doc/doxygen/man/man3/#{libName}.3: $(headers) doc/Doxyfile
 doc/doxygen/latex/refman.pdf:doc/doxygen/man/man3/#{libName}.3
 	make -C doc/doxygen/latex
 	
-obj/tests/%: test/%.c $(libs)
+obj/tests/%: test/%.c $(libdir)/lib#{libName}.a
 	@if [ ! -d obj/tests/ ]; then mkdir -p obj/tests/; fi
-	$(CC) -o $@ $^ $(CFLAGS) $(libdir)/lib#{libName}.a -lxml2
+	$(CC) -o $@ $^ $(CFLAGS) $(libdir)/lib#{libName}.a -lxml2 -lz -lm
 
 $(lib): $(objs)
 	rm -f $@

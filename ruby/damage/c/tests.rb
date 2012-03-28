@@ -1,3 +1,4 @@
+# -*- coding: undecided -*-
 # Copyright (C) 2011  Nicolas Morey-Chaisemartin <nicolas@morey-chaisemartin.com>
 #
 # This program is free software; you can redistribute it and/or
@@ -23,8 +24,8 @@ module Damage
                 output = Damage::Files.createAndOpen("gen/#{libName}/.db/", "dummy")
                 self.genTest1(description)
                 self.genTest2(description)
-                self.genTest3(description)
-                self.genTest4(description)
+                self.genTest3(description) 
+                self.genTest4(description) if description.config.rowip == true
             end
             module_function :write
 
@@ -174,20 +175,26 @@ int main()
 		exit(2);
 	}
     printf(\"Generated DB\\n\");
-	if (__#{libName}_#{description.top_entry.name}_xml_dump_file(file, ptr, 1) < 0) {
+	if (__#{libName}_#{description.top_entry.name}_xml_dump_file(file, ptr, __SIGMACDB_OPTION_GZIPPED) < 0) {
 		fprintf(stderr, \"Failed writing to %s in gzipped mode\\n\", file);
 		exit(3);
 	}
     printf(\"Wrote XML DB\\n\");
-	__#{libName}_#{description.top_entry.name}_free(ptr);
-    printf(\"Freed DB\\n\");
-	ptr = __#{libName}_#{description.top_entry.name}_xml_parse_file(file);
-	if (ptr == NULL) {
+	__#{libName}_#{description.top_entry.name} *ptr2;
+	ptr2 = __#{libName}_#{description.top_entry.name}_xml_load_file(file, __SIGMACDB_OPTION_GZIPPED);
+	if (ptr2 == NULL) {
 		fprintf(stderr, \"Failed to parse %s\\n\", file);
 		exit(4);
     }
-    printf(\"Parsed XML DB\\n\");
+     printf(\"Parsed XML DB\\n\");
+   if(__#{libName}_#{description.top_entry.name}_compare_single(ptr, ptr2) == 0){
+        fprintf(stderr, \"Dumped and reloaded version differ ! \\n\");
+        exit(5);
+    }
+    printf(\"Compared created and dumped DB\\n\");
 	__#{libName}_#{description.top_entry.name}_free(ptr);
+    printf(\"Freed DB\\n\");
+	__#{libName}_#{description.top_entry.name}_free(ptr2);
     printf(\"Freed DB\\n\");
 	return 0;
 }
@@ -218,8 +225,9 @@ int main()
    char* xml2=\".db/test2.xml.db\";
 
 	__#{libName}_#{description.top_entry.name} *ptr = create#{description.top_entry.name}(1);
+	__#{libName}_#{description.top_entry.name} *ptr2;
 
-	if (__#{libName}_#{description.top_entry.name}_binary_dump_file(file, ptr) == 0) {
+	if (__#{libName}_#{description.top_entry.name}_binary_dump_file(file, ptr, __SIGMACDB_OPTION_GZIPPED) == 0) {
 		fprintf(stderr, \"Failed writing to %s\\n\", file);
 		exit(2);
 	}
@@ -227,25 +235,30 @@ int main()
 
 	if (__#{libName}_#{description.top_entry.name}_xml_dump_file(xml, ptr, 0) < 0) {
 		fprintf(stderr, \"Failed writing to %s\\n\", xml);
-		exit(2);
+		exit(3);
 	}
     printf(\"Wrote XML DB\\n\");
-	__#{libName}_#{description.top_entry.name}_free(ptr);
-    printf(\"Freed DB\\n\");
 
-	ptr = __#{libName}_#{description.top_entry.name}_binary_load_file(file);
-	if (ptr == NULL) {
+	ptr2 = __#{libName}_#{description.top_entry.name}_binary_load_file(file, __SIGMACDB_OPTION_GZIPPED);
+	if (ptr2 == NULL) {
 		fprintf(stderr, \"Failed to parse %s\\n\", file);
-		exit(3);
+		exit(4);
     }
     printf(\"Loaded binary DB\\n\");
-	if (__#{libName}_#{description.top_entry.name}_xml_dump_file(xml2, ptr, 0) < 0) {
+    if(__#{libName}_#{description.top_entry.name}_compare_single(ptr, ptr2) == 0){
+        fprintf(stderr, \"Dumped and reloaded version differ ! \\n\");
+        exit(5);
+    }
+    printf(\"Compared created and dumped DB\\n\");
+	if (__#{libName}_#{description.top_entry.name}_xml_dump_file(xml2, ptr2, 0) < 0) {
 		fprintf(stderr, \"Failed writing to %s\\n\", xml);
-		exit(2);
+		exit(6);
 	}
      printf(\"Dumped XML DB DB\\n\");
 
-	__#{libName}_#{description.top_entry.name}_free(ptr); 
+	__#{libName}_#{description.top_entry.name}_free(ptr);
+    printf(\"Freed DB\\n\");
+	__#{libName}_#{description.top_entry.name}_free(ptr2); 
     printf(\"Freed DB\\n\");
 	return 0;
 }
@@ -273,30 +286,40 @@ int main()
    char* xml=\".db/test3.xml.org\";
 
 	__#{libName}_#{description.top_entry.name} *ptr = create#{description.top_entry.name}(1);
+	__#{libName}_#{description.top_entry.name} *ptr2, *ptr3;
 
-	if (__#{libName}_#{description.top_entry.name}_binary_dump_file(file, ptr) == 0) {
+	if (__#{libName}_#{description.top_entry.name}_binary_dump_file(file, ptr, 0) == 0) {
 		fprintf(stderr, \"Failed writing to %s\\n\", file);
 		exit(2);
 	}
-	if (__#{libName}_#{description.top_entry.name}_xml_dump_file(xml, ptr, 0) < 0) {
+	if (__#{libName}_#{description.top_entry.name}_xml_dump_file(xml, ptr, __SIGMACDB_OPTION_GZIPPED) < 0) {
 		fprintf(stderr, \"Failed writing to %s\\n\", xml);
 		exit(2);
 	}
-	__#{libName}_#{description.top_entry.name}_free(ptr);
-
-	ptr = __#{libName}_#{description.top_entry.name}_binary_load_file(file);
-	if (ptr == NULL) {
+	ptr2 = __#{libName}_#{description.top_entry.name}_binary_load_file(file, 0);
+	if (ptr2 == NULL) {
 		fprintf(stderr, \"Failed to parse %s\\n\", file);
 		exit(3);
     }
-	__#{libName}_#{description.top_entry.name}_free(ptr); 
-
-    ptr = __#{libName}_#{description.top_entry.name}_xml_parse_file(xml);
-	if (ptr == NULL) {
-		fprintf(stderr, \"Failed to parse %s\\n\", xml);
-		exit(4);
+    if(__#{libName}_#{description.top_entry.name}_compare_single(ptr, ptr2) == 0){
+        fprintf(stderr, \"Dumped and reloaded version differ ! \\n\");
+        exit(4);
     }
-	__#{libName}_#{description.top_entry.name}_free(ptr); 
+	__#{libName}_#{description.top_entry.name}_free(ptr2);
+
+
+    ptr3 = __#{libName}_#{description.top_entry.name}_xml_load_file(xml, __SIGMACDB_OPTION_GZIPPED);
+	if (ptr3 == NULL) {
+		fprintf(stderr, \"Failed to parse %s\\n\", xml);
+		exit(5);
+    }
+
+    if(__#{libName}_#{description.top_entry.name}_compare_single(ptr, ptr3) == 0){
+        fprintf(stderr, \"Dumped and reloaded version differ ! \\n\");
+        exit(6);
+    }
+	__#{libName}_#{description.top_entry.name}_free(ptr);
+	__#{libName}_#{description.top_entry.name}_free(ptr3); 
 
 	return 0;
 }
@@ -330,12 +353,12 @@ int main()
 
 	__#{libName}_#{description.top_entry.name} *ptr = create#{description.top_entry.name}(1);
 
-	if (__#{libName}_#{description.top_entry.name}_binary_dump_file(file, ptr) == 0) {
+	if (__#{libName}_#{description.top_entry.name}_binary_dump_file(file, ptr, 0) == 0) {
 		fprintf(stderr, \"Failed writing to %s\\n\", file);
 		exit(2);
 	}
 	__#{libName}_#{description.top_entry.name}_free(ptr);
-	ptr = __#{libName}_#{description.top_entry.name}_binary_load_file(file);
+	ptr = __#{libName}_#{description.top_entry.name}_binary_load_file(file, 0);
 	if (ptr == NULL) {
 		fprintf(stderr, \"Failed to parse %s\\n\", file);
 		exit(3);
