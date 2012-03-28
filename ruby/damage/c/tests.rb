@@ -52,18 +52,20 @@ module Damage
                         case field.category
                         when :intern
                             output.puts "\tptr->#{field.name} = create#{field.data_type}(#{nb_neighbours});"
-                        when :simple
-                            next if field.qty != :single
-                            case field.data_type
-                            when "char*"
-                                output.puts "\t{\n"
+                        when :string
+                            output.puts "\t{\n"
                                 output.puts "\t\tunsigned long i, len = rand()%128;\n"
                                 output.puts "\t\tchar _str[129];\n"
                                 output.puts "\t\tfor(i=0; i < len; i++){ _str[i] = (rand() % 26) + 'a';}\n"
                                 output.puts "\t\t_str[len] = 0;\n"
                                 output.puts "\t\tptr->#{field.name} = strdup(_str);\n"
                                 output.puts "\t}\n"
-                            when "unsigned long"
+                        when :simple
+                            next if field.qty != :single
+                            case field.data_type
+                            when "int"
+                                output.puts "\tptr->#{field.name} = 42;"
+                            when "long"
                                 output.puts "\tptr->#{field.name} = 0;"
                             when "double"
                                 output.puts "\tptr->#{field.name} = drand48();"
