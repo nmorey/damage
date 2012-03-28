@@ -231,7 +231,6 @@ int __sigmacDB_gzPrintf(gzFile file, const char* fmt, ...){
         exit(1);
 	} 
     va_end(argp);
-    fprintf(stdout, \"%s\\n\", buf);
     gzputs(file, buf);
     free(buf);
     return ret;
