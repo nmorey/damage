@@ -33,6 +33,7 @@ import java.nio.channels.*;
 import java.nio.charset.*;
 import org.dom4j.Element;
 import org.dom4j.dom.DOMElement;
+import java.io.DataOutputStream;
 
 /** Class #{params[:class]}: #{entry.description} */
 public class #{params[:class]} extends #{params[:uppercase_libname]}Object {

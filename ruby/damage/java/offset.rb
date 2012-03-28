@@ -20,7 +20,7 @@ module Damage
             def write(output, libName, entry, pahole, params)
                 output.puts("
 \t/** Compute object offset in binary file */
-\tpublic static int computeOffset(int offset){
+\tpublic int computeOffset(int offset){
 \t\tint cur_offset = offset;
 \t\tthis.__binary_offset = cur_offset;
 \t\tcur_offset += #{pahole[:size]};
@@ -32,12 +32,7 @@ module Damage
                         case field.category
                         when :simple, :enum
                         when :string
-                            output.printf("\t\tif(this._%s != null){\n", field.name)
-                            output.printf("\t\t\tint len = this._%s.length() + 1;\n", field.name)
-                            output.printf("\t\t\tcur_offset += len + 4 /* Size of len */;\n", field.name)
-                            output.printf("\t\t} else {\n")
-                            output.printf("\t\t\tcur_offset += 4 /* Size of strlen */;\n", field.name)
-                            output.printf("\t\t}\n")
+                            output.printf("\t\tcur_offset += computeStringLength(this._#{field.name});\n")
                         when :intern
                             output.printf("\t\tif(this._%s != null){\n", field.name)
                             output.printf("\t\t\tcur_offset = this._%s.computeOffset(cur_offset);\n", 
@@ -54,18 +49,7 @@ module Damage
                                           field.name)
                             output.printf("\t\t}\n")
                         when :string
-                            output.printf("\t\tif(this._%s){\n", field.name)
-                            output.printf("\t\t\tint i; for(i = 0; i < this._%s.length; i++){\n", 
-                                          field.name);
-                            output.printf("\t\t\t\tif(this._%s[i]){\n", field.name);
-                            output.printf("\t\t\t\t\tint len = this._s%s[i].length + 1;\n", field.name)
-                            output.printf("\t\t\t\t\tcur_offset += len + 4 /* Size of strlen */;\n", field.name)
-                            output.printf("\t\t\t\t} else {\n")
-                            output.printf("\t\t\t\t\tcur_offset += 4 /* Size fo strlen */;\n", field.name)
-                            output.printf("\t\t\t\t}\n")
-                            output.printf("\t\t\t}\n\n");
-                            output.printf("\t\t}\n")
-
+                            output.printf("\t\tcur_offset += computeStringArrayLength(this._#{field.name});\n")
                         when :intern
                             output.printf("\t\tfor (#{field.java_type} i: _#{field.name}) {\n")
                             output.printf("\t\t\tcur_offset = i.computeOffset(cur_offset);\n", 

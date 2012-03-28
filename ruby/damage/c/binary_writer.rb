@@ -167,6 +167,7 @@ uint32_t __#{libName}_#{entry.name}_binary_dump(__#{libName}_#{entry.name}* ptr,
                     indent="\t"
                     source="ptr"
                 end
+                output.printf("\tuint32_t rel_offset __attribute__((unused))  = sizeof(*ptr);\n")
                 output.printf("#{indent}__#{libName}_#{entry.name} val = *(#{source});\n\n")
 
                 entry.fields.each() { |field|
@@ -179,7 +180,48 @@ uint32_t __#{libName}_#{entry.name}_binary_dump(__#{libName}_#{entry.name}* ptr,
                             output.printf("#{indent}val.%s = NULL;\n", field.name)
                         end
                         next
-                    end
+                    elsif field.target == :both
+                        case field.qty
+                        when :single
+                            case field.category
+                            when :simple, :enum
+                            when :string
+                                output.printf("#{indent}val.%s = (void*)(unsigned long)(val._rowip_pos + rel_offset);\n", field.name)
+                                output.printf("#{indent}if(#{source}->%s){\n", field.name)
+                                output.printf("#{indent}\trel_offset  += strlen(#{source}->%s) + 1 + sizeof(rel_offset);\n", field.name)
+                                output.printf("#{indent}} else {\n")
+                                output.printf("#{indent}\trel_offset += sizeof(rel_offset);\n", field.name)
+                                output.printf("#{indent}} \n")
+                            when :intern
+                            else
+                                raise("Unsupported data category for #{entry.name}.#{field.name}");
+                            end
+                        when :list, :container
+                            case field.category
+                            when :simple
+                                output.printf("#{indent}if(#{source}->%s){\n", field.name)
+                                output.printf("#{indent}val.%s = (void*)(unsigned long)(val._rowip_pos + rel_offset);\n", field.name)
+                                output.printf("#{indent}\trel_offset += sizeof(*#{source}->%s) * #{source}->%sLen;\n", field.name, field.name)
+                                output.printf("#{indent}}\n")
+                            when :string
+                                output.printf("#{indent}if(#{source}->%s){\n", field.name)
+                                output.printf("#{indent}val.%s = (void*)(unsigned long)(val._rowip_pos + rel_offset);\n", field.name)
+                                output.printf("#{indent}\tunsigned int i; for(i = 0; i < #{source}->%sLen; i++){\n", 
+                                              field.name);
+                                output.printf("#{indent}\t\tif(#{source}->%s[i]){\n", field.name);
+                                output.printf("#{indent}\t\t\trel_offset += strlen(#{source}->%s[i]) + 1 + sizeof(rel_offset);\n", field.name)
+                                output.printf("#{indent}\t\t} else {\n")
+                                output.printf("#{indent}\t\t\trel_offset += sizeof(rel_offset);\n", field.name)
+                                output.printf("#{indent}\t\t}\n")
+                                output.printf("#{indent}\t}\n\n");
+                                output.printf("#{indent}}\n")
+                                
+                            when :intern
+                            else
+                                raise("Unsupported data category for #{entry.name}.#{field.name}");
+                            end
+                        end 
+                  end
                     if field.category == :intern then
                         output.printf("#{indent}if(#{source}->%s){\n", field.name)
                         output.printf("#{indent}\tval.%s = (void*)(unsigned long)#{source}->%s->_rowip_pos;\n", field.name, field.name)
@@ -213,10 +255,6 @@ uint32_t __#{libName}_#{entry.name}_binary_dump(__#{libName}_#{entry.name}* ptr,
                             cWrite(output, libName, zipped, indent, "&len", "sizeof(len)", "1", "file")
                             output.printf("#{indent}} \n")
                         when :intern
-                            output.printf("#{indent}if(#{source}->%s){\n", field.name)
-                            output.printf("#{indent}\tnbytes +=__#{libName}_%s_binary_dump#{fext}(#{source}->%s, file);\n", 
-                                          field.data_type, field.name)
-                            output.printf("#{indent}}\n")
                         else
                             raise("Unsupported data category for #{entry.name}.#{field.name}");
                         end
@@ -246,6 +284,31 @@ uint32_t __#{libName}_#{entry.name}_binary_dump(__#{libName}_#{entry.name}* ptr,
                             output.printf("#{indent}\t}\n\n");
                             output.printf("#{indent}}\n")
 
+                        when :intern
+                        else
+                            raise("Unsupported data category for #{entry.name}.#{field.name}");
+                        end
+                    end
+                }
+               entry.fields.each() { |field|
+                    next if field.target != :both
+                    case field.qty
+                    when :single
+                        case field.category
+                        when :simple, :enum
+                        when :string
+                        when :intern
+                            output.printf("#{indent}if(#{source}->%s){\n", field.name)
+                            output.printf("#{indent}\tnbytes +=__#{libName}_%s_binary_dump#{fext}(#{source}->%s, file);\n", 
+                                          field.data_type, field.name)
+                            output.printf("#{indent}}\n")
+                        else
+                            raise("Unsupported data category for #{entry.name}.#{field.name}");
+                        end
+                    when :list, :container
+                        case field.category
+                        when :simple
+                        when :string
                         when :intern
                             output.printf("#{indent}if(#{source}->%s){\n", field.name)
                             output.printf("#{indent}\tnbytes += __#{libName}_%s_binary_dump#{fext}(#{source}->%s, file, 1);\n", 
@@ -369,10 +432,6 @@ uint32_t __#{libName}_#{entry.name}_binary_comp_offset(__#{libName}_#{entry.name
                             output.printf("#{indent}\tchild_offset += sizeof(uint32_t);\n", field.name)
                             output.printf("#{indent}}\n")
                         when :intern
-                            output.printf("#{indent}if(#{source}->%s){\n", field.name)
-                            output.printf("#{indent}\tchild_offset = __#{libName}_%s_binary_comp_offset(#{source}->%s, child_offset);\n", 
-                                          field.data_type, field.name)
-                            output.printf("#{indent}}\n")
                         else
                             raise("Unsupported data category for #{entry.name}.#{field.name}");
                         end
@@ -396,6 +455,32 @@ uint32_t __#{libName}_#{entry.name}_binary_comp_offset(__#{libName}_#{entry.name
                             output.printf("#{indent}\t}\n\n");
                             output.printf("#{indent}}\n")
 
+                        when :intern
+                        else
+                            raise("Unsupported data category for #{entry.name}.#{field.name}");
+                        end
+                    end
+                }
+
+                entry.fields.each() { |field|
+                    next if field.target != :both
+                    case field.qty
+                    when :single
+                        case field.category
+                        when :simple, :enum
+                        when :string
+                        when :intern
+                            output.printf("#{indent}if(#{source}->%s){\n", field.name)
+                            output.printf("#{indent}\tchild_offset = __#{libName}_%s_binary_comp_offset(#{source}->%s, child_offset);\n", 
+                                          field.data_type, field.name)
+                            output.printf("#{indent}}\n")
+                        else
+                            raise("Unsupported data category for #{entry.name}.#{field.name}");
+                        end
+                    when :list, :container
+                        case field.category
+                        when :simple
+                        when :string
                         when :intern
                             output.printf("#{indent}if(#{source}->%s){\n", field.name)
                             output.printf("#{indent}\tchild_offset = __#{libName}_%s_binary_comp_offset(#{source}->%s, child_offset, 1);\n", 

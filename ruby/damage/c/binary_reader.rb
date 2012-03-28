@@ -219,10 +219,6 @@ __#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load_partial(FILE*
                             cRead(output, libName, zipped, "#{indent}\t", "&len", "sizeof(len)", "1", "file")
                             output.printf("#{indent}}\n")
                         when :intern
-                            output.printf("#{indent}if((opt->#{field.data_type} != 0) && (#{source}->%s != NULL)){\n", field.name)
-                            output.printf("#{indent}\t#{source}->%s = __#{libName}_%s_binary_load_partial#{fExt}(file, (uint32_t)(unsigned long)(#{source}->%s), opt);\n", 
-                                          field.name, field.data_type, field.name)
-                            output.printf("#{indent}} else {\n#{indent}\t#{source}->#{field.name} = NULL;\n#{indent}}\n")
                         else
                             raise("Unsupported data category for #{entry.name}.#{field.name}");
                         end
@@ -263,6 +259,33 @@ __#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load_partial(FILE*
                             output.printf("#{indent}\t\t}\n")
                             output.printf("#{indent}\t}\n")
                             output.printf("#{indent}}\n")
+                        when :intern
+                        else
+                            raise("Unsupported data category for #{entry.name}.#{field.name}");
+                        end
+                    end
+                }
+
+                entry.fields.each() { |field|
+                    next if field.target != :both
+                    case field.qty
+                    when :single
+                        case field.category
+                        when :simple, :enum
+                        when :string
+                        when :intern
+                            output.printf("#{indent}if((opt->#{field.data_type} != 0) && (#{source}->%s != NULL)){\n", field.name)
+                            output.printf("#{indent}\t#{source}->%s = __#{libName}_%s_binary_load_partial#{fExt}(file, (uint32_t)(unsigned long)(#{source}->%s), opt);\n", 
+                                          field.name, field.data_type, field.name)
+                            output.printf("#{indent}} else {\n#{indent}\t#{source}->#{field.name} = NULL;\n#{indent}}\n")
+                        else
+                            raise("Unsupported data category for #{entry.name}.#{field.name}");
+                        end
+                    when :list, :container
+                        case field.category
+                            
+                        when :simple
+                        when :string
                         when :intern
                             output.printf("#{indent}if((opt->#{field.data_type} != 0) && (#{source}->%s != NULL)){\n", field.name)
                             output.printf("#{indent}\t#{source}->%s = __#{libName}_%s_binary_load_partial#{fExt}(file, (uint32_t)(unsigned long)(#{source}->%s), opt);\n", 

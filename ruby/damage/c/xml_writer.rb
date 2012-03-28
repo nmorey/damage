@@ -139,7 +139,7 @@ module Damage
                             output.printf("\t\t}\n");
                             output.printf("\t}\n");
                         when :intern
-                            output.printf("\t{\n");
+                            output.printf("\tif(ptr->#{field.name}){\n");
                             output.printf("\t\t__#{libName}_#{field.data_type} *el;\n");
 
                             if field.qty == :container

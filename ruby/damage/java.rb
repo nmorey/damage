@@ -23,6 +23,7 @@ module Damage
 	require File.dirname(__FILE__) + '/java/offset'
         require File.dirname(__FILE__) + '/java/alloc'
         require File.dirname(__FILE__) + '/java/binary_reader'
+        require File.dirname(__FILE__) + '/java/binary_writer'
         require File.dirname(__FILE__) + '/java/dump'
         require File.dirname(__FILE__) + '/java/parser_options'
         
@@ -131,6 +132,7 @@ public interface I#{uppercaseLibName}ObjectVisitor {
                 Enum::write(output, libName, entry, pahole.entries[name], params)
                 Alloc::write(output, libName, entry, pahole.entries[name], params)
                 BinaryReader::write(output, libName, entry, pahole.entries[name], params)
+                BinaryWriter::write(output, libName, entry, pahole.entries[name], params)
                 XmlReader::write(output, libName, entry, pahole.entries[name], params)
                 XmlWriter::write(output, libName, entry, pahole.entries[name], params)
                 Offset::write(output, libName, entry, pahole.entries[name], params)
@@ -160,6 +162,7 @@ import java.nio.ByteOrder;
 import java.nio.charset.Charset;
 import java.nio.channels.*;
 import org.dom4j.dom.DOMElement;
+import java.io.DataOutputStream;
 
 public abstract class #{uppercaseLibName}Object {
 
@@ -341,6 +344,62 @@ public abstract class #{uppercaseLibName}Object {
 	 */
 	public abstract DOMElement xmlWrite();
 
+    /**
+     * Compute length of string in binary mode
+     * @return Offset increment
+     */
+     public int computeStringLength(String str){
+          if(str == null)
+              return 4 /* Size of strlen */;
+          return str.length() + 1 + 4 /* Size of strlen */;
+     }
+
+    /**
+     * Compute length of string Array in binary mode
+     * @return Offset increment
+     */
+     public int computeStringArrayLength(String str[]){
+          int total_len = 0;
+          if(str == null)
+              return 0;
+          int i; for(i = 0; i < str.length; i++){
+              total_len += computeStringLength(str[i]);
+          }
+          return total_len;
+     }
+    /**
+     * Write a string in binary format to a DataOutputStream
+     * @return Nothing
+     */
+     public void writeStringToFile(DataOutputStream output, String str) throws IOException {
+          if(str != null){
+              ByteBuffer struct = ByteBuffer.allocate(4);
+              struct.order(ByteOrder.LITTLE_ENDIAN);
+              struct.putLong(0, str.length() + 1);
+              output.write(struct.array(), 0, 4);
+              output.writeBytes(str);
+          } else {
+              output.writeInt(4);
+          }   
+          output.writeByte(0);
+     }
+    /**
+     * Write a string array in binary format to a DataOutputStream
+     * @return Nothing
+     */
+     public void writeStringArrayToFile(DataOutputStream output, String str[]) throws IOException {
+          if(str == null || str.length == 0){
+             output.writeInt(0);
+             return;
+          }
+          ByteBuffer struct = ByteBuffer.allocate(4);
+          struct.order(ByteOrder.LITTLE_ENDIAN);
+          struct.putLong(0, str.length);
+          output.write(struct.array(), 0, 4);
+          int i; for(i = 0; i < str.length; i++){
+              writeStringToFile(output, str[i]);
+          }
+     }
 }");
  
             output.close();
