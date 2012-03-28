@@ -606,6 +606,10 @@ gzFile __#{libName}_open_gzFile(const char* filename, int rdonly, const char* mo
             return NULL;
         if((file = gzdopen(dbLock->file, mode)) == NULL)
             return NULL;
+        if(*mode == 'w'){
+            ftruncate(dbLock->file, 0);
+        }
+
         dbLock->oGzFiles[dbLock->oGzFilesCount++] = file;
         return file;
     }
@@ -621,6 +625,9 @@ FILE* __#{libName}_open_FILE(const char* filename, int rdonly, const char* mode)
             return NULL;
         if((file = fdopen(dbLock->file, mode)) == NULL)
             return NULL;
+        if(*mode == 'w'){
+            ftruncate(dbLock->file, 0);
+        }
         dbLock->oFiles[dbLock->oFilesCount++] = file;
         return file;
     }
