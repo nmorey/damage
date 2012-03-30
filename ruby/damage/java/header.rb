@@ -20,7 +20,8 @@ module Damage
         def write(output, libName, entry, pahole, params)
          output.puts("
 package #{params[:package]};
-
+          
+import java.io.Writer;
 import java.io.BufferedInputStream;
 import java.io.DataOutputStream;
 import java.io.EOFException;

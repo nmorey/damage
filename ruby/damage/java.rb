@@ -314,6 +314,15 @@ public abstract class #{uppercaseLibName}Object {
 			}
 		}
 	}
+            
+  /**
+   * Intendation method, used when dumping objects.
+   */ 
+  public static void indent(java.io.Writer w, int indent) throws IOException {
+    for (int i = 0; i < indent; ++i) {
+         w.write(' ');
+    }
+  }
 	
 	/**
 	 * Dumps a human readable description of this object in console
