@@ -21,19 +21,24 @@ module Damage
          output.puts("
 package #{params[:package]};
 
-import java.io.IOException;
+import java.io.BufferedInputStream;
+import java.io.DataOutputStream;
 import java.io.EOFException;
-import java.io.RandomAccessFile;
 import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintStream;
-import java.util.zip.GZIPInputStream;
+import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.channels.*;
-import java.nio.charset.*;
+import java.nio.channels.FileChannel;
+import java.util.zip.GZIPInputStream;
+
+import org.dom4j.Document;
+import org.dom4j.DocumentException;
 import org.dom4j.Element;
 import org.dom4j.dom.DOMElement;
-import java.io.DataOutputStream;
+import org.dom4j.io.SAXReader;
 
 /** Class #{params[:class]}: #{entry.description} */
 public class #{params[:class]} extends #{params[:uppercase_libname]}Object {

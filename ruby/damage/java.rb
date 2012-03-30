@@ -152,17 +152,18 @@ public interface I#{uppercaseLibName}ObjectVisitor {
             output = Damage::Files.createAndOpen(outdir, "#{uppercaseLibName}Object.java") 
             output.puts("package #{description.config.package}.#{libName};
 
-import java.util.HashMap;
-import java.io.InputStream;
-import java.io.PrintStream;
+import java.io.DataOutputStream;
 import java.io.EOFException;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
-import java.nio.channels.*;
+
+import org.dom4j.Element;
 import org.dom4j.dom.DOMElement;
-import java.io.DataOutputStream;
 
 public abstract class #{uppercaseLibName}Object {
 
@@ -343,6 +344,12 @@ public abstract class #{uppercaseLibName}Object {
 	 * @return a DOM Element
 	 */
 	public abstract DOMElement xmlWrite();
+
+  /**
+   * Populate this object (expected virgin object)
+   * @param el and XML Element
+   */
+  public abstract void populateFromXMLElement(Element el);
 
     /**
      * Compute length of string in binary mode

@@ -19,12 +19,40 @@ module Damage
       module XmlReader
         def write(output, libName, entry, pahole, params)
          output.puts("
-\t/**
-\t * XML Reader from an Element 
-\t */
-")
-	output.printf("\tstatic public #{params[:class]} xmlRead(Element el) {\n");
-	output.printf("\t\t#{params[:class]} obj=new #{params[:class]}();\n");
+          
+          /**
+           * XML Reader from a file
+           */
+          static public #{params[:class]} xmlRead(String filename) throws IOException, DocumentException{
+             FileInputStream fis = new FileInputStream(filename);
+             BufferedInputStream bis = new BufferedInputStream(fis);
+             return xmlRead(bis);
+          }
+          
+          /**
+           * XML Reader from a Stream
+           */
+          static public #{params[:class]} xmlRead(InputStream is) throws IOException, DocumentException {
+            Document root = new SAXReader().read(is);
+            return xmlRead(root.getRootElement());
+          }
+        
+          /**
+           * XML Reader from an Element 
+           */
+          static public #{params[:class]} xmlRead(Element el) {
+            #{params[:class]} obj=new #{params[:class]}();
+            obj.populateFromXMLElement(el);
+            return obj;
+          }           
+         
+          /**
+           * Populate this object (expected virgin object)
+           * @param el and XML Element
+           */
+          @Override
+          public void populateFromXMLElement(Element el) {
+");
 	check = 0
             entry.fields.each() {|field|
 	    output.printf("\t\ttry {\n");
@@ -44,28 +72,28 @@ module Damage
 			    if field.category == :enum then
 				output.printf("\t\t\t\tfor (#{field.java_type} tmp#{field.java_type}: #{field.java_type}.values()) {\n");
         output.printf("\t\t\t\t\tif (tmp.equals(tmp#{field.java_type}.toString())) {\n");
-        output.printf("\t\t\t\t\t\tobj._#{field.name} = tmp#{field.java_type};\n");
+        output.printf("\t\t\t\t\t\tthis._#{field.name} = tmp#{field.java_type};\n");
         output.printf("\t\t\t\t\t\tbreak;\n");
         output.printf("\t\t\t\t\t}\n");
         output.printf("\t\t\t\t}\n");
 				else
 					case field.java_type
 					when "String"
-						output.printf("\t\t\t\tobj._#{field.name}=tmp.intern();\n")
+						output.printf("\t\t\t\tthis._#{field.name}=tmp.intern();\n")
 					when "int"
-						output.printf("\t\t\t\tobj._#{field.name}=Integer.parseInt(tmp);\n")
+						output.printf("\t\t\t\tthis._#{field.name}=Integer.parseInt(tmp);\n")
 					when "double"
-						output.printf("\t\t\t\tobj._#{field.name}=Double.parseDouble(tmp);\n")
+						output.printf("\t\t\t\tthis._#{field.name}=Double.parseDouble(tmp);\n")
 					when "byte"
-						output.printf("\t\t\t\tobj._#{field.name}=Byte.parseByte(tmp);\n")
+						output.printf("\t\t\t\tthis._#{field.name}=Byte.parseByte(tmp);\n")
 					when "short"
-						output.printf("\t\t\t\tobj._#{field.name}=Short.parseShort(tmp);\n")
+						output.printf("\t\t\t\tthis._#{field.name}=Short.parseShort(tmp);\n")
 					when "char"
-						output.printf("\t\t\t\tobj._#{field.name}=tmp.charAt(0);\n")
+						output.printf("\t\t\t\tthis._#{field.name}=tmp.charAt(0);\n")
 					when "float"
-						output.printf("\t\t\t\tobj._#{field.name}=Float.parseFloat(tmp);\n")
+						output.printf("\t\t\t\tthis._#{field.name}=Float.parseFloat(tmp);\n")
 					when "long"		
-						output.printf("\t\t\t\tobj._#{field.name}=Long.parseLong(tmp);\n")
+						output.printf("\t\t\t\tthis._#{field.name}=Long.parseLong(tmp);\n")
 					else
 						raise("Unsupported java-type for #{entry.name}.#{field.name}");
 					end
@@ -75,27 +103,27 @@ module Damage
 			check = 1
 				output.printf("\t\t\t@SuppressWarnings(\"unchecked\")\n");
                                 output.printf("\t\t\tjava.util.List<Element> tmp=(java.util.List<Element>)el.elements(\"#{field.name}\");\n")
-				output.printf("\t\t\tobj._#{field.name}=new #{field.java_type}[tmp.size()];\n");
+				output.printf("\t\t\tthis._#{field.name}=new #{field.java_type}[tmp.size()];\n");
                                 output.printf("\t\t\tint count = 0;\n");
 				output.printf("\t\t\tfor (Element #{field.name}Element: tmp) {\n");
                                 output.printf("\t\t\t\tString #{field.name}String = #{field.name}Element.getTextTrim();\n");
 				case field.java_type
 					when "String"
-						output.printf("\t\t\t\tobj._#{field.name}[count++]=#{field.name}String.intern();\n")
+						output.printf("\t\t\t\tthis._#{field.name}[count++]=#{field.name}String.intern();\n")
 					when "int"
-						output.printf("\t\t\t\tobj._#{field.name}[count++]=Integer.parseInt(#{field.name}String);\n")
+						output.printf("\t\t\t\tthis._#{field.name}[count++]=Integer.parseInt(#{field.name}String);\n")
 					when "double"
-						output.printf("\t\t\t\tobj._#{field.name}[count++]=Double.parseDouble(#{field.name}String);\n")
+						output.printf("\t\t\t\tthis._#{field.name}[count++]=Double.parseDouble(#{field.name}String);\n")
 					when "byte"
-						output.printf("\t\t\t\tobj._#{field.name}[count++]=Byte.parseByte(#{field.name}String);\n")
+						output.printf("\t\t\t\tthis._#{field.name}[count++]=Byte.parseByte(#{field.name}String);\n")
 					when "short"
-						output.printf("\t\t\t\tobj._#{field.name}[count++]=Short.parseShort(#{field.name}String);\n")
+						output.printf("\t\t\t\tthis._#{field.name}[count++]=Short.parseShort(#{field.name}String);\n")
 					when "char"
-						output.printf("\t\t\t\tobj._#{field.name}[count++]=#{field.name}String.charAt(0);\n")
+						output.printf("\t\t\t\tthis._#{field.name}[count++]=#{field.name}String.charAt(0);\n")
 					when "float"
-						output.printf("\t\t\t\tobj._#{field.name}[count++]=Float.parseFloat(#{field.name}String);\n")
+						output.printf("\t\t\t\tthis._#{field.name}[count++]=Float.parseFloat(#{field.name}String);\n")
 					when "long"		
-						output.printf("\t\t\t\tobj._#{field.name}[count++]=Long.parseLong(#{field.name}String);\n")
+						output.printf("\t\t\t\tthis._#{field.name}[count++]=Long.parseLong(#{field.name}String);\n")
 					else
 						raise("Unsupported java-type for #{entry.name}.#{field.name}");
 					end
@@ -109,7 +137,7 @@ module Damage
 			check = 1
                             output.printf("\t\t\tElement #{field.name}Element = el.element(\"#{field.name}\");\n");
                             output.printf("\t\t\tif (#{field.name}Element != null)\n");
-			    output.printf("\t\t\t\tobj._#{field.name}=#{field.java_type}.xmlRead(#{field.name}Element);\n");
+			    output.printf("\t\t\t\tthis._#{field.name}=#{field.java_type}.xmlRead(#{field.name}Element);\n");
                         when :list, :container
 			check = 1
 			    output.printf("\t\t\t@SuppressWarnings(\"unchecked\")\n");
@@ -118,9 +146,9 @@ module Damage
 			    else
 				output.printf("\t\t\tjava.util.List<Element> tmp=(java.util.List<Element>)el.elements(\"#{field.name}\");\n")
 		            end
-          output.printf("\t\t\tobj._#{field.name}=new java.util.ArrayList<#{field.java_type}>(tmp.size());\n");
+          output.printf("\t\t\tthis._#{field.name}=new java.util.ArrayList<#{field.java_type}>(tmp.size());\n");
 			    output.printf("\t\t\tfor (Element xmlElement: tmp) {\n");
-			    output.printf("\t\t\t\tobj._#{field.name}.add(#{field.java_type}.xmlRead(xmlElement));\n");
+			    output.printf("\t\t\t\tthis._#{field.name}.add(#{field.java_type}.xmlRead(xmlElement));\n");
 			    output.printf("\t\t\t}\n");
 			else raise("Unsupported data qty for #{entry.name}.#{field.name}") if field.attribute != :container
                         end
@@ -139,12 +167,11 @@ module Damage
             entry.fields.each() {|field|
                 case field.attribute
                 when :sort
-			output.printf("\t\tobj.sort_#{field.name}_by_#{field.sort_key}();\n");
+			output.printf("\t\tthis.sort_#{field.name}_by_#{field.sort_key}();\n");
 		end
 	    }
 
-	    output.puts("\t\tCleanup#{params[:uppercase_libname]}ObjectVisitor.instance.visit(obj);\n");
-	    output.puts("\t\treturn obj;\n");
+	    output.puts("\t\tCleanup#{params[:uppercase_libname]}ObjectVisitor.instance.visit(this);\n");
 	    output.puts("\t}\n\n");
         end
         module_function :write
