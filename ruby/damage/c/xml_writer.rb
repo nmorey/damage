@@ -177,8 +177,7 @@ module Damage
                     output.printf("void __#{libName}_#{entry.name}_xml_dump(FILE* file, " +
                                   "const __#{libName}_#{entry.name} *ptr){\n")
                 end
-                output.printf("\t#{printFunc}(file, \"<?xml version=\\\"1.0\\\" encoding=\\\"UTF-8\\\"?>\\n" +
-                              "<!DOCTYPE #{entry.name} SYSTEM \\\"sigmacDB.dtd\\\" >\\n\");\n")
+                output.printf("\t#{printFunc}(file, \"<?xml version=\\\"1.0\\\" encoding=\\\"UTF-8\\\"?>\\n\");")
                 output.printf("\t__#{libName}_#{entry.name}_xml_dump_within#{ext}(file, ptr, 0);\n")
                 output.printf("}\n\n")
 
