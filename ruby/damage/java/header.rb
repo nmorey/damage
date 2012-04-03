@@ -38,12 +38,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.zip.GZIPInputStream;
 
-import org.dom4j.Document;
-import org.dom4j.DocumentException;
-import org.dom4j.Element;
-import org.dom4j.dom.DOMElement;
-import org.dom4j.io.SAXReader;
-
 /** Class #{params[:class]}: #{entry.description} */
 public class #{params[:class]} extends #{params[:uppercase_libname]}Object {
 

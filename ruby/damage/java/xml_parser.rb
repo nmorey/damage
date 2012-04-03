@@ -78,10 +78,17 @@ public class XMLParser extends DefaultHandler {
      * Parses an XML file
      */
     public static #{uppercaseLibName}Object parse(String filename, String pathToDTD) throws javax.xml.parsers.ParserConfigurationException, IOException, SAXException, SAXParseException{
+        return parse(new java.io.File(filename), pathToDTD);
+    }
+    
+    /**
+     * Parses an XML file
+     */
+    public static #{uppercaseLibName}Object parse(java.io.File file, String pathToDTD) throws javax.xml.parsers.ParserConfigurationException, IOException, SAXException, SAXParseException{
         SAXParserFactory factory = SAXParserFactory.newInstance();
         SAXParser parser = factory.newSAXParser();
         XMLParser handler = new XMLParser(pathToDTD);
-        parser.parse(new java.io.File(filename), handler);
+        parser.parse(file, handler);
         return handler.root;
     }
 

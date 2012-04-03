@@ -163,9 +163,6 @@ import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
 
-import org.dom4j.Element;
-import org.dom4j.dom.DOMElement;
-
 public abstract class #{uppercaseLibName}Object {
 
 	/** damage_version */
@@ -316,10 +313,31 @@ public abstract class #{uppercaseLibName}Object {
 		}
 	}
 
+  public void writeToXML(String file, boolean indent) throws IOException {
+    writeToXML(new java.io.File(file), indent);
+  }
+  
+  public void writeToXML(java.io.File file, boolean indent) throws IOException {
+    java.io.Writer w = new java.io.BufferedWriter(new java.io.FileWriter(file));
+    writeToXML(w,indent);
+    w.flush();
+    w.close(); 
+  }
+
+  public void writeToXML(java.io.Writer w, boolean indent) throws IOException {
+    w.write(\"<?xml version=\\\"1.0\\\" encoding=\\\"UTF-8\\\"?>\\n\");
+    xmlWrite(w, indent?0:-1);
+  } 
+  
+  /**
+   * Write this object in a xml File
+   */
+  protected abstract void xmlWrite(java.io.Writer w, int indent) throws IOException;
+      
   /**
    * Intendation method, used when dumping objects.
    */
-  public static void indent(java.io.Writer w, int indent) throws IOException {
+  protected static void indent(java.io.Writer w, int indent) throws IOException {
     for (int i = 0; i < indent; ++i) {
          w.write(' ');
     }
@@ -327,45 +345,21 @@ public abstract class #{uppercaseLibName}Object {
 
 	/**
 	 * Dumps a human readable description of this object in console
-         */
+   */
 	public void dump(){
 		dump(System.out);
 	}
 
- /**
-  * Dumps a human readable description of this object in console
-  */
-  public org.dom4j.QName createQName(String s, java.util.Map<String, org.dom4j.QName> map){
-    org.dom4j.QName ret = map.get(s);
-    if (ret == null) {
-      ret = new org.dom4j.QName(s);
-      map.put(s, ret);
-    }
-    return ret;
-  }
-
 	/**
-         * Dumps a human readable description of this object in given PrintStream
-         */
-	public abstract void dump(PrintStream ps);
-
-	/**
-	 * XML Writer
-	 * @return a DOM Element
-	 */
-	public abstract DOMElement xmlWrite();
-
-  /**
-   * Populate this object (expected virgin object)
-   * @param el and XML Element
+   * Dumps a human readable description of this object in given PrintStream
    */
-  public abstract void populateFromXMLElement(Element el);
+	public abstract void dump(PrintStream ps);
 
     /**
      * Compute length of string in binary mode
      * @return Offset increment
      */
-     public int computeStringLength(String str){
+     protected static int computeStringLength(String str){
           if(str == null)
               return 4 /* Size of strlen */;
           return str.length() + 1 + 4 /* Size of strlen */;
@@ -375,7 +369,7 @@ public abstract class #{uppercaseLibName}Object {
      * Compute length of string Array in binary mode
      * @return Offset increment
      */
-     public int computeStringArrayLength(String str[]){
+     protected static int computeStringArrayLength(String str[]){
           int total_len = 0;
           if(str == null)
               return 0;
@@ -386,42 +380,25 @@ public abstract class #{uppercaseLibName}Object {
      }
 
     /**
-     * Write a string in binary format to a DataOutputStream
-     * @return Nothing
+     * XML handler
      */
-     public void writeStringToFile(DataOutputStream output, String str) throws IOException {
-          if(str != null){
-              ByteBuffer struct = ByteBuffer.allocate(4);
-              struct.order(ByteOrder.LITTLE_ENDIAN);
-              struct.putLong(0, str.length() + 1);
-              output.write(struct.array(), 0, 4);
-              output.writeBytes(str);
-          } else {
-              output.writeInt(4);
-          }
-          output.writeByte(0);
-     }
+    protected abstract void startElement(XMLParser parser, String str, org.xml.sax.Attributes attributes);
 
     /**
      * XML handler
      */
-    public abstract void startElement(XMLParser parser, String str, org.xml.sax.Attributes attributes);
-
-    /**
-     * XML handler
-     */
-    public abstract void endElement(XMLParser parser, String qName);
+    protected abstract void endElement(XMLParser parser, String qName);
 
     /**
      * handler called by XML parser, when this object has been completely read
      */
-    public abstract void createArraysCallback(java.util.Map<String, java.util.List<String>> map);
+    protected abstract void createArraysCallback(java.util.Map<String, java.util.List<String>> map);
 
     /**
      * Write a string array in binary format to a DataOutputStream
      * @return Nothing
      */
-     public void writeStringArrayToFile(DataOutputStream output, String str[]) throws IOException {
+     protected static void writeStringArrayToFile(DataOutputStream output, String str[]) throws IOException {
           if(str == null || str.length == 0){
              output.writeInt(0);
              return;
@@ -434,6 +411,23 @@ public abstract class #{uppercaseLibName}Object {
               writeStringToFile(output, str[i]);
           }
      }
+   
+     /**
+      * Write a string in binary format to a DataOutputStream
+      * @return Nothing
+      */
+      protected static void writeStringToFile(DataOutputStream output, String str) throws IOException {
+           if(str != null){
+               ByteBuffer struct = ByteBuffer.allocate(4);
+               struct.order(ByteOrder.LITTLE_ENDIAN);
+               struct.putLong(0, str.length() + 1);
+               output.write(struct.array(), 0, 4);
+               output.writeBytes(str);
+           } else {
+               output.writeInt(4);
+           }
+           output.writeByte(0);
+      }
 }");
 
       output.close();
