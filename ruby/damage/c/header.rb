@@ -73,6 +73,7 @@ module Damage
 
                 output.puts("\n#ifndef __#{libName.upcase}_NO_XML__");
                 output.puts("#include <libxml/tree.h>")
+                output.puts("#include <libxml/xmlreader.h>");
                 output.puts("#include <#{libName}/xml_reader.h>")
                 output.puts("#endif /* __#{libName.upcase}_NO_XML__ */\n");
                 description.config.hfiles.each() {|hfile|

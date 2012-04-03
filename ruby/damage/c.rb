@@ -23,7 +23,7 @@ module Damage
         require File.dirname(__FILE__) + '/c/common'
         require File.dirname(__FILE__) + '/c/sort'
         require File.dirname(__FILE__) + '/c/duplicate'
-        require File.dirname(__FILE__) + '/c/reader'
+        require File.dirname(__FILE__) + '/c/xml_reader'
         require File.dirname(__FILE__) + '/c/xml_writer'
         require File.dirname(__FILE__) + '/c/binary_reader'
         require File.dirname(__FILE__) + '/c/binary_writer'
@@ -44,7 +44,7 @@ module Damage
             Common::write(description)
             Sort::write(description)
             Duplicate::write(description)
-            Reader::write(description)
+            XMLReader::write(description)
             XMLWriter::write(description)
             BinaryReader::write(description)
             BinaryWriter::write(description)

@@ -30,6 +30,9 @@ module Damage
                 output = Damage::Files.createAndOpen("gen/#{description.config.libname}/src/", "common.c")
                 self.genCommonC(output, description)
                 output.close()
+                output = Damage::Files.createAndOpen("gen/#{description.config.libname}/src/", "common_xml.c")
+                self.genCommonXMLC(output, description)
+                output.close()
             end
             module_function :write
 
@@ -116,6 +119,19 @@ void *__#{libName}_realloc(void *ptr, unsigned long size);
 void __#{libName}_free(void *ptr);
 int __#{libName}_compare(const char *name, const char *matches[]);
 
+
+void __#{libName}_fread(void* buf, size_t elSize, int nbElem, FILE* input);
+void __#{libName}_fwrite(void* buf, size_t elSize, int nbElem, FILE* input);
+void __#{libName}_fseek(FILE *stream, long offset, int whence);
+void __#{libName}_gzread(gzFile input, void* buf, size_t size);
+void __#{libName}_gzwrite(gzFile output, void* buf, size_t size);
+void __#{libName}_gzseek(gzFile stream, long offset, int whence);
+
+void __#{libName}_paddOutput(FILE* file, int indent, int listable, int first);
+void __#{libName}_paddOutputGz(gzFile file, int indent, int listable, int first);
+int __sigmacDB_gzPrintf(gzFile file, const char* format, ...);
+
+
 char *__#{libName}_read_value_str(xmlNodePtr reader);
 unsigned long __#{libName}_read_value_ulong(xmlNodePtr reader);
 unsigned long long __#{libName}_read_value_ullong(xmlNodePtr reader);
@@ -131,16 +147,15 @@ unsigned long long __#{libName}_read_value_ullong_attr(xmlAttrPtr reader);
 signed long long __#{libName}_read_value_sllong_attr(xmlAttrPtr reader);
 double __#{libName}_read_value_double_attr(xmlAttrPtr reader);
 
-void __#{libName}_fread(void* buf, size_t elSize, int nbElem, FILE* input);
-void __#{libName}_fwrite(void* buf, size_t elSize, int nbElem, FILE* input);
-void __#{libName}_fseek(FILE *stream, long offset, int whence);
-void __#{libName}_gzread(gzFile input, void* buf, size_t size);
-void __#{libName}_gzwrite(gzFile output, void* buf, size_t size);
-void __#{libName}_gzseek(gzFile stream, long offset, int whence);
-
-void __#{libName}_paddOutput(FILE* file, int indent, int listable, int first);
-void __#{libName}_paddOutputGz(gzFile file, int indent, int listable, int first);
-int __sigmacDB_gzPrintf(gzFile file, const char* format, ...);
+char *__#{libName}_xml_read_value_str(xmlTextReaderPtr reader);
+const char *__#{libName}_xml_read_value_str_nocopy(xmlTextReaderPtr reader);
+unsigned long __#{libName}_xml_read_value_ulong(xmlTextReaderPtr reader);
+signed long __#{libName}_xml_read_value_slong(xmlTextReaderPtr reader);
+unsigned long long __#{libName}_xml_read_value_ullong(xmlTextReaderPtr reader);
+signed long long __#{libName}_xml_read_value_sllong(xmlTextReaderPtr reader);
+double __#{libName}_xml_read_value_double(xmlTextReaderPtr reader);
+const char *__#{libName}_get_name(xmlTextReaderPtr reader);
+void __#{libName}_eat_elnt(xmlTextReaderPtr reader);
 
 #define __#{libName}_error(str, err, arg...) {								\\
 		fprintf(stderr, \"error: #{libName}:\" str \"\\n\", ##arg);			\\
@@ -324,6 +339,235 @@ void __#{libName}_gzseek(gzFile stream, long offset, int whence){
  * HELPER FUNCTIONS
  *************************************/
 
+static __#{libName}_db_lock* lockedDBs = NULL;;
+
+static inline void __#{libName}_free_dblock(__#{libName}_db_lock* dbLock)
+{
+    int i;
+
+    if(dbLock->oFilesCount){
+/* This one will close the underlying fd, libc cleans up the others at exit, so free'ing them now is bad. */
+        fclose(dbLock->oFiles[0]);
+    }
+
+    for(i = 0; i < dbLock->oGzFilesCount; ++i){
+        gzclose(dbLock->oGzFiles[i]);
+    }
+	close(dbLock->file);
+	free(dbLock->name);
+	free(dbLock);
+
+}
+__#{libName}_db_lock* __#{libName}_acquire_flock(const char* filename, int rdonly){
+    __#{libName}_db_lock* dbLock;
+    struct flock lock;
+
+    if(filename == NULL){
+        return NULL;
+    }
+
+    for(dbLock = lockedDBs; dbLock; dbLock=dbLock->next){
+            if(!strcmp(filename, dbLock->name))
+                break;
+    }
+
+    if(dbLock && dbLock->rdonly == 1 && rdonly == 0){
+        /* File was locked in readonly. We can't allow to open in RW */
+        return NULL;
+    } else if(!dbLock){
+        dbLock = malloc(sizeof(*dbLock));
+        if(!dbLock)
+            return NULL;
+        dbLock->next = lockedDBs;
+        dbLock->name = strdup(filename);
+        dbLock->rdonly = rdonly;
+        dbLock->oFilesCount = 0;
+        dbLock->oGzFilesCount = 0;
+        if(!dbLock->name){
+            free(dbLock);
+            return NULL;
+        }
+        dbLock->file = open(dbLock->name, O_CREAT | (rdonly ? O_RDONLY : O_RDWR), 0777);
+        if(dbLock->file == -1){
+            free(dbLock->name);
+            free(dbLock);
+            return NULL;
+        }
+
+    	lock.l_whence = SEEK_SET;
+    	lock.l_start = 0;
+    	lock.l_len = 0;
+    	lock.l_pid = getpid();
+        if(rdonly){
+            lock.l_type = F_RDLCK;
+        } else {
+            lock.l_type = F_WRLCK;
+        }
+
+    	while(fcntl(dbLock->file, F_SETLKW, &lock)){
+    		if(errno != EINTR){
+                __#{libName}_free_dblock(dbLock);
+    			return NULL;
+            }
+        }
+        lockedDBs = dbLock;
+    } else {
+        lseek(dbLock->file, SEEK_SET, 0);
+    }
+
+ 	return dbLock;
+}
+
+int __#{libName}_open_fd(const char* filename, int rdonly){
+    __#{libName}_db_lock* dbLock = __#{libName}_acquire_flock(filename, rdonly);
+    if(dbLock)
+        return dbLock->file;
+
+    return -1;
+}
+    
+gzFile __#{libName}_open_gzFile(const char* filename, int rdonly, const char* mode){
+    __#{libName}_db_lock* dbLock = __#{libName}_acquire_flock(filename, rdonly);
+    gzFile file;
+    if(dbLock){
+        if(dbLock->oGzFilesCount == MAX_OPENED_FILE)
+            return NULL;
+        if((file = gzdopen(dbLock->file, mode)) == NULL)
+            return NULL;
+        if(*mode == 'w'){
+            ftruncate(dbLock->file, 0);
+        }
+
+        dbLock->oGzFiles[dbLock->oGzFilesCount++] = file;
+        return file;
+    }
+    return NULL;
+}
+
+    
+FILE* __#{libName}_open_FILE(const char* filename, int rdonly, const char* mode){
+    __#{libName}_db_lock* dbLock = __#{libName}_acquire_flock(filename, rdonly);
+    FILE* file;
+    if(dbLock){
+        if(dbLock->oFilesCount == MAX_OPENED_FILE)
+            return NULL;
+        if((file = fdopen(dbLock->file, mode)) == NULL)
+            return NULL;
+        if(*mode == 'w'){
+            ftruncate(dbLock->file, 0);
+        }
+        dbLock->oFiles[dbLock->oFilesCount++] = file;
+        return file;
+    }
+    return NULL;
+}
+
+int __#{libName}_release_flock(const char* filename){
+	__#{libName}_db_lock* dbLock;
+	__#{libName}_db_lock** dbPred;
+    struct flock lock;
+
+    for(dbLock = lockedDBs, dbPred=&(lockedDBs); dbLock; dbPred=&(dbLock->next), dbLock=dbLock->next){
+            if(!strcmp(filename, dbLock->name))
+                break;
+    }
+	if(!dbLock){
+		/* We don't own this lock !  */
+		return 1;
+	}
+
+    *dbPred=dbLock->next;
+
+	lock.l_whence = SEEK_SET;
+	lock.l_start = 0;
+	lock.l_len = 0;
+	lock.l_pid = getpid();
+	lock.l_type = F_UNLCK;
+
+	while(fcntl(dbLock->file, F_SETLKW, &lock))
+		if(errno != EINTR)
+			return 1;
+
+    __#{libName}_free_dblock(dbLock);
+	return 0;
+}
+
+"
+            end
+            module_function :genCommonC
+            def genCommonXMLC(output, description)
+                libName = description.config.libname
+                output.puts "
+#define _GNU_SOURCE
+#include <assert.h>
+#include <errno.h>
+#include <setjmp.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <libxml/xmlreader.h>
+#include \"#{libName}.h\"
+#include \"_#{libName}/_common.h\"
+
+
+/* int __#{libName}_line = 1; */
+
+/**
+ * Get the value of the current XML node
+ * Note: the returned value is only valid as long as reader is untouched.
+ * Any new read will cause the string to change.
+ * @param[in] reader XML Reader
+ * @return Value of the current node
+ */
+static const char *__#{libName}_get_value(xmlTextReaderPtr reader)
+{
+
+    const char *val = (const char *)xmlTextReaderConstValue(reader);
+    /* elong pos = 0, len; */
+    if (val == NULL) {
+        return \"-- Unknown --\";
+    }
+    /* len = strlen(val); */
+    /* Look for a \n to increment the line */
+    /* for (pos = 0; pos < len; pos++) {
+        if (val[pos] == '\n')
+            __#{libName}_line++;
+    } */
+    return val;
+}
+
+/**
+ * Eat one XML node.
+ * Node value is read then discarded to check if there is a newline
+ * @param[in] reader XML Reader
+ * @return Nothing
+ */
+void __#{libName}_eat_elnt(xmlTextReaderPtr reader)
+{
+    xmlTextReaderRead(reader);
+    __#{libName}_get_value(reader);
+}
+/**
+ * Get the name of the current XML node
+ * @param[in] reader XML Reader
+ * @return Name of the current node
+ */
+const char *__#{libName}_get_name(xmlTextReaderPtr reader)
+{
+
+	const char *name = (const char *)xmlTextReaderConstName(reader);
+	if (!strcmp(name, \"#text\")) {
+		__#{libName}_get_value(reader);
+	}
+
+	if (name == NULL) {
+		name =  \"-- Unknown --\";
+	}
+	return name;
+}
+
 /**
  * Parsing helper. Compare the node name to expected values.
  * If an expected node is found, (open element), we eat the next node, because
@@ -346,6 +590,102 @@ int __#{libName}_compare(const char *name, const char *matches[])
 		}
 	}
 	return i;
+}
+
+/**
+ * Get the value of the current XML node.
+ * This is equivalent to #__scp2dir_get_value but the string is duplicate
+ * so it won't change when new reads are dont to the XML file.
+ * @param[in] reader XML Reader
+ * @return Value of the current node 
+ */
+char *__#{libName}_xml_read_value_str(xmlTextReaderPtr reader)
+{
+	char *val;
+	val = strdup(__#{libName}_get_value(reader));
+	return val;
+}
+
+/**
+ * Get the value of the current XML node.
+ * This is equivalent to #__scp2dir_get_value but the string is duplicate
+ * so it won't change when new reads are dont to the XML file.
+ * @param[in] reader XML Reader
+ * @return Value of the current node 
+ */
+const char *__#{libName}_xml_read_value_str_nocopy(xmlTextReaderPtr reader)
+{
+	const char *val;
+	val = __#{libName}_get_value(reader);
+	return val;
+}
+
+/**
+ * Get the value of the current XML node as an unsigned long
+ * @param[in] reader XML Reader
+ * @return Value of the current node
+ */
+unsigned long __#{libName}_xml_read_value_ulong(xmlTextReaderPtr reader)
+{
+	const char *str;
+	unsigned long val;
+	str = __#{libName}_get_value(reader);
+	val = strtoul(str, NULL, 10);
+	return val;
+}
+/**
+ * Get the value of the current XML node as a signed long
+ * @param[in] reader XML Reader
+ * @return Value of the current node
+ */
+signed long __#{libName}_xml_read_value_slong(xmlTextReaderPtr reader)
+{
+	const char *str;
+	signed long val;
+	str = __#{libName}_get_value(reader);
+	val = strtol(str, NULL, 10);
+	return val;
+}
+
+/**
+ * Get the value of the current XML node as an unsigned long long
+ * @param[in] reader XML Reader
+ * @return Value of the current node
+ */
+unsigned long long __#{libName}_xml_read_value_ullong(xmlTextReaderPtr reader)
+{
+	const char *str;
+	unsigned long long val;
+	str = __#{libName}_get_value(reader);
+	val = strtoull(str, NULL, 10);
+	return val;
+}
+/**
+ * Get the value of the current XML node as a signed long long
+ * @param[in] reader XML Reader
+ * @return Value of the current node
+ */
+signed long long __#{libName}_xml_read_value_sllong(xmlTextReaderPtr reader)
+{
+	const char *str;
+	signed long long val;
+	str = __#{libName}_get_value(reader);
+	val = strtoll(str, NULL, 10);
+	return val;
+}
+
+/**
+ * Get the value of the current XML node as a double
+ * @param[in] reader XML Reader
+ * @return Value of the current node
+ */
+double __#{libName}_xml_read_value_double(xmlTextReaderPtr reader)
+{
+	const char *str;
+	double val;
+	str = __#{libName}_get_value(reader);
+	val = strtod(str, NULL);
+	return val;
 }
 
 /**
@@ -511,162 +851,10 @@ double __#{libName}_read_value_double_attr(xmlAttrPtr node)
 	return val;
 }
 
-static __#{libName}_db_lock* lockedDBs = NULL;;
-
-static inline void __#{libName}_free_dblock(__#{libName}_db_lock* dbLock)
-{
-    int i;
-
-    if(dbLock->oFilesCount){
-/* This one will close the underlying fd, libc cleans up the others at exit, so free'ing them now is bad. */
-        fclose(dbLock->oFiles[0]);
-    }
-
-    for(i = 0; i < dbLock->oGzFilesCount; ++i){
-        gzclose(dbLock->oGzFiles[i]);
-    }
-	close(dbLock->file);
-	free(dbLock->name);
-	free(dbLock);
-
-}
-__#{libName}_db_lock* __#{libName}_acquire_flock(const char* filename, int rdonly){
-    __#{libName}_db_lock* dbLock;
-    struct flock lock;
-
-    if(filename == NULL){
-        return NULL;
-    }
-
-    for(dbLock = lockedDBs; dbLock; dbLock=dbLock->next){
-            if(!strcmp(filename, dbLock->name))
-                break;
-    }
-
-    if(dbLock && dbLock->rdonly == 1 && rdonly == 0){
-        /* File was locked in readonly. We can't allow to open in RW */
-        return NULL;
-    } else if(!dbLock){
-        dbLock = malloc(sizeof(*dbLock));
-        if(!dbLock)
-            return NULL;
-        dbLock->next = lockedDBs;
-        dbLock->name = strdup(filename);
-        dbLock->rdonly = rdonly;
-        dbLock->oFilesCount = 0;
-        dbLock->oGzFilesCount = 0;
-        if(!dbLock->name){
-            free(dbLock);
-            return NULL;
-        }
-        dbLock->file = open(dbLock->name, O_CREAT | (rdonly ? O_RDONLY : O_RDWR), 0777);
-        if(dbLock->file == -1){
-            free(dbLock->name);
-            free(dbLock);
-            return NULL;
-        }
-
-    	lock.l_whence = SEEK_SET;
-    	lock.l_start = 0;
-    	lock.l_len = 0;
-    	lock.l_pid = getpid();
-        if(rdonly){
-            lock.l_type = F_RDLCK;
-        } else {
-            lock.l_type = F_WRLCK;
-        }
-
-    	while(fcntl(dbLock->file, F_SETLKW, &lock)){
-    		if(errno != EINTR){
-                __#{libName}_free_dblock(dbLock);
-    			return NULL;
-            }
-        }
-        lockedDBs = dbLock;
-    } else {
-        lseek(dbLock->file, SEEK_SET, 0);
-    }
-
- 	return dbLock;
-}
-
-int __#{libName}_open_fd(const char* filename, int rdonly){
-    __#{libName}_db_lock* dbLock = __#{libName}_acquire_flock(filename, rdonly);
-    if(dbLock)
-        return dbLock->file;
-
-    return -1;
-}
-    
-gzFile __#{libName}_open_gzFile(const char* filename, int rdonly, const char* mode){
-    __#{libName}_db_lock* dbLock = __#{libName}_acquire_flock(filename, rdonly);
-    gzFile file;
-    if(dbLock){
-        if(dbLock->oGzFilesCount == MAX_OPENED_FILE)
-            return NULL;
-        if((file = gzdopen(dbLock->file, mode)) == NULL)
-            return NULL;
-        if(*mode == 'w'){
-            ftruncate(dbLock->file, 0);
-        }
-
-        dbLock->oGzFiles[dbLock->oGzFilesCount++] = file;
-        return file;
-    }
-    return NULL;
-}
-
-    
-FILE* __#{libName}_open_FILE(const char* filename, int rdonly, const char* mode){
-    __#{libName}_db_lock* dbLock = __#{libName}_acquire_flock(filename, rdonly);
-    FILE* file;
-    if(dbLock){
-        if(dbLock->oFilesCount == MAX_OPENED_FILE)
-            return NULL;
-        if((file = fdopen(dbLock->file, mode)) == NULL)
-            return NULL;
-        if(*mode == 'w'){
-            ftruncate(dbLock->file, 0);
-        }
-        dbLock->oFiles[dbLock->oFilesCount++] = file;
-        return file;
-    }
-    return NULL;
-}
-
-int __#{libName}_release_flock(const char* filename){
-	__#{libName}_db_lock* dbLock;
-	__#{libName}_db_lock** dbPred;
-    struct flock lock;
-
-    for(dbLock = lockedDBs, dbPred=&(lockedDBs); dbLock; dbPred=&(dbLock->next), dbLock=dbLock->next){
-            if(!strcmp(filename, dbLock->name))
-                break;
-    }
-	if(!dbLock){
-		/* We don't own this lock !  */
-		return 1;
-	}
-
-    *dbPred=dbLock->next;
-
-	lock.l_whence = SEEK_SET;
-	lock.l_start = 0;
-	lock.l_len = 0;
-	lock.l_pid = getpid();
-	lock.l_type = F_UNLCK;
-
-	while(fcntl(dbLock->file, F_SETLKW, &lock))
-		if(errno != EINTR)
-			return 1;
-
-    __#{libName}_free_dblock(dbLock);
-	return 0;
-}
 
 "
             end
-            module_function :genCommonC
-        end
+            module_function :genCommonXMLC
+      end
     end
 end
