@@ -33,6 +33,9 @@ import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.zip.GZIPInputStream;
 
 import org.dom4j.Document;

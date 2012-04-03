@@ -15,23 +15,24 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 module Damage
-    module Java
-        require File.dirname(__FILE__) + '/java/header'
-        require File.dirname(__FILE__) + '/java/enum'
-	require File.dirname(__FILE__) + '/java/xml_reader'
-	require File.dirname(__FILE__) + '/java/xml_writer'
-	require File.dirname(__FILE__) + '/java/offset'
-        require File.dirname(__FILE__) + '/java/alloc'
-        require File.dirname(__FILE__) + '/java/binary_reader'
-        require File.dirname(__FILE__) + '/java/binary_writer'
-        require File.dirname(__FILE__) + '/java/dump'
-        require File.dirname(__FILE__) + '/java/parser_options'
-        
-        def generate(description, pahole)
-            libName = description.config.libname
-            version = description.config.version;
-            pom =  Damage::Files.createAndOpen("gen/#{libName}/java/", "pom.xml")
-            pom.puts("<?xml version=\"1.0\" encoding=\"UTF-8\"?>
+  module Java
+    require File.dirname(__FILE__) + '/java/header'
+    require File.dirname(__FILE__) + '/java/enum'
+    require File.dirname(__FILE__) + '/java/xml_reader'
+    require File.dirname(__FILE__) + '/java/xml_parser'
+    require File.dirname(__FILE__) + '/java/xml_writer'
+    require File.dirname(__FILE__) + '/java/offset'
+    require File.dirname(__FILE__) + '/java/alloc'
+    require File.dirname(__FILE__) + '/java/binary_reader'
+    require File.dirname(__FILE__) + '/java/binary_writer'
+    require File.dirname(__FILE__) + '/java/dump'
+    require File.dirname(__FILE__) + '/java/parser_options'
+
+    def generate(description, pahole)
+      libName = description.config.libname
+      version = description.config.version;
+      pom =  Damage::Files.createAndOpen("gen/#{libName}/java/", "pom.xml")
+      pom.puts("<?xml version=\"1.0\" encoding=\"UTF-8\"?>
 <project xmlns=\"http://maven.apache.org/POM/4.0.0\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"
    xsi:schemaLocation=\"http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd\">
 <modelVersion>4.0.0</modelVersion>
@@ -45,7 +46,7 @@ module Damage
   		<artifactId>dom4j</artifactId>
   		<version>1.6.1</version>
 	</dependency>
-  </dependencies>    
+  </dependencies>
   <build>
     <sourceDirectory>src</sourceDirectory>
     <outputDirectory>bin</outputDirectory>
@@ -61,18 +62,18 @@ module Damage
       </plugin>
     </plugins>
   </build>
-  
+
 </project>");
-            
-            outdir = "gen/#{libName}/java/src/"
-            description.config.package.split(".").each() { |dir|
-                outdir += dir + "/"
-            }
-            outdir += libName + "/"
-            uppercaseLibName = libName.slice(0,1).upcase + libName.slice(1..-1)
-            ivisitorOutput = Damage::Files.createAndOpen(outdir, "I#{uppercaseLibName}ObjectVisitor.java") 
-            ivisitorOutput.puts("package #{description.config.package}.#{libName};
-          
+
+      outdir = "gen/#{libName}/java/src/"
+      description.config.package.split(".").each() { |dir|
+        outdir += dir + "/"
+      }
+      outdir += libName + "/"
+      uppercaseLibName = libName.slice(0,1).upcase + libName.slice(1..-1)
+      ivisitorOutput = Damage::Files.createAndOpen(outdir, "I#{uppercaseLibName}ObjectVisitor.java")
+      ivisitorOutput.puts("package #{description.config.package}.#{libName};
+
 /**
  * Visitor (see http://en.wikipedia.org/wiki/Visitor_pattern)
  * @author xraynaud@kalray.eu
@@ -80,10 +81,10 @@ module Damage
  */
 public interface I#{uppercaseLibName}ObjectVisitor {
   ");
-            
-            visitorOutput = Damage::Files.createAndOpen(outdir, "Default#{uppercaseLibName}ObjectVisitor.java")
-            visitorOutput.puts("package #{description.config.package}.#{libName};
-            
+
+      visitorOutput = Damage::Files.createAndOpen(outdir, "Default#{uppercaseLibName}ObjectVisitor.java")
+      visitorOutput.puts("package #{description.config.package}.#{libName};
+
   /**
    * Default Visitor implementation (see http://en.wikipedia.org/wiki/Visitor_pattern)
    * @author xraynaud@kalray.eu
@@ -92,16 +93,16 @@ public interface I#{uppercaseLibName}ObjectVisitor {
   public class Default#{uppercaseLibName}ObjectVisitor implements I#{uppercaseLibName}ObjectVisitor {
     ");
 
-            delegateVisitorOutput = Damage::Files.createAndOpen(outdir, "Delegate#{uppercaseLibName}ObjectVisitor.java")
-            delegateVisitorOutput.puts("package #{description.config.package}.#{libName};
-            
+      delegateVisitorOutput = Damage::Files.createAndOpen(outdir, "Delegate#{uppercaseLibName}ObjectVisitor.java")
+      delegateVisitorOutput.puts("package #{description.config.package}.#{libName};
+
   /**
    * Delegate Visitor implementation (see http://en.wikipedia.org/wiki/Visitor_pattern)
    * @author xraynaud@kalray.eu
    *
    */
   public class Delegate#{uppercaseLibName}ObjectVisitor extends Default#{uppercaseLibName}ObjectVisitor {
-	
+
 	private I#{uppercaseLibName}ObjectVisitor delegateVisitor;
 
 	public Delegate#{uppercaseLibName}ObjectVisitor() {
@@ -123,34 +124,34 @@ public interface I#{uppercaseLibName}ObjectVisitor {
 
     ");
 
+      description.entries.each(){ |name, entry|
+        raise("Missing size info") if pahole.entries[name] == nil
+        params = nameToParams(description, name)
+        output = Damage::Files.createAndOpen(outdir, "#{params[:class]}.java")
+        Header::write(output, libName, entry, pahole.entries[name], params)
+        Enum::write(output, libName, entry, pahole.entries[name], params)
+        Alloc::write(output, libName, entry, pahole.entries[name], params)
+        BinaryReader::write(output, libName, entry, pahole.entries[name], params)
+        BinaryWriter::write(output, libName, entry, pahole.entries[name], params)
+        XmlReader::write(output, libName, entry, pahole.entries[name], params)
+        XmlWriter::write(output, libName, entry, pahole.entries[name], params)
+        Offset::write(output, libName, entry, pahole.entries[name], params)
+        Dump::write(output, libName, entry, pahole.entries[name], params)
 
-            description.entries.each(){ |name, entry|
-                raise("Missing size info") if pahole.entries[name] == nil
-                params = nameToParams(description, name)
-                output = Damage::Files.createAndOpen(outdir, "#{params[:class]}.java") 
-                Header::write(output, libName, entry, pahole.entries[name], params)
-                Enum::write(output, libName, entry, pahole.entries[name], params)
-                Alloc::write(output, libName, entry, pahole.entries[name], params)
-                BinaryReader::write(output, libName, entry, pahole.entries[name], params)
-                BinaryWriter::write(output, libName, entry, pahole.entries[name], params)
-                XmlReader::write(output, libName, entry, pahole.entries[name], params)
-                XmlWriter::write(output, libName, entry, pahole.entries[name], params)
-                Offset::write(output, libName, entry, pahole.entries[name], params)
-                Dump::write(output, libName, entry, pahole.entries[name], params)
-
-                ParserOptions::write(description)
-                output.puts("\n}\n\n")
-                output.close()
-                ivisitorOutput.printf("\tpublic void visit(%s obj);\n\n", "#{params[:class]}")
-                visitorOutput.printf("\t@Override\n")
-                visitorOutput.printf("\tpublic void visit(%s obj) {}\n\n", "#{params[:class]}")
-		delegateVisitorOutput.printf("\t@Override\n")
-		delegateVisitorOutput.printf("\tpublic void visit(%s obj) {\n", "#{params[:class]}")
-		delegateVisitorOutput.printf("\t\tif (delegateVisitor != null) delegateVisitor.visit(obj);\n")
-		delegateVisitorOutput.printf("\t}\n\n")
-            }
-            output = Damage::Files.createAndOpen(outdir, "#{uppercaseLibName}Object.java") 
-            output.puts("package #{description.config.package}.#{libName};
+        ParserOptions::write(description)
+        XMLParser::write(description)
+        output.puts("\n}\n\n")
+        output.close()
+        ivisitorOutput.printf("\tpublic void visit(%s obj);\n\n", "#{params[:class]}")
+        visitorOutput.printf("\t@Override\n")
+        visitorOutput.printf("\tpublic void visit(%s obj) {}\n\n", "#{params[:class]}")
+        delegateVisitorOutput.printf("\t@Override\n")
+        delegateVisitorOutput.printf("\tpublic void visit(%s obj) {\n", "#{params[:class]}")
+        delegateVisitorOutput.printf("\t\tif (delegateVisitor != null) delegateVisitor.visit(obj);\n")
+        delegateVisitorOutput.printf("\t}\n\n")
+      }
+      output = Damage::Files.createAndOpen(outdir, "#{uppercaseLibName}Object.java")
+      output.puts("package #{description.config.package}.#{libName};
 
 import java.io.DataOutputStream;
 import java.io.EOFException;
@@ -230,7 +231,7 @@ public abstract class #{uppercaseLibName}Object {
 			nbytes += count;
 		}
 	}
-	
+
 	/**
 	 * Read from given inputstream until the given array is full,
 	 * and return a ByteBuffer wrapping the byte array
@@ -241,8 +242,8 @@ public abstract class #{uppercaseLibName}Object {
 		in.order(ByteOrder.LITTLE_ENDIAN);
 		return in;
 	}
-	
-	/** 
+
+	/**
 	 * Read a string from given inputstream
 	 */
 	public static String readString(InputStream is) throws IOException {
@@ -262,7 +263,7 @@ public abstract class #{uppercaseLibName}Object {
 		return ret;
 	}
 
-  /** 
+  /**
    * Read a string from given inputstream
    */
   public static String readString(FileChannel fc) throws IOException {
@@ -301,7 +302,7 @@ public abstract class #{uppercaseLibName}Object {
 
 	/**
 	 * Intendation method, used when dumping objects.
-	 */ 
+	 */
 	public static void indentToString(PrintStream ps, int indent, boolean listable, boolean first) {
 		for (int i = 0; i < indent; ++i) {
                 	ps.print('\\t');
@@ -314,16 +315,16 @@ public abstract class #{uppercaseLibName}Object {
 			}
 		}
 	}
-            
+
   /**
    * Intendation method, used when dumping objects.
-   */ 
+   */
   public static void indent(java.io.Writer w, int indent) throws IOException {
     for (int i = 0; i < indent; ++i) {
          w.write(' ');
     }
   }
-	
+
 	/**
 	 * Dumps a human readable description of this object in console
          */
@@ -342,7 +343,7 @@ public abstract class #{uppercaseLibName}Object {
     }
     return ret;
   }
-            
+
 	/**
          * Dumps a human readable description of this object in given PrintStream
          */
@@ -383,6 +384,7 @@ public abstract class #{uppercaseLibName}Object {
           }
           return total_len;
      }
+
     /**
      * Write a string in binary format to a DataOutputStream
      * @return Nothing
@@ -396,9 +398,25 @@ public abstract class #{uppercaseLibName}Object {
               output.writeBytes(str);
           } else {
               output.writeInt(4);
-          }   
+          }
           output.writeByte(0);
      }
+
+    /**
+     * XML handler
+     */
+    public abstract void startElement(XMLParser parser, String str, org.xml.sax.Attributes attributes);
+
+    /**
+     * XML handler
+     */
+    public abstract void endElement(XMLParser parser, String qName);
+
+    /**
+     * handler called by XML parser, when this object has been completely read
+     */
+    public abstract void createArraysCallback(java.util.Map<String, java.util.List<String>> map);
+
     /**
      * Write a string array in binary format to a DataOutputStream
      * @return Nothing
@@ -417,29 +435,29 @@ public abstract class #{uppercaseLibName}Object {
           }
      }
 }");
- 
-            output.close();
 
-            ivisitorOutput.puts("}\n");
-            visitorOutput.puts("}\n");
-            delegateVisitorOutput.puts("}\n");
-            ivisitorOutput.close();
-            visitorOutput.close();
-            delegateVisitorOutput.close();
-        end
-        module_function :generate
+      output.close();
 
-        def nameToParams(description, name)
-            params={}
-            params[:package] = description.config.package + "." + description.config.libname
-            params[:uppercase_libname] = description.config.libname.slice(0,1).upcase + description.config.libname.slice(1..-1)
-            params[:version] = description.config.version
-            params[:damage_version] = description.config.damage_version
-            params[:class] = name.slice(0,1).upcase + name.slice(1..-1)
-            params[:bin_header] = description.pahole.entries["binary_header"]
-            params[:name] = name
-            return params
-        end
-        module_function :nameToParams
+      ivisitorOutput.puts("}\n");
+      visitorOutput.puts("}\n");
+      delegateVisitorOutput.puts("}\n");
+      ivisitorOutput.close();
+      visitorOutput.close();
+      delegateVisitorOutput.close();
     end
+    module_function :generate
+
+    def nameToParams(description, name)
+      params={}
+      params[:package] = description.config.package + "." + description.config.libname
+      params[:uppercase_libname] = description.config.libname.slice(0,1).upcase + description.config.libname.slice(1..-1)
+      params[:version] = description.config.version
+      params[:damage_version] = description.config.damage_version
+      params[:class] = name.slice(0,1).upcase + name.slice(1..-1)
+      params[:bin_header] = description.pahole.entries["binary_header"]
+      params[:name] = name
+      return params
+    end
+    module_function :nameToParams
+  end
 end
