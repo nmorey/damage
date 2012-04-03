@@ -52,7 +52,8 @@ module Damage
                   when "String"
                     output.printf("\t\t\t\tret._#{field.name}=_#{field.name}_tmp.intern();\n")
                   when "int"
-                    output.printf("\t\t\t\tret._#{field.name}=Integer.parseInt(_#{field.name}_tmp);\n")
+                    output.printf("\t\t\t\tif (\"4294967295\".equals(_#{field.name}_tmp)) ret._#{field.name}=-1;\n");
+                    output.printf("\t\t\t\telse ret._#{field.name}=Integer.parseInt(_#{field.name}_tmp);\n")
                   when "double"
                     output.printf("\t\t\t\tret._#{field.name}=Double.parseDouble(_#{field.name}_tmp);\n")
                   when "byte"
@@ -64,7 +65,8 @@ module Damage
                   when "float"
                     output.printf("\t\t\t\tret._#{field.name}=Float.parseFloat(_#{field.name}_tmp);\n")
                   when "long"
-                    output.printf("\t\t\t\tret._#{field.name}=Long.parseLong(_#{field.name}_tmp);\n")
+                    output.printf("\t\t\t\tif (\"18446744073709551615\".equals(_#{field.name}_tmp)) ret._#{field.name}=-1L;\n");
+                    output.printf("\t\t\t\telse ret._#{field.name}=Long.parseLong(_#{field.name}_tmp);\n")
                   else
                     raise("Unsupported java-type for #{entry.name}.#{field.name}");
                   end
@@ -130,7 +132,8 @@ module Damage
                 when "String"
                   output.printf("\t\t\t\tthis._#{field.name}[count_#{field.name}++]=#{field.name}String.intern();\n")
                 when "int"
-                  output.printf("\t\t\t\tthis._#{field.name}[count_#{field.name}++]=Integer.parseInt(#{field.name}String);\n")
+                  output.printf("\t\t\t\tif (\"4294967295\".equals(#{field.name}String)) this._#{field.name}[count_#{field.name}++]=-1;\n");
+                  output.printf("\t\t\t\telse this._#{field.name}[count_#{field.name}++]=Integer.parseInt(#{field.name}String);\n")
                 when "double"
                   output.printf("\t\t\t\tthis._#{field.name}[count_#{field.name}++]=Double.parseDouble(#{field.name}String);\n")
                 when "byte"
@@ -142,7 +145,8 @@ module Damage
                 when "float"
                   output.printf("\t\t\t\tthis._#{field.name}[count_#{field.name}++]=Float.parseFloat(#{field.name}String);\n")
                 when "long"
-                  output.printf("\t\t\t\tthis._#{field.name}[count_#{field.name}++]=Long.parseLong(#{field.name}String);\n")
+                  output.printf("\t\t\t\tif (\"18446744073709551615\".equals(#{field.name}String)) this._#{field.name}[count_#{field.name}++]=-1L;\n");
+                  output.printf("\t\t\t\telse this._#{field.name}[count_#{field.name}++]=Long.parseLong(#{field.name}String);\n")
                 else
                   raise("Unsupported java-type for #{entry.name}.#{field.name}");
                 end
