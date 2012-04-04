@@ -93,6 +93,13 @@ FILE* __#{libName}_open_FILE(const char* filename, int rdonly, const char* mode)
  */
 int __#{libName}_release_flock(const char* filename);
 
+/**
+ * Configure the DTD search path
+ * @param[in] path DTD search path
+ * @return Nothing.
+ */
+void __#{libName}_set_dtd_path(const char* path);
+
 #endif /* __#{libName}_common_h__ */
 "
             end
@@ -157,6 +164,8 @@ double __#{libName}_xml_read_value_double(xmlTextReaderPtr reader);
 const char *__#{libName}_get_name(xmlTextReaderPtr reader);
 void __#{libName}_eat_elnt(xmlTextReaderPtr reader);
 
+const char* __#{libName}_get_dtd_path(void);
+
 #define __#{libName}_error(str, err, arg...) {								\\
 		fprintf(stderr, \"error: #{libName}:\" str \"\\n\", ##arg);			\\
 		longjmp(__#{libName}_error_happened, err);} while(0)
@@ -208,6 +217,7 @@ typedef struct ___#{libName}_db_lock{
     int oGzFilesCount;
 } __#{libName}_db_lock;
 
+
 void *__#{libName}_malloc(unsigned long size)
 {
 	void *ptr = calloc(1, size);
@@ -236,7 +246,7 @@ void *__#{libName}_realloc(void *ptr, unsigned long size)
 	}
 	return nptr;
 }
-int __sigmacDB_gzPrintf(gzFile file, const char* fmt, ...){
+int __#{libName}_gzPrintf(gzFile file, const char* fmt, ...){
     char* buf;
     va_list argp;
     va_start(argp, fmt);
@@ -252,6 +262,13 @@ int __sigmacDB_gzPrintf(gzFile file, const char* fmt, ...){
 
 }
 
+static const char* dtd_path = NULL;
+void __#{libName}_set_dtd_path(const char* path){
+    dtd_path = __#{libName}_strdup(path);
+}
+const char* __#{libName}_get_dtd_path(void){
+    return dtd_path;
+}
 void __#{libName}_free(void *ptr)
 {
 	if (ptr != NULL) {

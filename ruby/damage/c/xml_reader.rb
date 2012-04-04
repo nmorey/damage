@@ -516,8 +516,9 @@ __#{libName}_#{type} *__#{libName}_#{name}#{type}Container_xml_load_elements(xml
                 output.printf("\t\tlseek(unzippedFd, 0, SEEK_SET);\n");
                 output.printf("\t\tfd = unzippedFd;\n");
                 output.printf("\t}\n");
-
-                output.printf("\treader = xmlReaderForFd(fd, NULL, NULL, 0);\n\n");
+                output.printf("\tconst char* dtd_path = __#{libName}_get_dtd_path();");
+                output.printf("\tint parse_options = dtd_path != NULL ? (XML_PARSE_DTDVALID | XML_PARSE_DTDLOAD) : 0;");
+                output.printf("\treader = xmlReaderForFd(fd, dtd_path, NULL, parse_options);\n\n");
                 
                 output.printf("\tif (reader == NULL) {\n");
                 output.printf("\t\t__#{libName}_error(\"Failed to open XML file %%s\",\n");
@@ -546,6 +547,9 @@ __#{libName}_#{type} *__#{libName}_#{name}#{type}Container_xml_load_elements(xml
                 output.printf("\t\t\tbreak;\n");
                 output.printf("\t\t}\n");
                 output.printf("\t}\n\n");
+                output.printf("\tif (dtd_path && !xmlTextReaderIsValid(reader)) {\n");
+                output.printf("\t__#{libName}_error(\"XML file does not follow the DTD\\n\", EINVAL);\n");
+                output.printf("\t}\n");
                 output.printf("\tif (opts & __#{libName.upcase}_OPTION_READONLY) {\n");
                 output.printf("\t__#{libName}_release_flock(file);\n");
                 output.printf("\t}\n");
