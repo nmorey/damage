@@ -250,9 +250,6 @@ module Damage
                         when :string
                             output.printf("#{indent}obj._#{field.name} = readString(zip);\n")
                         when :intern
-                            output.printf("#{indent}field_offset = in.getInt(#{pahole[field.name][:offset]});\n")
-                            output.printf("#{indent}if(field_offset != 0)\n")
-                            output.printf("#{indent}\tobj._#{field.name} = #{field.java_type}.loadFromZip(zip);\n")
                         else
                             raise("Unsupported data category for #{entry.name}.#{field.name}");
                         end
@@ -298,6 +295,36 @@ module Damage
                             output.printf("#{indent}\t}\n")
                             output.printf("#{indent}}\n")
 
+                        when :intern
+                        else
+                            raise("Unsupported data category for #{entry.name}.#{field.name}");
+                        end                  
+                    else
+                        raise("Unsupported quantitiy for #{entry.name}.{field.name}")
+                    end
+                }
+                entry.fields.each() { |field|
+                    next if field.target != :both
+
+                    output.printf("\n#{indent}/* Parsing #{field.name} */\n")
+                    
+                    case field.qty
+                    when :single
+                        case field.category
+                        when :simple
+                        when :enum
+                        when :string
+                        when :intern
+                            output.printf("#{indent}field_offset = in.getInt(#{pahole[field.name][:offset]});\n")
+                            output.printf("#{indent}if(field_offset != 0)\n")
+                            output.printf("#{indent}\tobj._#{field.name} = #{field.java_type}.loadFromZip(zip);\n")
+                        else
+                            raise("Unsupported data category for #{entry.name}.#{field.name}");
+                        end
+                    when :list, :container
+                        case field.category
+                        when :simple
+                        when :string
                         when :intern
                             output.printf("#{indent}field_offset = in.getInt(#{pahole[field.name][:offset]});\n")
                             output.printf("#{indent}if (field_offset != 0) {\n")
