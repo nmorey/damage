@@ -23,11 +23,14 @@ module Damage
                     outputC = Damage::Files.createAndOpen("gen/#{description.config.libname}/src", "binary_writer__#{name}.c")
                     self.genBinaryWriter(outputC, description, entry, false)
                     outputC.close()
-
                     outputC = Damage::Files.createAndOpen("gen/#{description.config.libname}/src", "binary_writer_gz__#{name}.c")
                     self.genBinaryWriter(outputC, description, entry, true)
                     outputC.close()
 
+
+                    outputC = Damage::Files.createAndOpen("gen/#{description.config.libname}/src", "binary_writer_offset_#{name}.c")
+                    self.genCompOffset(outputC, description, entry)
+                    outputC.close()
                     outputC = Damage::Files.createAndOpen("gen/#{description.config.libname}/src", "binary_writer_wrapper__#{name}.c")
                     self.genBinaryWriterWrapper(outputC, description, entry)
                     outputC.close()
@@ -110,6 +113,131 @@ module Damage
                 output.puts("#endif /* __#{libName}_binary_writer_h__ */\n")
             end
             module_function :genBinaryWriterH
+
+            def genCompOffset(output, description, entry)
+                libName = description.config.libname
+                hasNext = (entry.attribute == :listable) ? ", int siblings" : ""
+
+              output.printf("#include \"#{libName}.h\"\n")
+                output.printf("#include \"_#{libName}/_common.h\"\n")
+                output.printf("#include <stdint.h>\n")
+                output.printf("\n\n") 
+                output.puts("
+
+/** \\addtogroup #{libName} DAMAGE #{libName} Library
+ * @{
+**/
+/** \\addtogroup binary_writer Binary Writer API
+ * @{
+ **/
+");
+               output.puts"
+uint32_t __#{libName}_#{entry.name}_binary_comp_offset(__#{libName}_#{entry.name}* ptr, uint32_t offset#{hasNext}){
+"
+                output.printf("\tuint32_t child_offset = offset;\n")
+
+                if entry.attribute == :listable then
+                    output.printf("\t__#{libName}_%s *el, *next;\n\tfor(el = ptr; el != NULL; el = next) {\n",entry.name)
+                    output.printf("\t\tnext = el->next;\n");
+                    source="el"
+                    indent="\t\t"
+                else
+                    indent="\t"
+                    source="ptr"
+                end
+                output.printf("#{indent}#{source}->_rowip_pos = child_offset;\n")
+                output.printf("#{indent}child_offset += sizeof(*#{source});\n")
+
+                entry.fields.each() { |field|
+                    next if field.target != :both
+                    case field.qty
+                    when :single
+                        case field.category
+                        when :simple, :enum
+                        when :string
+                            output.printf("#{indent}if(#{source}->%s){\n", field.name)
+                            output.printf("#{indent}\tuint32_t len = strlen(#{source}->%s) + 1;\n", field.name)
+                            output.printf("#{indent}\tchild_offset += len + sizeof(len);\n", field.name)
+                            output.printf("#{indent}} else {\n")
+                            output.printf("#{indent}\tchild_offset += sizeof(uint32_t);\n", field.name)
+                            output.printf("#{indent}}\n")
+                        when :intern
+                        else
+                            raise("Unsupported data category for #{entry.name}.#{field.name}");
+                        end
+                    when :list, :container
+                        case field.category
+                        when :simple
+                            output.printf("#{indent}if(#{source}->%s){\n", field.name)
+                            output.printf("#{indent}\tchild_offset += (sizeof(*#{source}->%s) * #{source}->%sLen);\n",
+                                          field.name, field.name)
+                            output.printf("#{indent}}\n")
+                        when :string
+                            output.printf("#{indent}if(#{source}->%s){\n", field.name)
+                            output.printf("#{indent}\tunsigned int i; for(i = 0; i < #{source}->%sLen; i++){\n", 
+                                          field.name);
+                            output.printf("#{indent}\t\tif(#{source}->%s[i]){\n", field.name);
+                            output.printf("#{indent}\t\t\tuint32_t len = strlen(#{source}->%s[i]) + 1;\n", field.name)
+                            output.printf("#{indent}\t\t\tchild_offset += len + sizeof(len);\n", field.name)
+                            output.printf("#{indent}\t\t} else {\n")
+                            output.printf("#{indent}\t\t\tchild_offset += sizeof(uint32_t);\n", field.name)
+                            output.printf("#{indent}\t\t}\n")
+                            output.printf("#{indent}\t}\n\n");
+                            output.printf("#{indent}}\n")
+
+                        when :intern
+                        else
+                            raise("Unsupported data category for #{entry.name}.#{field.name}");
+                        end
+                    end
+                }
+
+                entry.fields.each() { |field|
+                    next if field.target != :both
+                    case field.qty
+                    when :single
+                        case field.category
+                        when :simple, :enum
+                        when :string
+                        when :intern
+                            output.printf("#{indent}if(#{source}->%s){\n", field.name)
+                            output.printf("#{indent}\tchild_offset = __#{libName}_%s_binary_comp_offset(#{source}->%s, child_offset);\n", 
+                                          field.data_type, field.name)
+                            output.printf("#{indent}}\n")
+                        else
+                            raise("Unsupported data category for #{entry.name}.#{field.name}");
+                        end
+                    when :list, :container
+                        case field.category
+                        when :simple
+                        when :string
+                        when :intern
+                            output.printf("#{indent}if(#{source}->%s){\n", field.name)
+                            output.printf("#{indent}\tchild_offset = __#{libName}_%s_binary_comp_offset(#{source}->%s, child_offset, 1);\n", 
+                                          field.data_type, field.name)
+                            output.printf("#{indent}}\n")
+                        else
+                            raise("Unsupported data category for #{entry.name}.#{field.name}");
+                        end
+                    end
+                }
+                if entry.attribute == :listable  then
+ 
+                    output.printf("\t\tif(siblings == 0){\n")
+                    output.printf("\t\t\treturn child_offset;\n") 
+                    output.printf("\t\t}\n") 
+                    output.printf("\t}\n") 
+                end
+
+                output.puts "\treturn child_offset;"
+                output.puts "}"
+               output.puts("
+/** @} */
+/** @} */
+")
+ 
+            end 
+           module_function :genCompOffset
 
             def cWrite(output, libName, zipped, indent, src, size, qty, file)
                 if zipped == true
@@ -330,6 +458,7 @@ uint32_t __#{libName}_#{entry.name}_binary_dump(__#{libName}_#{entry.name}* ptr,
                 output.puts "\treturn nbytes;"
                 output.puts "}"
 
+
                output.puts("
 /** @} */
 /** @} */
@@ -397,110 +526,8 @@ uint32_t __#{libName}_#{entry.name}_binary_dump(__#{libName}_#{entry.name}* ptr,
                 output.printf("\treturn (unsigned long)header.length;\n");
                 output.printf("}\n");
 
-                hasNext = (entry.attribute == :listable) ? ", int siblings" : ""
 
                 output.printf("\n\n") 
-
-                output.puts"
-uint32_t __#{libName}_#{entry.name}_binary_comp_offset(__#{libName}_#{entry.name}* ptr, uint32_t offset#{hasNext}){
-"
-                output.printf("\tuint32_t child_offset = offset;\n")
-
-                if entry.attribute == :listable then
-                    output.printf("\t__#{libName}_%s *el, *next;\n\tfor(el = ptr; el != NULL; el = next) {\n",entry.name)
-                    output.printf("\t\tnext = el->next;\n");
-                    source="el"
-                    indent="\t\t"
-                else
-                    indent="\t"
-                    source="ptr"
-                end
-                output.printf("#{indent}#{source}->_rowip_pos = child_offset;\n")
-                output.printf("#{indent}child_offset += sizeof(*#{source});\n")
-
-                entry.fields.each() { |field|
-                    next if field.target != :both
-                    case field.qty
-                    when :single
-                        case field.category
-                        when :simple, :enum
-                        when :string
-                            output.printf("#{indent}if(#{source}->%s){\n", field.name)
-                            output.printf("#{indent}\tuint32_t len = strlen(#{source}->%s) + 1;\n", field.name)
-                            output.printf("#{indent}\tchild_offset += len + sizeof(len);\n", field.name)
-                            output.printf("#{indent}} else {\n")
-                            output.printf("#{indent}\tchild_offset += sizeof(uint32_t);\n", field.name)
-                            output.printf("#{indent}}\n")
-                        when :intern
-                        else
-                            raise("Unsupported data category for #{entry.name}.#{field.name}");
-                        end
-                    when :list, :container
-                        case field.category
-                        when :simple
-                            output.printf("#{indent}if(#{source}->%s){\n", field.name)
-                            output.printf("#{indent}\tchild_offset += (sizeof(*#{source}->%s) * #{source}->%sLen);\n",
-                                          field.name, field.name)
-                            output.printf("#{indent}}\n")
-                        when :string
-                            output.printf("#{indent}if(#{source}->%s){\n", field.name)
-                            output.printf("#{indent}\tunsigned int i; for(i = 0; i < #{source}->%sLen; i++){\n", 
-                                          field.name);
-                            output.printf("#{indent}\t\tif(#{source}->%s[i]){\n", field.name);
-                            output.printf("#{indent}\t\t\tuint32_t len = strlen(#{source}->%s[i]) + 1;\n", field.name)
-                            output.printf("#{indent}\t\t\tchild_offset += len + sizeof(len);\n", field.name)
-                            output.printf("#{indent}\t\t} else {\n")
-                            output.printf("#{indent}\t\t\tchild_offset += sizeof(uint32_t);\n", field.name)
-                            output.printf("#{indent}\t\t}\n")
-                            output.printf("#{indent}\t}\n\n");
-                            output.printf("#{indent}}\n")
-
-                        when :intern
-                        else
-                            raise("Unsupported data category for #{entry.name}.#{field.name}");
-                        end
-                    end
-                }
-
-                entry.fields.each() { |field|
-                    next if field.target != :both
-                    case field.qty
-                    when :single
-                        case field.category
-                        when :simple, :enum
-                        when :string
-                        when :intern
-                            output.printf("#{indent}if(#{source}->%s){\n", field.name)
-                            output.printf("#{indent}\tchild_offset = __#{libName}_%s_binary_comp_offset(#{source}->%s, child_offset);\n", 
-                                          field.data_type, field.name)
-                            output.printf("#{indent}}\n")
-                        else
-                            raise("Unsupported data category for #{entry.name}.#{field.name}");
-                        end
-                    when :list, :container
-                        case field.category
-                        when :simple
-                        when :string
-                        when :intern
-                            output.printf("#{indent}if(#{source}->%s){\n", field.name)
-                            output.printf("#{indent}\tchild_offset = __#{libName}_%s_binary_comp_offset(#{source}->%s, child_offset, 1);\n", 
-                                          field.data_type, field.name)
-                            output.printf("#{indent}}\n")
-                        else
-                            raise("Unsupported data category for #{entry.name}.#{field.name}");
-                        end
-                    end
-                }
-                if entry.attribute == :listable  then
- 
-                    output.printf("\t\tif(siblings == 0){\n")
-                    output.printf("\t\t\treturn child_offset;\n") 
-                    output.printf("\t\t}\n") 
-                    output.printf("\t}\n") 
-                end
-
-                output.puts "\treturn child_offset;"
-                output.puts "}"
 
                 output.puts("
 /** @} */
