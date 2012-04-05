@@ -525,6 +525,7 @@ __#{libName}_#{type} *__#{libName}_#{name}#{type}Container_xml_load_elements(xml
                 output.printf("\t\t\t  ENOENT, file);\n");
                 output.printf("\t\treturn NULL;\n");
                 output.printf("\t}\n\n");
+                output.printf("\txmlTextReaderSetErrorHandler(reader, __#{libName}_xmlTextReaderError, (void*)file);\n");
                 output.printf("\n\twhile (xmlTextReaderRead(reader) == 1) {\n");
                 output.printf("\t\tconst char *name = __#{libName}_get_name(reader);\n\n");
                 output.printf("\t\tswitch (xmlTextReaderNodeType(reader)) {\n");

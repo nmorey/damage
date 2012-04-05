@@ -165,6 +165,9 @@ const char *__#{libName}_get_name(xmlTextReaderPtr reader);
 void __#{libName}_eat_elnt(xmlTextReaderPtr reader);
 
 const char* __#{libName}_get_dtd_path(void);
+void __#{libName}_xmlTextReaderError(void *arg, const char * msg, 
+                                     xmlParserSeverities severity,
+                                     xmlTextReaderLocatorPtr locator);
 
 #define __#{libName}_error(str, err, arg...) {								\\
 		fprintf(stderr, \"error: #{libName}:\" str \"\\n\", ##arg);			\\
@@ -868,6 +871,13 @@ double __#{libName}_read_value_double_attr(xmlAttrPtr node)
 	return val;
 }
 
+void __#{libName}_xmlTextReaderError(void *arg, const char * msg, 
+                                     xmlParserSeverities severity __attribute__((unused)),
+                                     xmlTextReaderLocatorPtr locator){
+    const char* filename = (const char*)arg;
+    fprintf(stderr, \"%s:%d: error: %s\\n\", filename, xmlTextReaderLocatorLineNumber(locator), msg);
+    longjmp(__#{libName}_error_happened, EINVAL);
+}
 
 "
             end
