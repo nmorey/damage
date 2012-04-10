@@ -39,7 +39,8 @@ headers  := $(wildcard include/*.h include/#{libName}/*.h)
 objs     := $(patsubst src/%.c,obj/i686/%.o,$(srcs))
 objs64   := $(patsubst src/%.c,obj/x86_64/%.o,$(srcs))
 tests_src:= $(wildcard test/*.c)
-tests    := $(patsubst test/%.c,obj/tests/%,$(tests_src))
+tests    := $(patsubst test/%.c,obj/tests/%.x,$(tests_src))
+tests_ok    := $(patsubst test/%.c,obj/tests/%.ok,$(tests_src))
 lib      := obj/i686/lib#{libName}.a
 lib64    := obj/x86_64/lib#{libName}.a
 dlib      := obj/i686/lib#{libName}.so
@@ -74,6 +75,7 @@ endif
 all: $(libs) 
 
 tests: $(tests)
+runtests: $(tests_ok)
 
 doc:doc/doxygen/man/man3/#{libName}.3
 
@@ -84,9 +86,13 @@ doc/doxygen/man/man3/#{libName}.3: $(headers) doc/Doxyfile
 doc/doxygen/latex/refman.pdf:doc/doxygen/man/man3/#{libName}.3
 	make -C doc/doxygen/latex
 	
-obj/tests/%: test/%.c $(libdir)/lib#{libName}.a
+obj/tests/%.x: test/%.c $(libdir)/lib#{libName}.a
 	@if [ ! -d obj/tests/ ]; then mkdir -p obj/tests/; fi
 	$(CC) -o $@ $^ $(CFLAGS) $(libdir)/lib#{libName}.a -lxml2 -lz -lm
+
+obj/tests/%.ok: obj/tests/%.x 
+	$<
+	@date > $@
 
 $(lib): $(objs)
 	rm -f $@
