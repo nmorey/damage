@@ -129,12 +129,26 @@ __#{libName}_options __#{libName}_get_options(VALUE hash){
     return opts;
 }
 /*
+ * call-seq:
+ *   #{moduleName}::set_dtd_path = String
+ *
+ * Set the DTD search path for XMl validation
+ *
+ */
+static VALUE rub#{moduleName}_set_dtd(VALUE obj, VALUE val){
+     Check_Type(val, T_STRING);
+   __#{libName}_set_dtd_path(StringValuePtr(val));
+   return val;
+}
+
+/*
  * #{moduleName}  DAMAGE Module
  * 
  * #{description.config.description}
  */
 static void Init_#{moduleName}(void){
     #{moduleName} = rb_define_module(\"#{moduleName}\");
+    rb_define_module_function(#{moduleName}, \"set_dtd_path\", rub#{moduleName}_set_dtd, 1);
 }
 void Init_lib#{libName}_ruby(){
     Init_#{moduleName}();
