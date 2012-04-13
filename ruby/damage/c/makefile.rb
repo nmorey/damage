@@ -56,7 +56,7 @@ SUFFIX  := #{libName}
 
 CC=gcc
 CFLAGS_COMMON  := -Iinclude/ $(cflags) -Wall -Wextra -Werror -g -I/usr/include/libxml2 -Werror -fPIC -I.
-CFLAGS         := $(CFLAGS_COMMON) -O0
+CFLAGS         := $(CFLAGS_COMMON) -O3
 
 
 ifeq ($(ARCH), x86_64)
