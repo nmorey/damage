@@ -511,7 +511,15 @@ __#{libName}_#{type} *__#{libName}_#{name}#{type}Container_xml_load_elements(xml
                 output.printf("\t\twhile(1){\n");
                 output.printf("\t\t\tnbytes =  gzread(gzFd, &buf, sizeof(buf));\n");
                 output.printf("\t\t\tif(nbytes <= 0) break;\n");
-                output.printf("\t\t\twrite(unzippedFd, &buf, nbytes);\n");
+                output.printf("\t\t\tint sum = 0;\n");
+                output.printf("\t\t\twhile(sum < nbytes){\n");
+                output.printf("\t\t\t\tint ret = write(unzippedFd, &buf, nbytes);\n");
+                output.printf("\t\t\t\tif(ret == -1){\n");
+                output.printf("\t\t\t\t\tperror(\"Damage error\");\n");
+                output.printf("\t\t\t\t\texit(EXIT_FAILURE);\n");
+                output.printf("\t\t\t\t}\n");
+                output.printf("\t\t\t\tsum += ret;\n");
+                output.printf("\t\t\t}\n");
                 output.printf("\t\t}\n");
                 output.printf("\t\tlseek(unzippedFd, 0, SEEK_SET);\n");
                 output.printf("\t\tfd = unzippedFd;\n");
