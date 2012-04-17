@@ -484,6 +484,7 @@ __#{libName}_#{type} *__#{libName}_#{name}#{type}Container_xml_load_elements(xml
 ");
                 output.printf("__#{libName}_%s *__#{libName}_%s_xml_load_file(const char* file, __#{libName}_options opts){\n", entry.name, entry.name);
                 output.printf("\tconst char *matches[] =\n\t{ \"%s\", NULL};", entry.name); 
+                output.printf("\tchar *uzName = NULL;"); 
                 output.printf("\t__#{libName}_%s *ptr = NULL;\n", entry.name);
                 
                 output.printf("\tint ret, fd;\n");
@@ -506,7 +507,8 @@ __#{libName}_#{type} *__#{libName}_#{name}#{type}Container_xml_load_elements(xml
                 output.printf("\tif (opts & __#{libName.upcase}_OPTION_GZIPPED) {\n");
                 output.printf("\t\tint nbytes;\n");
                 output.printf("\t\tchar buf[8192];\n");
-                output.printf("\t\tint unzippedFd = mkstemp(strdup(\"/tmp/#{libName}.uz.XXXXXX\"));\n");
+                output.printf("\t\tuzName = strdup(\"/tmp/#{libName}.uz.XXXXXX\");\n");
+                output.printf("\t\tint unzippedFd = mkstemp(uzName);\n");
                 output.printf("\t\tgzFile gzFd = gzdopen(fd, \"r\");\n");
                 output.printf("\t\twhile(1){\n");
                 output.printf("\t\t\tnbytes =  gzread(gzFd, &buf, sizeof(buf));\n");
@@ -556,6 +558,12 @@ __#{libName}_#{type} *__#{libName}_#{name}#{type}Container_xml_load_elements(xml
                 output.printf("\t}\n");
                 output.printf("\txmlFreeTextReader(reader);\n");
                 output.printf("\txmlCleanupParser();\n");
+                output.printf("\tif (opts & __#{libName.upcase}_OPTION_GZIPPED) {\n");
+                output.printf("\t\tclose(fd);\n");
+                output.printf("\t\tunlink(uzName);\n");
+                output.printf("\t\tfree(uzName);\n");
+                output.printf("\t}\n");
+
                 output.printf("\treturn ptr;\n");
                 output.printf("}\n\n");
 
