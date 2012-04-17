@@ -28,7 +28,7 @@ module Damage
                     outputC.close()
 
 
-                    outputC = Damage::Files.createAndOpen("gen/#{description.config.libname}/src", "binary_writer_offset_#{name}.c")
+                    outputC = Damage::Files.createAndOpen("gen/#{description.config.libname}/src", "binary_writer_offset__#{name}.c")
                     self.genCompOffset(outputC, description, entry)
                     outputC.close()
                     outputC = Damage::Files.createAndOpen("gen/#{description.config.libname}/src", "binary_writer_wrapper__#{name}.c")
