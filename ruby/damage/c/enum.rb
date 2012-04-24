@@ -81,7 +81,7 @@ module Damage
 
                 output.puts("/** Global enum for #{libName} object type */")
                 output.puts("typedef enum {");
-                output.puts("\t__#{libName}_OBJECT_TYPE_N_A /** Unrecognized object */ = 0,");
+                output.puts("\t__#{libName.upcase}_OBJECT_TYPE_N_A /** Unrecognized object */ = 0,");
                 count = 1;
                 description.entries.each()  {|name, entry|
                     output.puts("\t__#{libName.upcase}_OBJECT_TYPE_#{name.upcase} /** #{name} object */ = #{count},");
