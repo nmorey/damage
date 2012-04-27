@@ -211,7 +211,12 @@ __#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load_partial(FILE*
                             output.printf("#{indent}if(#{source}->%s){\n", field.name)
                             output.printf("#{indent}\tuint32_t len;\n")
                             cRead(output, libName, zipped, "#{indent}\t", "&len", "sizeof(len)", "1", "file")
-                            output.printf("#{indent}\t#{source}->%s = __#{libName}_malloc(len * sizeof(char));\n", field.name)
+
+                            output.printf("#{indent}\tif(len > 0) {\n")
+                            output.printf("#{indent}\t\t#{source}->%s = __#{libName}_malloc(len * sizeof(char));\n", field.name)
+                            output.printf("#{indent}\t} else {\n")
+                            output.printf("#{indent}\t\t#{source}->%s = NULL;\n", field.name)
+                            output.printf("#{indent}\t} \n")
 
                             cRead(output, libName, zipped, "#{indent}\t", "#{source}->#{field.name}", "sizeof(char)", "len", "file")
                             output.printf("#{indent}} else {\n")
