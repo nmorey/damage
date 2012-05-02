@@ -91,7 +91,7 @@ module Damage
      */
     @Override
     protected void endElement(XMLParser parser, String qName) {
-        if (\"#{params[:name]}\".equals(qName)) {
+        if (getXMLName().equals(qName)) {
             parser.endElement();
 ");
         entry.fields.each() {|field|

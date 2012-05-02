@@ -19,13 +19,45 @@ module Damage
     module XmlWriter
       def write(output, libName, entry, pahole, params)
         output.puts("
+       /**
+        * Gets XML name
+        */
+       @Override
+       protected String getXMLName() {
+           return \"#{params[:name]}\";
+       }
+
+       /**
+        * notify an XML element has content
+        */
+       private boolean notifyContent(Writer w, boolean hasContent) throws IOException {
+          if (!hasContent) w.write(\">\\n\");
+          return true;
+       }
+
+       /**
+        * close XML element
+        */
+       private void closeElement(Writer w, int indent, boolean hasContent) throws IOException {
+           if (hasContent) {
+               indent(w, indent);
+               w.write(\"</\");
+               w.write(getXMLName());
+               w.write(\">\\n\");
+           } else {
+               w.write(\"/>\\n\");
+           }
+       }
+       
        /*
         * XML writer
         */
        @Override
        protected void xmlWrite(Writer w, int indent) throws IOException {
+         boolean hasContent = false;
          indent(w, indent);
-         w.write(\"<#{params[:name]} \");
+         w.write(\"<\");
+         w.write(getXMLName());
 ");
 
         entry.fields.each() {|field|
@@ -38,28 +70,27 @@ module Damage
                 output.printf("\t\t/** Writing #{field.name} */\n");
                 if field.category == :enum then
                   output.printf("\t\tif (_#{field.name} != #{field.java_type}.N_A) {\n");
-                  output.printf("\t\t\tw.write(\"#{field.name}=\\\"\");\n");
+                  output.printf("\t\t\tw.write(\" #{field.name}=\\\"\");\n");
                   output.printf("\t\t\tw.write(_#{field.name}.toString());\n");
-                  output.printf("\t\t\tw.write(\"\\\" \");\n");
+                  output.printf("\t\t\tw.write(\"\\\"\");\n");
                   output.printf("\t\t}\n");
                 else
                   if field.java_type == "String" then
                     output.printf("\t\tif (_#{field.name} != null) {\n");
-                    output.printf("\t\t\tw.write(\"#{field.name}=\\\"\");\n");
+                    output.printf("\t\t\tw.write(\" #{field.name}=\\\"\");\n");
                     output.printf("\t\t\tw.write(_#{field.name}.toString());\n");
-                    output.printf("\t\t\tw.write(\"\\\" \");\n");
+                    output.printf("\t\t\tw.write(\"\\\"\");\n");
                     output.printf("\t\t}\n");
                   else
-                    output.printf("\t\tw.write(\"#{field.name}=\\\"\");\n");
+                    output.printf("\t\tw.write(\" #{field.name}=\\\"\");\n");
                     output.printf("\t\tw.write(String.valueOf(_#{field.name}));\n");
-                    output.printf("\t\tw.write(\"\\\" \");\n");
+                    output.printf("\t\tw.write(\"\\\"\");\n");
                   end
                 end
               end
             end
           end
         }
-        output.printf("\t\tw.write(\">\\n\");\n");
 
         entry.fields.each() {|field|
           case field.attribute
@@ -73,10 +104,11 @@ module Damage
                 output.printf("\t\t/** Writing #{field.name} */\n");
                 output.printf("\t\tif (_#{field.name} != null) {\n");
                 output.printf("\t\t\tfor (#{field.java_type} i: _#{field.name}) {\n");
-                output.printf("\t\t\tindent(w, indent==-1?-1:indent+1);\n");
-                output.printf("\t\t\tw.write(\"<#{field.name}><![CDATA[\");\n");
-                output.printf("\t\t\tw.write(String.valueOf(i));\n");
-                output.printf("\t\t\tw.write(\"]]></#{field.name}>\\n\");\n");
+                output.printf("\t\t\t\thasContent = notifyContent(w, hasContent);\n");
+                output.printf("\t\t\t\tindent(w, indent==-1?-1:indent+1);\n");
+                output.printf("\t\t\t\tw.write(\"<#{field.name}><![CDATA[\");\n");
+                output.printf("\t\t\t\tw.write(String.valueOf(i));\n");
+                output.printf("\t\t\t\tw.write(\"]]></#{field.name}>\\n\");\n");
                 output.printf("\t\t\t}\n");
                 output.printf("\t\t}\n");
               end
@@ -85,11 +117,13 @@ module Damage
               when :single
                 output.printf("\t\t/** Writing #{field.name} */\n");
                 output.printf("\t\tif (_#{field.name} != null) {\n");
+		output.printf("\t\t\thasContent = notifyContent(w, hasContent);\n");
                 output.printf("\t\t\t_#{field.name}.xmlWrite(w, indent==-1?-1:indent+1);\n");
                 output.printf("\t\t}\n");
               when :list, :container
                 if field.attribute == :container
                   output.printf("\t\tif (_#{field.name} != null) {\n");
+		  output.printf("\t\t\thasContent = notifyContent(w, hasContent);\n");
                   output.printf("\t\t\tindent(w, indent==-1?-1:indent+1);\n");
                   output.printf("\t\t\tw.write(\"<#{field.name}>\\n\");\n");
                   output.printf("\t\t\tfor (#{field.java_type} i: _#{field.name}) {\n");
@@ -101,6 +135,7 @@ module Damage
                 else
                   output.printf("\t\tif (_#{field.name} != null) {\n");
                   output.printf("\t\t\tfor (#{field.java_type} i: _#{field.name}) {\n");
+                  output.printf("\t\t\thasContent = notifyContent(w, hasContent);\n");
                   output.printf("\t\t\t\ti.xmlWrite(w, indent==-1?-1:indent+1);\n");
                   output.printf("\t\t\t}\n");
                   output.printf("\t\t}\n");
@@ -118,10 +153,7 @@ module Damage
         }
 
         output.printf("
-         indent(w, indent);
-         w.write(\"</\");
-         w.write(\"#{params[:name]}\");
-         w.write(\">\\n\");
+         closeElement(w, indent, hasContent);
          }
 
 
