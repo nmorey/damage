@@ -326,8 +326,11 @@ public abstract class #{uppercaseLibName}Object {
 
   public void writeToXML(java.io.Writer w, boolean indent) throws IOException {
     w.write(\"<?xml version=\\\"1.0\\\" encoding=\\\"UTF-8\\\"?>\\n\");
+    w.write(\"<!DOCTYPE \" + getXMLName() + \" SYSTEM \\\"sigmacDB.dtd\\\" >\\n\");
     xmlWrite(w, indent?0:-1);
   } 
+
+  protected abstract String getXMLName();
   
   /**
    * Write this object in a xml File
