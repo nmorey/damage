@@ -88,7 +88,8 @@ module Damage
                     count += 1
                 }
                 output.puts("} __#{libName}_object_type;")
-                output.printf("\n\n");
+                output.printf("extern const char*__#{libName}_object_type_strings[#{description.entries.length+1}];\n\n");
+            output.printf("\n\n");
                 
                 output.puts("
 /** @} */
@@ -118,6 +119,14 @@ module Damage
                     }       
 
                 }
+                output.printf("\n\n");
+                output.puts("/** Global enum for #{libName} object type */")
+                output.puts("const char* __#{libName}_object_type_strings[#{description.entries.length + 1}] = {");
+                output.puts("\t\"N/A\",");
+                description.entries.each()  {|name, entry|
+                    output.puts("\t\"#{name}\",");
+                }
+                output.puts("};")
                 output.printf("\n\n");
             end
             module_function :genC
