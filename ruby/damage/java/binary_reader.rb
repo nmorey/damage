@@ -1,4 +1,4 @@
-# -*- coding: undecided -*-
+# -*- cofing: utf-8 -*-
 # Copyright (C) 2011  Nicolas Morey-Chaisemartin <nicolas@morey-chaisemartin.com>
 #
 # This program is free software; you can redistribute it and/or
