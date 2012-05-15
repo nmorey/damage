@@ -81,13 +81,13 @@ module Damage
 
                 output.puts("/** Global enum for #{libName} object type */")
                 output.puts("typedef enum {");
-                output.puts("\t__#{libName.upcase}_OBJECT_TYPE_N_A /** Unrecognized object */ = 0,");
+                output.printf("\t__#{libName.upcase}_OBJECT_TYPE_N_A /** Unrecognized object */ = 0");
                 count = 1;
                 description.entries.each()  {|name, entry|
-                    output.puts("\t__#{libName.upcase}_OBJECT_TYPE_#{name.upcase} /** #{name} object */ = #{count},");
+                    output.printf(",\n\t__#{libName.upcase}_OBJECT_TYPE_#{name.upcase} /** #{name} object */ = #{count}");
                     count += 1
                 }
-                output.puts("} __#{libName}_object_type;")
+                output.puts("\n} __#{libName}_object_type;")
                 output.printf("extern const char*__#{libName}_object_type_strings[#{description.entries.length+1}];\n\n");
             output.printf("\n\n");
                 
