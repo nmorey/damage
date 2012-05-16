@@ -39,8 +39,8 @@ module Damage
             super
             if @copyOnClose == true then
                 if FileUtils.compare_file("#{dir}/#{name}_", "#{dir}/#{name}") == true
-                    FileUtils.rm("#{dir}/#{name}_")
                 else
+                    STDOUT.puts "Copying #{dir}/#{name}_ -> #{dir}/#{name}"
                     FileUtils.mv("#{dir}/#{name}_",  "#{dir}/#{name}")
                 end
             end
