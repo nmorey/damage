@@ -40,7 +40,7 @@ module Damage
             if @copyOnClose == true then
                 if FileUtils.compare_file("#{dir}/#{name}_", "#{dir}/#{name}") == true
                 else
-                    STDOUT.puts "Copying #{dir}/#{name}_ -> #{dir}/#{name}"
+#                    STDOUT.puts "Copying #{dir}/#{name}_ -> #{dir}/#{name}"
                     FileUtils.mv("#{dir}/#{name}_",  "#{dir}/#{name}")
                 end
             end
