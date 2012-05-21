@@ -59,7 +59,6 @@ static VALUE #{params[:funcPrefix]}_#{field.name}_setRowip(VALUE self, VALUE val
     #{params[:cType]}* ptr;
     Data_Get_Struct(self, #{params[:cType]}, ptr);
     assert(ptr);
-    Check_Type(val, #{field.rubyType});
     ptr->#{field.name} = #{field.ruby2val}(val);
     return self;
 }
