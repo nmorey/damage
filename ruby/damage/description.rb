@@ -98,6 +98,10 @@ module Damage
             # Name of the other field to use to sort the Entry
             attr_accessor :sort_key
 
+            # For field with category :sort:
+            # Name of the other field to use to sort the Entry
+            attr_accessor :rubyType
+
             # Build a new Field from a parsed YAML tree
             def initialize(libName, entry, field)
 
@@ -168,6 +172,7 @@ module Damage
                         @default_val = "NULL"
                         @java_default_val="null"
                     end
+                    @rubyType = "T_STRING"
                 when "UL"
                     @data_type="unsigned long long"
                     @java_type = "long"
@@ -182,6 +187,7 @@ module Damage
                         @default_val = "0ULL" 
                         @java_default_val = "0L" 
                     end
+                    @rubyType = "T_BIGNUM"
                 when "SL"
                     @data_type="signed long long"
                     @java_type = "long"
@@ -196,6 +202,7 @@ module Damage
                         @default_val = "0LL" 
                         @java_default_val = "0LL" 
                     end
+                    @rubyType = "T_BIGNUM"
                 when "DL"
                     @data_type="double"
                     @java_type = "double"
@@ -214,6 +221,7 @@ module Damage
                     @printf=".16e"
                     @val2ruby = "rb_float_new"
                     @ruby2val = "NUM2DBL"
+                    @rubyType = "T_FLOAT"
                 when "UI"
                     @data_type = "unsigned int"
                     @java_type = "int"
@@ -228,6 +236,7 @@ module Damage
                     if @default_val == nil then
                         @java_default_val = @default_val = "0"
                     end
+                    @rubyType = "T_FIXNUM"
                 when "SI"
                     @data_type = "signed int"
                     @java_type = "int"
@@ -241,6 +250,7 @@ module Damage
                     if @default_val == nil then
                         @java_default_val = @default_val = "0"
                     end
+                    @rubyType = "T_FIXNUM"
                 when /ENUM\(([^)]*)\)/
                     @data_type = "unsigned int"
                     @java_type = @name.slice(0,1).upcase + @name.slice(1..-1)
@@ -269,7 +279,7 @@ module Damage
                         @java_default_val = "#{@java_type}.#{@default_val.sub(/[^[:alnum:]]/, "_").upcase}"
                         @default_val = "#{@enumPrefix}_#{@default_val.sub(/[^[:alnum:]]/, "_").upcase}"  
                     end
-
+                    @rubyType = "T_SYMBOL"
                 when /(S|STRUCT)\(([\w+ ]*)\)/
                     @data_type = $2
                     @java_type = @data_type.slice(0,1).upcase + @data_type.slice(1..-1)
@@ -280,7 +290,8 @@ module Damage
                         @java_default_val = "null"
                     end
                     puts "This format is not DTD compatible (Field #{@name} has type #{@data_type})" if ((@data_type != @name) && (@target != :mem) && (@attribute != :container))
-                when /(A|ARRAY)\(([\w+ ]*)\)/
+                     @rubyType = "T_DATA"
+               when /(A|ARRAY)\(([\w+ ]*)\)/
                     @data_type = "#{$2}*"
                     @java_type = $2.slice(0,1).upcase + $2.slice(1..-1) +"[]"
                     @category = :intern
@@ -288,6 +299,7 @@ module Damage
                         @default_val = "NULL"  
                         @java_default_val = "null"
                     end
+                    @rubyType = "T_DATA"
                 when "ID"
                     @category = :id
                     @default_val = "0UL"  if @default_val == nil
@@ -307,7 +319,8 @@ module Damage
                         @default_val = "NULL" 
                         @java_default_val = "null"
                     end
-                    puts "This format is not DTD compatible (Field #{@name} has type #{@data_type})" if ((@data_type != @name) && (@target != :mem) && (@attribute != :container))
+                       @rubyType = "T_DATA"
+                  puts "This format is not DTD compatible (Field #{@name} has type #{@data_type})" if ((@data_type != @name) && (@target != :mem) && (@attribute != :container))
 
                 else
                     raise("Field #{@name} has no data type...")

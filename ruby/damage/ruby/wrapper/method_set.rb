@@ -59,6 +59,7 @@ static VALUE #{params[:funcPrefix]}_#{field.name}_setRowip(VALUE self, VALUE val
     #{params[:cType]}* ptr;
     Data_Get_Struct(self, #{params[:cType]}, ptr);
     assert(ptr);
+    Check_Type(val, #{field.rubyType});
     ptr->#{field.name} = #{field.ruby2val}(val);
     return self;
 }
@@ -69,6 +70,7 @@ static VALUE #{params[:funcPrefix]}_#{field.name}_setRowip(VALUE self, VALUE val
     #{params[:cType]}* ptr;
     Data_Get_Struct(self, #{params[:cType]}, ptr);
     assert(ptr);
+    Check_Type(val, #{field.rubyType});
     if(ptr->#{field.name}) free(ptr->#{field.name});
     ptr->#{field.name} = strdup(StringValuePtr(val));
     return self;
@@ -100,10 +102,18 @@ static VALUE #{params[:funcPrefix]}_#{field.name}_setRowip(VALUE self, VALUE val
 "); 
 
                             when :intern
+                                subParams = Damage::Ruby::nameToParams(libName, field.data_type)
                                 output.puts("
 #{setStr}{
+    extern VALUE #{subParams[:classValue]};
     #{params[:cType]}* ptr;
     __#{libName}_#{field.data_type} *ptr2;
+    Check_Type(val, #{field.rubyType});
+    if(CLASS_OF(val) != #{subParams[:classValue]}){
+        rb_raise(rb_eArgError, \"Using object of class '%s' while expecting class '%s'\\n\", 
+            rb_obj_classname(val), rb_class2name(#{subParams[:classValue]}));
+    }
+
     Data_Get_Struct(self, #{params[:cType]}, ptr);
     Data_Get_Struct(val, __#{libName}_#{field.data_type}, ptr2);
     assert(ptr); assert(ptr2);
@@ -121,7 +131,7 @@ static VALUE #{params[:funcPrefix]}_#{field.name}_setRowip(VALUE self, VALUE val
     int i;
     Data_Get_Struct(self, #{params[:cType]}, ptr);
     assert(ptr);
-    Check_Type(val, T_SYMBOL);
+    Check_Type(val, #{field.rubyType});
 
     for(i = 0; i < #{field.enum.length + 1}; i++){
         if(#{entry.name}_#{field.name}_enumId[i] == SYM2ID(val)){
@@ -157,6 +167,7 @@ static VALUE #{params[:funcPrefix]}_#{field.name}_setRowip(VALUE self, VALUE val
     ptr->#{field.name}Len = RARRAY_LEN(val);
     for(i = 0; i < ptr->#{field.name}Len; i++){
         VALUE elnt = rb_ary_shift(val);
+        Check_Type(elnt, #{field.rubyType});
         ptr->#{field.name}[i] = strdup(StringValuePtr(elnt));
     }
     return self;
@@ -179,6 +190,7 @@ static VALUE #{params[:funcPrefix]}_#{field.name}_setRowip(VALUE self, VALUE val
     ptr->#{field.name}Len = RARRAY_LEN(val);
     for(i = 0; i < ptr->#{field.name}Len; i++){
         VALUE elnt = rb_ary_shift(val);
+        Check_Type(elnt, #{field.rubyType});
         ptr->#{field.name}[i] = #{field.ruby2val}(elnt);
     }
     return self;
@@ -196,6 +208,7 @@ static VALUE #{params[:funcPrefix]}_#{field.name}_setRowip(VALUE self, VALUE val
     }
     for(i = 0; i < ptr->#{field.name}Len; i++){
         VALUE elnt = rb_ary_shift(val);
+        Check_Type(elnt, #{field.rubyType});
         __#{libName.upcase}_ROWIP_PTR(ptr, #{field.name})[i] = #{field.ruby2val}(elnt);
     }
     return self;
@@ -208,8 +221,12 @@ static VALUE #{params[:funcPrefix]}_#{field.name}_setRowip(VALUE self, VALUE val
 extern VALUE #{subParams[:classValueList]};
 #{setStr}{
     #{params[:cType]}* ptr;
-    #{subParams[:cTypeList]}* list;
-
+    Check_Type(val, #{field.rubyType});
+    if(CLASS_OF(val) != #{subParams[:classValueList]}){
+        rb_raise(rb_eArgError, \"Using object of class '%s' while expecting class '%s'\\n\", 
+            rb_obj_classname(val), rb_class2name(#{subParams[:classValueList]}));
+    }
+   #{subParams[:cTypeList]}* list;
 
     Data_Get_Struct(self, #{params[:cType]}, ptr);
     assert(ptr);

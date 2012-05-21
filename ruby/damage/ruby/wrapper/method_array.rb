@@ -60,6 +60,11 @@ static VALUE #{params[:funcPrefixList]}_arrayAdd(VALUE self, VALUE obj){
     #{params[:cType]} *elnt;
 
     Data_Get_Struct(self, #{params[:cTypeList]}, ptr);
+    Check_Type(obj, T_DATA);
+    if(CLASS_OF(obj) != #{params[:classValue]}){
+        rb_raise(rb_eArgError, \"Using object of class '%s' while expecting class '%s'\\n\", 
+            rb_obj_classname(obj), rb_class2name(#{params[:classValue]}));
+    }
     Data_Get_Struct(obj, #{params[:cType]}, elnt);
     assert(ptr);
 
