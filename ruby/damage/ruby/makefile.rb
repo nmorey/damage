@@ -68,7 +68,7 @@ $(lib): $(srcs) $(headers)
 $(lib64):  $(srcs) $(headers)
 	+make -f Makefile
 
-ruby/lib#{libName}_ruby.so: ruby/ruby_#{libName}.c $(libs) 
+ruby/lib#{libName}_ruby.so: ruby/ruby_#{libName}.c $(libs) $(r_srcs)
 	+cd ruby; ruby extconf.rb; make $(MFLAGS)
 
 doc/ruby/index.html: ruby/ruby_#{libName}.c $(r_srcs)
