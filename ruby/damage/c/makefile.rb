@@ -55,7 +55,7 @@ PREFIX  := /usr
 SUFFIX  := #{libName}
 
 CC=gcc
-CFLAGS_COMMON  := -Iinclude/ $(cflags) -Wall -Wextra -Werror -g -I/usr/include/libxml2 -Werror -fPIC -I.
+CFLAGS_COMMON  := -Iinclude/ $(cflags) -Wall -Wextra -Werror -g -I/usr/include/libxml2 -Werror -fPIC -I. -std=gnu99
 CFLAGS         := $(CFLAGS_COMMON) -O3
 
 
