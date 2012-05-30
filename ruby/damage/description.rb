@@ -267,7 +267,7 @@ module Damage
                     @enum=[]
                     count = 1
                     $1.split('|').each() {|e|
-                        @enum << { :label => e.sub(/[^[:alnum:]]/, "_").upcase, :rubLabel => e.sub(/[^[:alnum:]]/, "_"),
+                        @enum << { :label => e.gsub(/[^[:alnum:]]/, "_").upcase, :rubLabel => e.gsub(/[^[:alnum:]]/, "_"),
                             :str => e, :count => count}
                         count += 1
                     }
