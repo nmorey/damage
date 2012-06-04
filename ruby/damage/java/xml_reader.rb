@@ -184,33 +184,9 @@ module Damage
                 check = 1
               when :list
                 check = 1
-                #output.printf("\t\t\t@SuppressWarnings(\"unchecked\")\n");
-                #output.printf("\t\t\tjava.util.List<Element> tmp=(java.util.List<Element>)el.elements(\"#{field.name}\");\n")
-                #output.printf("\t\t\tthis._#{field.name}=new #{field.java_type}[tmp.size()];\n");
-                #output.printf("\t\t\tint count = 0;\n");
-                #output.printf("\t\t\tfor (Element #{field.name}Element: tmp) {\n");
-                #output.printf("\t\t\t\tString #{field.name}String = #{field.name}Element.getTextTrim();\n");
-                case field.java_type
-                when "String"
-                  #output.printf("\t\t\t\tthis._#{field.name}[count++]=#{field.name}String.intern();\n")
-                when "int"
-                  #output.printf("\t\t\t\tthis._#{field.name}[count++]=Integer.parseInt(#{field.name}String);\n")
-                when "double"
-                  #output.printf("\t\t\t\tthis._#{field.name}[count++]=Double.parseDouble(#{field.name}String);\n")
-                when "byte"
-                  #output.printf("\t\t\t\tthis._#{field.name}[count++]=Byte.parseByte(#{field.name}String);\n")
-                when "short"
-                  #output.printf("\t\t\t\tthis._#{field.name}[count++]=Short.parseShort(#{field.name}String);\n")
-                when "char"
-                  #output.printf("\t\t\t\tthis._#{field.name}[count++]=#{field.name}String.charAt(0);\n")
-                when "float"
-                  #output.printf("\t\t\t\tthis._#{field.name}[count++]=Float.parseFloat(#{field.name}String);\n")
-                when "long"
-                  #output.printf("\t\t\t\tthis._#{field.name}[count++]=Long.parseLong(#{field.name}String);\n")
-                else
-                  raise("Unsupported java-type for #{entry.name}.#{field.name}");
-                end
-                #output.printf("\t\t\t}\n");
+		output.printf("\t\tif (\"#{field.name}\".equals(qName)) {\n");
+		output.printf("\t\t\tparser.waitForElement(qName);\n");
+                output.printf("\t\t}\n");
               else
                 raise("Unsupported data qty for #{entry.name}.#{field.name}");
               end
