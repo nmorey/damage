@@ -84,7 +84,8 @@ module Damage
                         when :simple
                             output.printf("\t#{printFunc}(file, \" #{field.name}=\\\"%%#{field.printf}\\\"\", ptr->#{field.name});\n");
                         when :enum
-                            output.printf("\t#{printFunc}(file, \" #{field.name}=\\\"%%s\\\"\", __#{libName}_#{entry.name}_#{field.name}_strings[ptr->#{field.name}]);\n") 
+                            output.printf("\tif(ptr->#{field.name} > 0)\n")
+                            output.printf("\t\t#{printFunc}(file, \" #{field.name}=\\\"%%s\\\"\", __#{libName}_#{entry.name}_#{field.name}_strings[ptr->#{field.name}]);\n")
                         when :string
                             output.printf("\tif(ptr->#{field.name} != NULL){\n");
                             output.printf("\t\t#{printFunc}(file, \" #{field.name}=\\\"%%s\\\"\", ptr->#{field.name});\n");
