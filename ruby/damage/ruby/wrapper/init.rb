@@ -28,6 +28,21 @@ module Damage
  */
 static
 void Init_#{params[:className]}(void){
+")
+                    entry.enums.each() {|field|
+                        output.puts("
+    {
+        int i;
+        for(i = 0; i < #{field.enum.length + 1}; i++){
+            #{entry.name}_#{field.name}_enumId[i] = rb_intern(__#{params[:libName]}_#{entry.name}_#{field.name}_strings[i]);
+        }
+    }
+") }
+                    if entry.attribute == :enum
+                        output.puts "}"
+                        return
+                    end
+                    output.puts("
     #{params[:classValue]} = rb_define_class_under(#{params[:moduleName]}, \"#{params[:className]}\", rb_cObject);
     rb_define_alloc_func(#{params[:classValue]}, #{params[:funcPrefix]}_alloc);
     rb_define_method(#{params[:classValue]}, \"initialize\", #{params[:funcPrefix]}_initialize, 0);
@@ -148,15 +163,7 @@ void Init_#{params[:classNameListRowip]}(){
                     output.puts "    Init_#{params[:classNameList]}();" if entry.attribute == :listable
                     output.puts "    Init_#{params[:classNameListRowip]}();" if entry.attribute == :listable && rowip == true
                     
-                    entry.enums.each() {|field|
-                        output.puts("
-    {
-        int i;
-        for(i = 0; i < #{field.enum.length + 1}; i++){
-            #{entry.name}_#{field.name}_enumId[i] = rb_intern(#{entry.name}_#{field.name}_enum[i]);
-        }
-    }
-") }
+ 
                     output.puts("
 }
 ");

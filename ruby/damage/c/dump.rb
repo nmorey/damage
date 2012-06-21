@@ -82,6 +82,11 @@ module Damage
                             output.printf("\t\tfirst = 0;\n")
                             output.printf("\t\tfprintf(file, \"#{field.name}: %%s\\n\", "+
                                           "__#{libName}_#{entry.name}_#{field.name}_strings[ptr->#{field.name}]);\n") 
+                        when :genum
+                            output.printf("\t\t__#{libName}_paddOutput(file, indent, listable, first);\n")
+                            output.printf("\t\tfirst = 0;\n")
+                            output.printf("\t\tfprintf(file, \"#{field.name}: %%s\\n\", "+
+                                          "__#{libName}_#{field.genumEntry}_#{field.genumField}_strings[ptr->#{field.name}]);\n") 
 
                         when :string
                             output.printf("\t\tif(ptr->#{field.name} != NULL){\n");

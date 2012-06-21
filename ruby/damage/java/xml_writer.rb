@@ -64,11 +64,11 @@ module Damage
           case field.attribute
           when :container,:none
             case field.category
-            when :simple, :enum, :string,:id, :idref
+            when :simple, :enum, :string,:id, :idref, :genum
               case field.qty
               when :single
                 output.printf("\t\t/** Writing #{field.name} */\n");
-                if field.category == :enum then
+                if field.category == :enum || field.category == :genum then
                   output.printf("\t\tif (_#{field.name} != #{field.java_type}.N_A) {\n");
                   output.printf("\t\t\tw.write(\" #{field.name}=\\\"\");\n");
                   output.printf("\t\t\tw.write(_#{field.name}.toString());\n");
@@ -96,7 +96,7 @@ module Damage
           case field.attribute
           when :container,:none
             case field.category
-            when :simple, :enum, :string,:id, :idref
+            when :simple, :enum, :string,:id, :idref, :genum
               case field.qty
               when :single
                 # already treated

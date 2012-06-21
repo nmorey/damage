@@ -1,4 +1,4 @@
-# -*- cofing: utf-8 -*-
+# -*- coding: utf-8 -*-
 # Copyright (C) 2012  Nicolas Morey-Chaisemartin <nicolas@morey-chaisemartin.com>
 #
 # This program is free software; you can redistribute it and/or
@@ -53,7 +53,7 @@ output.puts("
                             when "double"
                                 output.printf("\t\tstruct.putDouble(#{pahole[field.name][:offset]}, this._#{field.name});\n")
                             end
-                        when :enum
+                        when :enum, :genum
                             output.printf("\t\tstruct.putInt(#{pahole[field.name][:offset]}, this._#{field.name}.ordinal());\n")
                         when :string
                             output.printf("\t\tstruct.putLong(#{pahole[field.name][:offset]}, cur_offset);\n")
@@ -109,7 +109,7 @@ output.puts("
                     when :single
                         case field.category
                         when :simple
-                        when :enum
+                        when :enum, :genum
                             #Ignore was done inline
                         when :string
                             output.printf("\t\twriteStringToFile(output, this._#{field.name});\n")

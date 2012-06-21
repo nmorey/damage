@@ -37,7 +37,7 @@ module Damage
             module_function :generate
 
             private
-            def genWrapperC(output, entry, libName, rowip)
+            def genWrapperC(output, description, entry, libName, rowip)
                 params=Damage::Ruby::nameToParams(libName, entry.name)
                 Header::write(output, entry, libName, params, rowip)
                 Mark::write(output, entry, libName, params, rowip)
@@ -46,7 +46,7 @@ module Damage
                 ToFile::write(output, entry, libName, params, rowip)
                 NewFile::write(output, entry, libName, params, rowip)
                 MethodGet::write(output, entry, libName, params, rowip)
-                MethodSet::write(output, entry, libName, params, rowip)
+                MethodSet::write(output, description, entry, libName, params, rowip)
                 MethodCompare::write(output, entry, libName, params, rowip)
                 if(entry.attribute == :listable)
                     MethodArray::write(output, entry, libName, params, rowip)
@@ -55,7 +55,11 @@ module Damage
                 #        MethodAcc::write(output, entry, params, rowip)
                 Init::write(output, entry, libName, params, rowip)
             end
-
+            def genWrapperEnum(output, description, entry, libName, rowip)
+                params=Damage::Ruby::nameToParams(libName, entry.name)
+                Header::write(output, entry, libName, params, rowip)
+                Init::write(output, entry, libName, params, rowip)
+            end
             def genWrapperH(output, entry)
             end
 
@@ -69,14 +73,26 @@ module Damage
                     
                     #          outputH = Damage::Files.createAndOpen(outdir, "ruby_#{entry.name}.h")
                     outputC = Damage::Files.createAndOpen(outdir, "ruby_#{entry.name}.c") 
-                    genWrapperC(outputC, entry, libName, description.config.rowip);
+                    genWrapperC(outputC, description, entry, libName, description.config.rowip);
+                    #          genWrapperH(outputH, entry);
+                    outputC.close()
+                    #          outputH.close()
+
+                } 
+
+                description.enums.each(){ |name, entry|
+                    params=Damage::Ruby::nameToParams(libName, entry.name)
+                    
+                    #          outputH = Damage::Files.createAndOpen(outdir, "ruby_#{entry.name}.h")
+                    outputC = Damage::Files.createAndOpen(outdir, "ruby_#{entry.name}.c") 
+                    genWrapperEnum(outputC, description, entry, libName, description.config.rowip);
                     #          genWrapperH(outputH, entry);
                     outputC.close()
                     #          outputH.close()
 
                 } 
             end
-            module_function :genWrapperC, :genWrapperH, :genWrappers
+            module_function :genWrapperC, :genWrapperH, :genWrappers, :genWrapperEnum
 
         end
     end

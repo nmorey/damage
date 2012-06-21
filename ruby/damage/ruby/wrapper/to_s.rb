@@ -73,7 +73,16 @@ VALUE #{params[:funcPrefix]}_xml_to_string(VALUE self, int indent){
     {
     indentToString(string, indent, listable, first);
     string = rb_str_concat(string, rb_str_new2(strdup(\"#{field.name}: \")));
-    string = rb_str_concat(string, rb_str_new2(strdup(#{entry.name}_#{field.name}_enum[ptr->#{field.name}])));
+    string = rb_str_concat(string, rb_str_new2(strdup(__#{params[:libName]}_#{entry.name}_#{field.name}_strings[ptr->#{field.name}])));
+    string = rb_str_concat(string, rb_str_new2(strdup(\"\\n\")));
+    }
+")
+                            when :genum
+                                output.puts("
+    {
+    indentToString(string, indent, listable, first);
+    string = rb_str_concat(string, rb_str_new2(strdup(\"#{field.name}: \")));
+    string = rb_str_concat(string, rb_str_new2(strdup(__#{params[:libName]}_#{field.genumEntry}_#{field.genumField}_strings[ptr->#{field.name}])));
     string = rb_str_concat(string, rb_str_new2(strdup(\"\\n\")));
     }
 ")

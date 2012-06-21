@@ -34,16 +34,16 @@ module Damage
           case field.attribute
           when :container,:none
             case field.category
-            when :simple, :enum, :string,:id, :idref
+            when :simple, :enum, :string,:id, :idref, :genum
               case field.qty
               when :single
                 output.printf("\t\t\t/** Reading #{field.name} */\n");
                 output.printf("\t\t\tString _#{field.name}_tmp = attributes.getValue(\"#{field.name}\");\n");
                 output.printf("\t\t\tif (_#{field.name}_tmp != null) {\n");
-                if field.category == :enum then
-                  output.printf("\t\t\t\tfor (#{field.java_type} tmp#{field.java_type}: #{field.java_type}.values()) {\n");
-                  output.printf("\t\t\t\t\tif (_#{field.name}_tmp.equals(tmp#{field.java_type}.toString())) {\n");
-                  output.printf("\t\t\t\t\t\tret._#{field.name} = tmp#{field.java_type};\n");
+                if field.category == :enum  || field.category == :genum then
+                  output.printf("\t\t\t\tfor (#{field.java_type} tmp#{field.java_type.gsub(/\./, "_")}: #{field.java_type}.values()) {\n");
+                  output.printf("\t\t\t\t\tif (_#{field.name}_tmp.equals(tmp#{field.java_type.gsub(/\./, "_")}.toString())) {\n");
+                  output.printf("\t\t\t\t\t\tret._#{field.name} = tmp#{field.java_type.gsub(/\./, "_")};\n");
                   output.printf("\t\t\t\t\t\tbreak;\n");
                   output.printf("\t\t\t\t\t}\n");
                   output.printf("\t\t\t\t}\n");
@@ -119,7 +119,7 @@ module Damage
           case field.attribute
           when :container,:none
             case field.category
-            when :simple, :enum, :string,:id, :idref
+            when :simple, :enum, :string,:id, :idref, :genum
               case field.qty
               when :list
                 check = 1
@@ -178,7 +178,7 @@ module Damage
             check = 1
           when :container,:none
             case field.category
-            when :simple, :enum, :string,:id, :idref
+            when :simple, :enum, :string,:id, :idref, :genum
               case field.qty
               when :single
                 check = 1

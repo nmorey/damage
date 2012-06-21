@@ -86,6 +86,9 @@ module Damage
                         when :enum
                             output.printf("\tif(ptr->#{field.name} > 0)\n")
                             output.printf("\t\t#{printFunc}(file, \" #{field.name}=\\\"%%s\\\"\", __#{libName}_#{entry.name}_#{field.name}_strings[ptr->#{field.name}]);\n")
+                        when :genum
+                            output.printf("\tif(ptr->#{field.name} > 0)\n")
+                            output.printf("\t\t#{printFunc}(file, \" #{field.name}=\\\"%%s\\\"\", __#{libName}_#{field.genumEntry}_#{field.genumField}_strings[ptr->#{field.name}]);\n")
                         when :string
                             output.printf("\tif(ptr->#{field.name} != NULL){\n");
                             output.printf("\t\t#{printFunc}(file, \" #{field.name}=\\\"%%s\\\"\", ptr->#{field.name});\n");
@@ -110,7 +113,7 @@ module Damage
                     when :single
                         case field.category
                         when :simple
-                        when :enum
+                        when :enum, :genum
                         when :string
                         when :intern
                             output.printf("\tif(ptr->#{field.name} != NULL){\n");

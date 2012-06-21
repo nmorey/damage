@@ -1,4 +1,4 @@
-# -*- cofing: utf-8 -*-
+# -*- coding: utf-8 -*-
 # Copyright (C) 2011  Nicolas Morey-Chaisemartin <nicolas@morey-chaisemartin.com>
 #
 # This program is free software; you can redistribute it and/or
@@ -89,6 +89,11 @@ module Damage
                             output.printf("#{indent}\tint _val = in.getInt(#{pahole[field.name][:offset]});\n")
                             output.printf("#{indent}\tobj._#{field.name} = idTo#{field.java_type}(_val);\n")
                             output.printf("#{indent}}\n")
+                        when :genum
+                            output.printf("#{indent}{\n")
+                            output.printf("#{indent}\tint _val = in.getInt(#{pahole[field.name][:offset]});\n")
+                            output.printf("#{indent}\tobj._#{field.name} = #{field.genumEntry.slice(0,1).upcase + field.genumEntry.slice(1..-1)}.idTo#{field.genumField.slice(0,1).upcase + field.genumField.slice(1..-1)}(_val);\n")
+                            output.printf("#{indent}}\n")
 
                         when :string
                             output.printf("#{indent}obj._#{field.name} = readString(fc);\n")
@@ -152,7 +157,7 @@ module Damage
                     when :single
                         case field.category
                         when :simple
-                        when :enum
+                        when :enum, :genum
                         when :string
                         when :intern
                             output.printf("#{indent}field_offset = in.getInt(#{pahole[field.name][:offset]});\n")
@@ -246,6 +251,11 @@ module Damage
                             output.printf("#{indent}\tint _val = in.getInt(#{pahole[field.name][:offset]});\n")
                             output.printf("#{indent}\tobj._#{field.name} = idTo#{field.java_type}(_val);\n")
                             output.printf("#{indent}}\n")
+                        when :genum
+                            output.printf("#{indent}{\n")
+                            output.printf("#{indent}\tint _val = in.getInt(#{pahole[field.name][:offset]});\n")
+                            output.printf("#{indent}\tobj._#{field.name} = #{field.genumEntry.slice(0,1).upcase + field.genumEntry.slice(1..-1)}.idTo#{field.genumField.slice(0,1).upcase + field.genumField.slice(1..-1)}(_val);\n")
+                            output.printf("#{indent}}\n")
 
                         when :string
                             output.printf("#{indent}obj._#{field.name} = readString(zip);\n")
@@ -312,7 +322,7 @@ module Damage
                     when :single
                         case field.category
                         when :simple
-                        when :enum
+                        when :enum, :genum
                         when :string
                         when :intern
                             output.printf("#{indent}field_offset = in.getInt(#{pahole[field.name][:offset]});\n")

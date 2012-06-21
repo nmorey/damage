@@ -206,7 +206,7 @@ __#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load_partial(FILE*
                     case field.qty
                     when :single
                         case field.category
-                        when :simple, :enum
+                        when :simple, :enum, :genum
                         when :string
                             output.printf("#{indent}if(#{source}->%s){\n", field.name)
                             output.printf("#{indent}\tuint32_t len;\n")
@@ -276,7 +276,7 @@ __#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load_partial(FILE*
                     case field.qty
                     when :single
                         case field.category
-                        when :simple, :enum
+                        when :simple, :enum, :genum
                         when :string
                         when :intern
                             output.printf("#{indent}if((opt->#{field.data_type} != 0) && (#{source}->%s != NULL)){\n", field.name)

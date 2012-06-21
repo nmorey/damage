@@ -75,6 +75,10 @@ module Damage
 
             # Possible values of the field  if category is :enum
             attr_accessor :enum
+            # Entry that defines the global enum for for :genum fields
+            attr_accessor :genumEntry
+            # Field that defines the global enum for for :genum fields
+            attr_accessor :genumField
             # Possible values  of the field  if category is :enum in DTD form
             attr_accessor :enumList
             # Prefix for enum name
@@ -251,6 +255,29 @@ module Damage
                         @java_default_val = @default_val = "0"
                     end
                     @rubyType = "T_FIXNUM"
+                when /GENUM\( *([^),]*) *, *([^),]*) *\)/
+                    @data_type = "unsigned int"
+                    @java_type = $1.slice(0,1).upcase + $1.slice(1..-1) +
+                        "." + $2.slice(0,1).upcase + $2.slice(1..-1)
+                    @ruby_type = ":label"
+                    @category = :genum
+                    @type_size = 4
+                    @genumEntry = $1
+                    @genumField = $2
+                    @enumPrefix="__#{libName.upcase}_#{$1.upcase}_#{$2.upcase}"
+                    raise("Enums cannot be used as containers or list") if @qty != :single
+                    @is_attribute = true if @qty == :single
+                    @printf="u"
+                    @val2ruby = "UINT2NUM"
+                    @ruby2val = "NUM2UINT"
+                    if @default_val == nil then 
+                        @default_val = "0"  
+                        @java_default_val = "#{@java_type}.N_A"
+                    else
+                        @java_default_val = "#{@java_type}.#{@default_val.sub(/[^[:alnum:]]/, "_").upcase}"
+                        @default_val = "#{@enumPrefix}_#{@default_val.sub(/[^[:alnum:]]/, "_").upcase}"  
+                    end
+                    @rubyType = "T_SYMBOL"
                 when /ENUM\(([^)]*)\)/
                     @data_type = "unsigned int"
                     @java_type = @name.slice(0,1).upcase + @name.slice(1..-1)
@@ -272,6 +299,7 @@ module Damage
                         count += 1
                     }
                     @enumList = nil if @enumList =~ /\//
+
                     if @default_val == nil then 
                         @default_val = "0"  
                         @java_default_val = "#{@java_type}.N_A"
@@ -280,6 +308,7 @@ module Damage
                         @default_val = "#{@enumPrefix}_#{@default_val.sub(/[^[:alnum:]]/, "_").upcase}"  
                     end
                     @rubyType = "T_SYMBOL"
+
                 when /(S|STRUCT)\(([\w+ ]*)\)/
                     @data_type = $2
                     @java_type = @data_type.slice(0,1).upcase + @data_type.slice(1..-1)
@@ -290,8 +319,8 @@ module Damage
                         @java_default_val = "null"
                     end
                     puts "This format is not DTD compatible (Field #{@name} has type #{@data_type})" if ((@data_type != @name) && (@target != :mem) && (@attribute != :container))
-                     @rubyType = "T_DATA"
-               when /(A|ARRAY)\(([\w+ ]*)\)/
+                    @rubyType = "T_DATA"
+                when /(A|ARRAY)\(([\w+ ]*)\)/
                     @data_type = "#{$2}*"
                     @java_type = $2.slice(0,1).upcase + $2.slice(1..-1) +"[]"
                     @category = :intern
@@ -319,8 +348,8 @@ module Damage
                         @default_val = "NULL" 
                         @java_default_val = "null"
                     end
-                       @rubyType = "T_DATA"
-                  puts "This format is not DTD compatible (Field #{@name} has type #{@data_type})" if ((@data_type != @name) && (@target != :mem) && (@attribute != :container))
+                    @rubyType = "T_DATA"
+                    puts "This format is not DTD compatible (Field #{@name} has type #{@data_type})" if ((@data_type != @name) && (@target != :mem) && (@attribute != :container))
 
                 else
                     raise("Field #{@name} has no data type...")
@@ -356,7 +385,8 @@ module Damage
             attr_accessor :description
             # Wheter two entries of this types are comparable or not. If not, they are always equals
             attr_accessor :comparable
-
+            # Fields sorted by name
+            attr_accessor :s_fields
             # Build an entry from a parsed YAML tree
 
             def initialize(libName, entry)
@@ -370,7 +400,7 @@ module Damage
                 @sort = []
                 @containers = {}
                 @enums=[]
-
+                @s_fields = {}
                 @description = entry["description"]
 
                 case entry["attribute"]
@@ -378,6 +408,8 @@ module Damage
                     @attribute = :top
                 when "LISTABLE"
                     @attribute = :listable
+                when "ENUM"
+                    @attribute = :enum
                 when nil
                 else
                     raise("Unknown entry attribute #{entry["attribute"]}")
@@ -419,7 +451,7 @@ module Damage
                     end
                     @containers[_field.name] = _field.data_type if _field.qty == :container
 
-
+                    @s_fields[_field.name] = _field
 
 
                 } if entry["fields"] != nil
@@ -469,6 +501,8 @@ module Damage
             attr_accessor :config
             # Returns a map of the DB entries index by their name
             attr_accessor :entries
+            # Returns a map of the DB globa enums index by their name
+            attr_accessor :enums
             # Returns the top entry (highesht entry of all)
             attr_accessor :top_entry
             # Returns a list of all the containers defined in the entries
@@ -482,7 +516,7 @@ module Damage
                 @config = Config.new(tree["config"])
                 @entries = {}
                 @containers = {}
-
+                @enums = {}
                 #Iterate one each entry and eventually store it as top or store its containers as needed
                 tree["entries"].each() { |entry|
                     _entry = Entry.new(config.libname, entry)
@@ -492,7 +526,11 @@ module Damage
                         @containers[name] = data_type
 
                     }
-                    @entries[_entry.name] = _entry
+                    if _entry.attribute == :enum then
+                        @enums[_entry.name] = _entry
+                    else
+                        @entries[_entry.name] = _entry
+                    end
                 }
             end
         end

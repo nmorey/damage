@@ -30,7 +30,7 @@ module Damage
                     case field.qty
                     when :single
                         case field.category
-                        when :simple, :enum
+                        when :simple, :enum, :genum
                         when :string
                             output.printf("\t\tcur_offset += computeStringLength(this._#{field.name});\n")
                         when :intern
