@@ -48,7 +48,7 @@ module Damage
                                 maxOccurs = "+" if field.required == true
                             end
                             if ( field.target != :mem && field.is_attribute != true) then
-                                if field.attribute == :container || field.category == :simple then
+                                if field.attribute == :container || field.category == :simple || field.category == :string then
                                     output.printf("#{comma}#{field.name}#{maxOccurs}")
                                     if field.category == :simple && simpleList[field.name] == nil
                                         strList << "<!ELEMENT #{field.name} (#PCDATA)>\n"
