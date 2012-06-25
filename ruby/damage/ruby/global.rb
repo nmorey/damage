@@ -147,6 +147,29 @@ static VALUE rub#{moduleName}_set_dtd(VALUE obj, VALUE val){
  * #{description.config.description}
  */
 static void Init_#{moduleName}(void){
+    /*
+     * Document-module: #{moduleName}
+     *
+     * == Summary
+     *
+     * Damage Generate Module: #{moduleName}
+     * Version: #{description.config.version}
+     * #{description.config.description}     *
+     * == Classes
+     *")
+          description.entries.each(){ |name, entry|
+              params=Damage::Ruby::nameToParams(libName, entry.name)
+              output.puts("     * - #{moduleName}::#{params[:className]}")
+              output.puts("     * - #{moduleName}::#{params[:classNameRowip]}") if description.config.rowip == true
+              if entry.attribute == :listable
+                  output.puts("     * - #{moduleName}::#{params[:classNameList]}")
+                  output.puts("     * - #{moduleName}::#{params[:classNameListRowip]}") if description.config.rowip == true
+              end
+
+          }
+          output.puts(
+"     *
+     */
     #{moduleName} = rb_define_module(\"#{moduleName}\");
     rb_define_module_function(#{moduleName}, \"set_dtd_path\", rub#{moduleName}_set_dtd, 1);
 }

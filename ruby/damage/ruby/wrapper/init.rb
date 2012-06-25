@@ -43,6 +43,11 @@ void Init_#{params[:className]}(void){
                         return
                     end
                     output.puts("
+    /*
+     * Document-class: #{params[:moduleName]}::#{params[:className]}
+     *
+     * #{entry.description}
+     */
     #{params[:classValue]} = rb_define_class_under(#{params[:moduleName]}, \"#{params[:className]}\", rb_cObject);
     rb_define_alloc_func(#{params[:classValue]}, #{params[:funcPrefix]}_alloc);
     rb_define_method(#{params[:classValue]}, \"initialize\", #{params[:funcPrefix]}_initialize, 0);
@@ -86,6 +91,12 @@ void Init_#{params[:className]}(void){
  */
 static
 void Init_#{params[:classNameRowip]}(void){
+    /*
+     * Document-class: #{params[:moduleName]}::#{params[:classNameRowip]}
+     *
+     * #{entry.description}
+     * ROWIP Version
+     */
     #{params[:classValueRowip]} = rb_define_class_under(#{params[:moduleName]}, \"#{params[:classNameRowip]}\", rb_cObject);
     rb_define_method(#{params[:classValueRowip]}, \"to_binary_rowip\", #{params[:funcPrefix]}_to_binary_rowip, 1);
     rb_define_singleton_method(#{params[:classValueRowip]}, \"load_binary_rowip\", #{params[:funcPrefix]}_load_binary_rowip, 2);
@@ -116,6 +127,11 @@ void Init_#{params[:classNameRowip]}(void){
  */
 static
 void Init_#{params[:classNameList]}(){
+    /*
+     * Document-class: #{params[:moduleName]}::#{params[:classNameList]}
+     *
+     * List of #{params[:className]}
+     */
     #{params[:classValueList]} = rb_define_class_under(#{params[:moduleName]}, \"#{params[:classNameList]}\", rb_cObject);
 
     rb_define_alloc_func(#{params[:classValueList]}, #{params[:funcPrefixList]}_alloc);
@@ -145,6 +161,11 @@ void Init_#{params[:classNameList]}(){
  */
 static
 void Init_#{params[:classNameListRowip]}(){
+    /*
+     * Document-class: #{params[:moduleName]}::#{params[:classNameListRowip]}
+     *
+     * List of #{params[:className]}, ROWIP Version
+     */
     #{params[:classValueListRowip]} = rb_define_class_under(#{params[:moduleName]}, \"#{params[:classNameListRowip]}\", rb_cObject);
     rb_include_module(#{params[:classValueListRowip]}, rb_mEnumerable);
     rb_define_method(#{params[:classValueListRowip]}, \"[]\", #{params[:funcPrefixList]}_arrayGetRowip, 1);
