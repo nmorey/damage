@@ -91,6 +91,9 @@ module Damage
                             output.puts "\t\tptr->#{field.name}_str = strdup(_str);\n"
                             output.puts "\t\tptr->#{field.name} = first;\n"
                             output.puts "\t}\n"
+                        when :enum
+                            next if field.qty != :single
+                            output.puts "\tptr->#{field.name} = 1;"
                         end
                     }
                     if entry.attribute == :listable then
