@@ -1,4 +1,4 @@
-# -*- cofing: utf-8 -*-
+# -*- coding: utf-8 -*-
 # Copyright (C) 2011  Nicolas Morey-Chaisemartin <nicolas@morey-chaisemartin.com>
 #
 # This program is free software; you can redistribute it and/or
@@ -54,13 +54,22 @@ module Damage
                         when :intern
                             output.puts "\tptr->#{field.name} = create#{field.data_type}(#{nb_neighbours});"
                         when :string
+                            if field.qty != :single
+                                output.puts "ptr->#{field.name}Len = rand()%10;"
+                                output.puts "ptr->#{field.name} = malloc(sizeof(*ptr->#{field.name}) * ptr->#{field.name}Len);"
+                                output.puts "\tfor(unsigned _idx = 0; _idx < ptr->#{field.name}Len; ++_idx)"
+                            end
                             output.puts "\t{\n"
-                                output.puts "\t\tunsigned long i, len = rand()%128;\n"
-                                output.puts "\t\tchar _str[129];\n"
-                                output.puts "\t\tfor(i=0; i < len; i++){ _str[i] = (rand() % 26) + 'a';}\n"
-                                output.puts "\t\t_str[len] = 0;\n"
+                            output.puts "\t\tunsigned long i, len = rand()%128;\n"
+                            output.puts "\t\tchar _str[129];\n"
+                            output.puts "\t\tfor(i=0; i < len; i++){ _str[i] = (rand() % 26) + 'a';}\n"
+                            output.puts "\t\t_str[len] = 0;\n"
+                            if field.qty != :single
+                                output.puts "\t\tptr->#{field.name}[_idx] = strdup(_str);\n"
+                            else
                                 output.puts "\t\tptr->#{field.name} = strdup(_str);\n"
-                                output.puts "\t}\n"
+                            end
+                            output.puts "\t}\n"
                         when :simple
                             next if field.qty != :single
                             case field.data_type
@@ -278,7 +287,7 @@ int main()
 #include <string.h>
 
 "
-                genDBCreator(output, description, 15)
+                genDBCreator(output, description, 10)
                 output.puts "
 int main()
 {
