@@ -136,7 +136,6 @@ module Damage
                         when :string
                             output.printf("\t{\n");
                             output.printf("\t\tunsigned int i;\n");
-                            output.printf("\t\t#{printFunc}(file, \"#{field.name}:\\n\");\n");
                             output.printf("\t\tfor(i = 0; i < ptr->#{field.name}Len; i++){\n");
                             output.printf("\t\t\t#{paddFunc}(file, indent + 1, 0, 0);\n")
                             output.printf("\t\t\t#{printFunc}(file, \"<#{field.name}>%%s</#{field.name}>\\n\", ptr->#{field.name}[i]);\n");
