@@ -553,7 +553,7 @@ static const char *__#{libName}_get_value(xmlTextReaderPtr reader)
     const char *val = (const char *)xmlTextReaderConstValue(reader);
     /* elong pos = 0, len; */
     if (val == NULL) {
-        return \"-- Unknown --\";
+        return \"\";
     }
     /* len = strlen(val); */
     /* Look for a \n to increment the line */
