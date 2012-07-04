@@ -519,6 +519,8 @@ __#{libName}_#{type} *__#{libName}_#{name}#{type}Container_xml_load_elements(xml
                 output.printf("\t\tchar buf[8192];\n");
                 output.printf("\t\tuzName = strdup(\"/tmp/#{libName}.uz.XXXXXX\");\n");
                 output.printf("\t\tint unzippedFd = mkstemp(uzName);\n");
+                output.printf("\t\tif(unzippedFd < 0)\n");
+                output.printf("\t\t\t__#{libName}_error(\"Failed to open temporary file: %%s\", ENOENT, strerror(errno));\n");
                 output.printf("\t\tgzFile gzFd = gzdopen(fd, \"r\");\n");
                 output.printf("\t\twhile(1){\n");
                 output.printf("\t\t\tnbytes =  gzread(gzFd, &buf, sizeof(buf));\n");
