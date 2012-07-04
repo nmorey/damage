@@ -209,9 +209,10 @@ static VALUE #{params[:funcPrefixList]}_duplicate(VALUE self) {
 
     Data_Get_Struct(self, #{params[:cTypeList]}, ptr);
 
-    ptr2 = malloc(sizeof(*ptr2));
+    ptr2 = __#{params[:libName]}_malloc(sizeof(*ptr2));
     ptr2->first = ptr2->last = NULL;
     ptr2->parent = NULL;
+    ptr2->_private = (VALUE)NULL;
     if(ptr->first){
         elnts = #{params[:cType]}_duplicate(ptr->first, 1);
         #{params[:funcPrefix]}_decorate(#{params[:funcPrefix]}_wrapFirst(elnts));

@@ -134,12 +134,14 @@ __#{libName}_#{type} *__#{libName}_#{name}#{type}Container_xml_load_elements(xml
                 output.printf("\t\t\t\t\tEINVAL, name, xmlTextReaderGetParserLineNumber(reader));\n");
                 output.printf("\t\t\t\tbreak;\n");
                 output.printf("\t\t\t}\n");
+                output.printf("\t\t\tbreak;\n");
                 output.printf("\t\tcase 15:\n");
                 output.printf("\t\t\tif(!strcmp(name, \"#{name}\")) {\n");
                 output.printf("\t\t\t\t/* End of the descriptor, let's leave */\n");
                 output.printf("\t\t\t\t__#{libName}_eat_elnt(reader);\n");
                 output.printf("\t\t\t\treturn ptr;\n");
                 output.printf("\t\t\t}\n");
+                output.printf("\t\t\tbreak;\n");
                 output.printf("\t\tdefault:\n");
                 output.printf("\t\t\t/* Ignore */\n");
                 output.printf("\t\t\tbreak;\n");
@@ -552,6 +554,7 @@ __#{libName}_#{type} *__#{libName}_#{name}#{type}Container_xml_load_elements(xml
                 output.printf("\t\t\tswitch (__#{libName}_compare(name, matches)) {\n");
                 output.printf("\t\t\tcase 0:\n");
                 output.printf("\t\t\t\t/* %s */\n", entry.name);
+                output.printf("\t\t\t\tassert(ptr == NULL);\n");
                 output.printf("\t\t\t\tptr = __#{libName}_%s_xml_load_element(reader, \"%s\");\n", entry.name, entry.name) ;
                 output.printf("\t\t\t\tbreak;\n");
                 output.printf("\t\t\tdefault:\n");

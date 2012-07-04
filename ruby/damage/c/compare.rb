@@ -121,7 +121,7 @@ module Damage
                                         end
                                         output.printf("#{offset}for (i = 0; i < ptr1->%sLen; ++i) {\n", field.name)
                                         output.printf("#{offset}\tif (ptr1->%s[i] != ptr2->%s[i]) {\n", field.name, field.name)
-                                        output.printf("#{offset}\t\tif (((ptr1->%s[i] == 0) && (ptr2->%s[i] !=0)) || ((ptr1->%s != 0) && (ptr2->%s == 0))) {\n", field.name, field.name, field.name, field.name)
+                                        output.printf("#{offset}\t\tif (((ptr1->%s[i] == 0) && (ptr2->%s[i] !=0)) || ((ptr1->%s[i] != 0) && (ptr2->%s[i] == 0))) {\n", field.name, field.name, field.name, field.name)
                                         output.printf("#{offset}\t\t\treturn 0;\n#{offset}\t\t}\n")
                                         output.printf("#{offset}\t\telse {\n")
                                         output.printf("#{offset}\t\t\tif (strcmp(ptr1->%s[i], ptr2->%s[i]) != 0) {\n", field.name, field.name)

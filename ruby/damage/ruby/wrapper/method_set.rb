@@ -189,6 +189,8 @@ static VALUE #{params[:funcPrefix]}_#{field.name}_setRowip(VALUE self, VALUE val
         free(ptr->#{field.name});
     }
     ptr->#{field.name}Len = RARRAY_LEN(val);
+    ptr->#{field.name} = __#{libName}_malloc(ptr->#{field.name}Len * sizeof(*ptr->#{field.name}));
+
     for(i = 0; i < ptr->#{field.name}Len; i++){
         VALUE elnt = rb_ary_shift(val);
         Check_Type(elnt, #{field.rubyType});
@@ -212,6 +214,8 @@ static VALUE #{params[:funcPrefix]}_#{field.name}_setRowip(VALUE self, VALUE val
         free(ptr->#{field.name});
     }
     ptr->#{field.name}Len = RARRAY_LEN(val);
+    ptr->#{field.name} = __#{libName}_malloc(ptr->#{field.name}Len * sizeof(*ptr->#{field.name}));
+
     for(i = 0; i < ptr->#{field.name}Len; i++){
         VALUE elnt = rb_ary_shift(val);
         Check_Type(elnt, #{field.rubyType});
