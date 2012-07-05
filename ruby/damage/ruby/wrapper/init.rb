@@ -28,6 +28,26 @@ module Damage
  */
 static
 void Init_#{params[:className]}(void){
+")
+                    entry.enums.each() {|field|
+                        output.puts("
+    {
+        int i;
+        for(i = 0; i < #{field.enum.length + 1}; i++){
+            #{entry.name}_#{field.name}_enumId[i] = rb_intern(__#{params[:libName]}_#{entry.name}_#{field.name}_strings[i]);
+        }
+    }
+") }
+                    if entry.attribute == :enum
+                        output.puts "}"
+                        return
+                    end
+                    output.puts("
+    /*
+     * Document-class: #{params[:moduleName]}::#{params[:className]}
+     *
+     * #{entry.description}
+     */
     #{params[:classValue]} = rb_define_class_under(#{params[:moduleName]}, \"#{params[:className]}\", rb_cObject);
     rb_define_alloc_func(#{params[:classValue]}, #{params[:funcPrefix]}_alloc);
     rb_define_method(#{params[:classValue]}, \"initialize\", #{params[:funcPrefix]}_initialize, 0);
@@ -71,6 +91,12 @@ void Init_#{params[:className]}(void){
  */
 static
 void Init_#{params[:classNameRowip]}(void){
+    /*
+     * Document-class: #{params[:moduleName]}::#{params[:classNameRowip]}
+     *
+     * #{entry.description}
+     * ROWIP Version
+     */
     #{params[:classValueRowip]} = rb_define_class_under(#{params[:moduleName]}, \"#{params[:classNameRowip]}\", rb_cObject);
     rb_define_method(#{params[:classValueRowip]}, \"to_binary_rowip\", #{params[:funcPrefix]}_to_binary_rowip, 1);
     rb_define_singleton_method(#{params[:classValueRowip]}, \"load_binary_rowip\", #{params[:funcPrefix]}_load_binary_rowip, 2);
@@ -101,6 +127,11 @@ void Init_#{params[:classNameRowip]}(void){
  */
 static
 void Init_#{params[:classNameList]}(){
+    /*
+     * Document-class: #{params[:moduleName]}::#{params[:classNameList]}
+     *
+     * List of #{params[:className]}
+     */
     #{params[:classValueList]} = rb_define_class_under(#{params[:moduleName]}, \"#{params[:classNameList]}\", rb_cObject);
 
     rb_define_alloc_func(#{params[:classValueList]}, #{params[:funcPrefixList]}_alloc);
@@ -130,6 +161,11 @@ void Init_#{params[:classNameList]}(){
  */
 static
 void Init_#{params[:classNameListRowip]}(){
+    /*
+     * Document-class: #{params[:moduleName]}::#{params[:classNameListRowip]}
+     *
+     * List of #{params[:className]}, ROWIP Version
+     */
     #{params[:classValueListRowip]} = rb_define_class_under(#{params[:moduleName]}, \"#{params[:classNameListRowip]}\", rb_cObject);
     rb_include_module(#{params[:classValueListRowip]}, rb_mEnumerable);
     rb_define_method(#{params[:classValueListRowip]}, \"[]\", #{params[:funcPrefixList]}_arrayGetRowip, 1);
@@ -148,15 +184,7 @@ void Init_#{params[:classNameListRowip]}(){
                     output.puts "    Init_#{params[:classNameList]}();" if entry.attribute == :listable
                     output.puts "    Init_#{params[:classNameListRowip]}();" if entry.attribute == :listable && rowip == true
                     
-                    entry.enums.each() {|field|
-                        output.puts("
-    {
-        int i;
-        for(i = 0; i < #{field.enum.length + 1}; i++){
-            #{entry.name}_#{field.name}_enumId[i] = rb_intern(#{entry.name}_#{field.name}_enum[i]);
-        }
-    }
-") }
+ 
                     output.puts("
 }
 ");

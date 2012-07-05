@@ -553,7 +553,7 @@ static const char *__#{libName}_get_value(xmlTextReaderPtr reader)
     const char *val = (const char *)xmlTextReaderConstValue(reader);
     /* elong pos = 0, len; */
     if (val == NULL) {
-        return \"-- Unknown --\";
+        return \"\";
     }
     /* len = strlen(val); */
     /* Look for a \n to increment the line */
@@ -572,7 +572,8 @@ static const char *__#{libName}_get_value(xmlTextReaderPtr reader)
  */
 void __#{libName}_eat_elnt(xmlTextReaderPtr reader)
 {
-    xmlTextReaderRead(reader);
+    int res = xmlTextReaderRead(reader);
+    assert(res >= 0);
     __#{libName}_get_value(reader);
 }
 /**
@@ -584,13 +585,15 @@ const char *__#{libName}_get_name(xmlTextReaderPtr reader)
 {
 
 	const char *name = (const char *)xmlTextReaderConstName(reader);
-	if (!strcmp(name, \"#text\")) {
-		__#{libName}_get_value(reader);
-	}
 
 	if (name == NULL) {
 		name =  \"-- Unknown --\";
 	}
+
+	if (!strcmp(name, \"#text\")) {
+		__#{libName}_get_value(reader);
+	}
+
 	return name;
 }
 

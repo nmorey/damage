@@ -18,7 +18,7 @@ module Damage
     module Ruby
         module Wrapper
             module MethodSet
-                def write(output, entry, libName, params, rowip)
+                def write(output, description, entry, libName, params, rowip)
                     entry.fields.each() {|field|
                         next if field.target != :both
                          retType=(field.qty == :list || field.qty == :container) ? ((field.category == :intern) ? (field.ruby_type + "List") : (field.ruby_type + "[]" )): field.ruby_type
@@ -143,6 +143,31 @@ static VALUE #{params[:funcPrefix]}_#{field.name}_setRowip(VALUE self, VALUE val
     return self;
 }
 ");
+                            when :genum
+                                output.puts("
+#{aliasFunc}
+") if rowip == true
+                                _field = description.enums[field.genumEntry].s_fields[field.genumField]
+                                output.puts("
+#{setStr}{
+    #{params[:cType]}* ptr;
+    int i;
+    Data_Get_Struct(self, #{params[:cType]}, ptr);
+    assert(ptr);
+    Check_Type(val, #{field.rubyType});
+    extern ID #{field.genumEntry}_#{field.genumField}_enumId[];
+
+    for(i = 0; i < #{_field.enum.length + 1}; i++){
+        if(#{field.genumEntry}_#{field.genumField}_enumId[i] == SYM2ID(val)){
+            ptr->#{field.name} = i;
+            return self;
+        }
+    }
+
+    rb_raise(rb_eArgError, \"Invalid argument for enum #{entry.name}.#{field.name}\");
+    return self;
+}
+");
                             else
                                 raise("Unsupported data category for #{entry.name}.#{field.name}");
 
@@ -164,6 +189,8 @@ static VALUE #{params[:funcPrefix]}_#{field.name}_setRowip(VALUE self, VALUE val
         free(ptr->#{field.name});
     }
     ptr->#{field.name}Len = RARRAY_LEN(val);
+    ptr->#{field.name} = __#{libName}_malloc(ptr->#{field.name}Len * sizeof(*ptr->#{field.name}));
+
     for(i = 0; i < ptr->#{field.name}Len; i++){
         VALUE elnt = rb_ary_shift(val);
         Check_Type(elnt, #{field.rubyType});
@@ -187,6 +214,8 @@ static VALUE #{params[:funcPrefix]}_#{field.name}_setRowip(VALUE self, VALUE val
         free(ptr->#{field.name});
     }
     ptr->#{field.name}Len = RARRAY_LEN(val);
+    ptr->#{field.name} = __#{libName}_malloc(ptr->#{field.name}Len * sizeof(*ptr->#{field.name}));
+
     for(i = 0; i < ptr->#{field.name}Len; i++){
         VALUE elnt = rb_ary_shift(val);
         Check_Type(elnt, #{field.rubyType});

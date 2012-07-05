@@ -18,7 +18,7 @@ module Damage
   module Java
       module Header
         def write(output, libName, entry, pahole, params)
-         output.puts("
+         output.printf("
 package #{params[:package]};
           
 import java.io.Writer;
@@ -39,9 +39,12 @@ import java.util.List;
 import java.util.zip.GZIPInputStream;
 
 /** Class #{params[:class]}: #{entry.description} */
-public class #{params[:class]} extends #{params[:uppercase_libname]}Object {
+public class #{params[:class]} ")
 
-")
+            output.printf "extends #{params[:uppercase_libname]}Object " if entry.attribute != :enum
+            output.puts " {
+
+"
             entry.fields.each() {|field|
                 case field.attribute
                 when :sort
@@ -49,7 +52,7 @@ public class #{params[:class]} extends #{params[:uppercase_libname]}Object {
                     output.printf("\tpublic java.util.HashMap<Integer, #{field.java_type}> _#{field.name}_by_#{field.sort_key};\n")
                 when :meta,:container,:none
                     case field.category
-                    when :simple, :enum, :string
+                    when :simple, :enum, :string, :genum
                         case field.qty
                         when :single
                             if field.category == :enum then

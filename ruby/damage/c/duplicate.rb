@@ -88,7 +88,7 @@ module Damage
                         case field.qty
                         when :single
                             case field.category
-                            when :simple, :enum
+                            when :simple, :enum, :genum
                                 # Do nothing
                                 output.printf("#{indent}#{dest}->#{field.name} = #{source}->#{field.name};\n");
                             when :string

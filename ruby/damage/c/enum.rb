@@ -50,7 +50,7 @@ module Damage
                         output.printf("\n} __#{libName}_#{entry.name}_#{field.name};\n");
                         output.puts("
 /** Array containing the string for each enum entry */");
-                        output.printf("extern const char*__#{libName}_#{entry.name}_#{field.name}_strings[#{field.enum.length+1}];\n\n");
+                        output.printf("extern const char*__#{libName}_#{entry.name}_#{field.name}_strings[#{field.enum.length+2}];\n\n");
                     end
 
                 }       
@@ -76,7 +76,9 @@ module Damage
 
                 description.entries.each() {|name, entry|
                     genEnum(output, libName, entry)
-
+                }
+                description.enums.each() {|name, entry|
+                    genEnum(output, libName, entry)
                 }
 
                 output.puts("/** Global enum for #{libName} object type */")
@@ -88,7 +90,7 @@ module Damage
                     count += 1
                 }
                 output.puts("\n} __#{libName}_object_type;")
-                output.printf("extern const char*__#{libName}_object_type_strings[#{description.entries.length+1}];\n\n");
+                output.printf("extern const char*__#{libName}_object_type_strings[#{description.entries.length+2}];\n\n");
             output.printf("\n\n");
                 
                 output.puts("
@@ -99,6 +101,22 @@ module Damage
             end
             module_function :genH
 
+            def _genC(output, description, entry)
+                libName = description.config.libname
+
+                entry.fields.each() {|field|
+                    if field.category == :enum then
+                        output.printf("const char*__#{libName}_#{entry.name}_#{field.name}_strings[#{field.enum.length+2}] = {\n");
+                        output.printf("\t\"N/A\",\n")
+                        field.enum.each() { |val|
+                            output.printf("\t\"#{val[:str]}\",\n")
+                        } 
+                        output.printf("\tNULL\n")
+                        output.printf("};\n");
+                    end
+                }       
+            end
+            module_function :_genC
             def genC(output, description)
                 libName = description.config.libname
 
@@ -106,26 +124,20 @@ module Damage
 
                 
                 description.entries.each() {|name, entry|
-                    entry.fields.each() {|field|
-                        if field.category == :enum then
-                            output.printf("const char*__#{libName}_#{entry.name}_#{field.name}_strings[#{field.enum.length+1}] = {\n");
-                            output.printf("\t\"N/A\"")
-                            field.enum.each() { |val|
-                                output.printf(",\n\t\"#{val[:str]}\"")
-                            } 
-                            output.printf("\n};\n");
-                        end
+                    _genC(output, description, entry)
+                }
 
-                    }       
-
+                description.enums.each() {|name, entry|
+                    _genC(output, description, entry)
                 }
                 output.printf("\n\n");
                 output.puts("/** Global enum for #{libName} object type */")
-                output.puts("const char* __#{libName}_object_type_strings[#{description.entries.length + 1}] = {");
+                output.puts("const char* __#{libName}_object_type_strings[#{description.entries.length + 2}] = {");
                 output.puts("\t\"N/A\",");
                 description.entries.each()  {|name, entry|
                     output.puts("\t\"#{name}\",");
                 }
+                output.puts("\tNULL");
                 output.puts("};")
                 output.printf("\n\n");
             end

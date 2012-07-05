@@ -150,6 +150,15 @@ public interface I#{uppercaseLibName}ObjectVisitor {
         delegateVisitorOutput.printf("\t\tif (delegateVisitor != null) delegateVisitor.visit(obj);\n")
         delegateVisitorOutput.printf("\t}\n\n")
       }
+
+      description.enums.each(){ |name, entry|
+        params = nameToParams(description, name)
+        output = Damage::Files.createAndOpen(outdir, "#{params[:class]}.java")
+        Header::write(output, libName, entry, pahole.entries[name], params)
+        Enum::write(output, libName, entry, pahole.entries[name], params)
+        output.puts("\n}\n\n")
+        output.close()
+      }
       output = Damage::Files.createAndOpen(outdir, "#{uppercaseLibName}Object.java")
       output.puts("package #{description.config.package}.#{libName};
 

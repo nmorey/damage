@@ -134,12 +134,14 @@ __#{libName}_#{type} *__#{libName}_#{name}#{type}Container_xml_load_elements(xml
                 output.printf("\t\t\t\t\tEINVAL, name, xmlTextReaderGetParserLineNumber(reader));\n");
                 output.printf("\t\t\t\tbreak;\n");
                 output.printf("\t\t\t}\n");
+                output.printf("\t\t\tbreak;\n");
                 output.printf("\t\tcase 15:\n");
                 output.printf("\t\t\tif(!strcmp(name, \"#{name}\")) {\n");
                 output.printf("\t\t\t\t/* End of the descriptor, let's leave */\n");
                 output.printf("\t\t\t\t__#{libName}_eat_elnt(reader);\n");
                 output.printf("\t\t\t\treturn ptr;\n");
                 output.printf("\t\t\t}\n");
+                output.printf("\t\t\tbreak;\n");
                 output.printf("\t\tdefault:\n");
                 output.printf("\t\t\t/* Ignore */\n");
                 output.printf("\t\t\tbreak;\n");
@@ -201,17 +203,6 @@ __#{libName}_#{type} *__#{libName}_#{name}#{type}Container_xml_load_elements(xml
                 end
                 output.printf("NULL };\n");
 
-                if entry.enums.length > 0 then
-                    entry.enums.each() { |field|
-                        output.printf("\tstatic const char *#{field.name}_enum_str[] =\n\t{"); 
-                        # Enumerate allowed keyword
-                        output.printf("\"N_A\", ");
-                        field.enum.each() {|enum|
-                            output.printf("\"%s\", ", enum[:str]) ;
-                        }
-                        output.printf("NULL };\n");
-                    }
-                end
                 #Get second level pointer to maneg "nexts" lists
                 entry.children.each() {|field|
                     if field.qty == :list  && field.category == :intern
@@ -259,7 +250,7 @@ __#{libName}_#{type} *__#{libName}_#{name}#{type}Container_xml_load_elements(xml
                                     raise("Unsupported type #{field.data_type}\n")
                                 end
                             when :enum
-                                output.printf("\t\t\t\tswitch (__#{libName}_compare(value, #{field.name}_enum_str)) {\n");
+                                output.printf("\t\t\t\tswitch (__#{libName}_compare(value, __#{libName}_#{entry.name}_#{field.name}_strings)) {\n");
                                 subCaseCount=1
                                 field.enum.each() {|enum|
                                     output.printf("\t\t\t\tcase %d:\n", subCaseCount);
@@ -271,6 +262,25 @@ __#{libName}_#{type} *__#{libName}_#{name}#{type}Container_xml_load_elements(xml
                                 output.printf("\t\t\t\tdefault:\n");
                                 output.printf("\t\t\t\t\t/* N/A or something else*/\n");
                                 output.printf("\t\t\t\t\tptr->%s = #{field.enumPrefix}_N_A;\n", field.name) ;
+                                output.printf("\t\t\t\t\tbreak;\n");
+                                output.printf("\t\t\t\t}\n");
+
+
+                            when :genum
+                                output.printf("\t\t\t\tswitch (__#{libName}_compare(value, __#{libName}_#{field.genumEntry}_#{field.genumField}_strings)) {\n");
+                                subCaseCount=1
+                                puts "#{field.genumEntry} #{field.genumField}"
+                                _field = description.enums[field.genumEntry].s_fields[field.genumField]
+                                _field.enum.each() {|enum|
+                                    output.printf("\t\t\t\tcase %d:\n", subCaseCount);
+                                    output.printf("\t\t\t\t\t/* %s */\n", enum[:str]);
+                                    output.printf("\t\t\t\t\tptr->%s = #{_field.enumPrefix}_#{enum[:label]};\n", field.name) ;
+                                    output.printf("\t\t\t\t\tbreak;\n");
+                                    subCaseCount+=1
+                                }
+                                output.printf("\t\t\t\tdefault:\n");
+                                output.printf("\t\t\t\t\t/* N/A or something else*/\n");
+                                output.printf("\t\t\t\t\tptr->%s = #{_field.enumPrefix}_N_A;\n", field.name) ;
                                 output.printf("\t\t\t\t\tbreak;\n");
                                 output.printf("\t\t\t\t}\n");
 
@@ -509,6 +519,8 @@ __#{libName}_#{type} *__#{libName}_#{name}#{type}Container_xml_load_elements(xml
                 output.printf("\t\tchar buf[8192];\n");
                 output.printf("\t\tuzName = strdup(\"/tmp/#{libName}.uz.XXXXXX\");\n");
                 output.printf("\t\tint unzippedFd = mkstemp(uzName);\n");
+                output.printf("\t\tif(unzippedFd < 0)\n");
+                output.printf("\t\t\t__#{libName}_error(\"Failed to open temporary file: %%s\", ENOENT, strerror(errno));\n");
                 output.printf("\t\tgzFile gzFd = gzdopen(fd, \"r\");\n");
                 output.printf("\t\twhile(1){\n");
                 output.printf("\t\t\tnbytes =  gzread(gzFd, &buf, sizeof(buf));\n");
@@ -544,6 +556,7 @@ __#{libName}_#{type} *__#{libName}_#{name}#{type}Container_xml_load_elements(xml
                 output.printf("\t\t\tswitch (__#{libName}_compare(name, matches)) {\n");
                 output.printf("\t\t\tcase 0:\n");
                 output.printf("\t\t\t\t/* %s */\n", entry.name);
+                output.printf("\t\t\t\tassert(ptr == NULL);\n");
                 output.printf("\t\t\t\tptr = __#{libName}_%s_xml_load_element(reader, \"%s\");\n", entry.name, entry.name) ;
                 output.printf("\t\t\t\tbreak;\n");
                 output.printf("\t\t\tdefault:\n");

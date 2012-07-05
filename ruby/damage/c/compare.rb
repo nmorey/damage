@@ -97,7 +97,7 @@ module Damage
                                         output.printf("#{offset}\t\tif (strcmp(ptr1->%s, ptr2->%s) != 0) {\n", field.name, field.name)
                                         output.printf("#{offset}\t\t\treturn 0;\n#{offset}\t\t}\n")
                                         output.printf("#{offset}\t}\n#{offset}}\n")
-                                    when :simple, :enum, :id, :idref
+                                    when :simple, :enum, :id, :idref, :genum
                                         if field.data_type == "double" then 
                                             output.printf("#{offset}if ((fabs(ptr1->%s - ptr2->%s) /ptr1->%s) > 1e-13 ){\n", field.name, field.name, field.name)
                                         else
@@ -121,14 +121,14 @@ module Damage
                                         end
                                         output.printf("#{offset}for (i = 0; i < ptr1->%sLen; ++i) {\n", field.name)
                                         output.printf("#{offset}\tif (ptr1->%s[i] != ptr2->%s[i]) {\n", field.name, field.name)
-                                        output.printf("#{offset}\t\tif (((ptr1->%s[i] == 0) && (ptr2->%s[i] !=0)) || ((ptr1->%s != 0) && (ptr2->%s == 0))) {\n", field.name, field.name, field.name, field.name)
+                                        output.printf("#{offset}\t\tif (((ptr1->%s[i] == 0) && (ptr2->%s[i] !=0)) || ((ptr1->%s[i] != 0) && (ptr2->%s[i] == 0))) {\n", field.name, field.name, field.name, field.name)
                                         output.printf("#{offset}\t\t\treturn 0;\n#{offset}\t\t}\n")
                                         output.printf("#{offset}\t\telse {\n")
                                         output.printf("#{offset}\t\t\tif (strcmp(ptr1->%s[i], ptr2->%s[i]) != 0) {\n", field.name, field.name)
                                         output.printf("#{offset}\t\t\t\treturn 0;\n#{offset}\t\t\t}\n")
                                         output.printf("#{offset}\t\t}\n#{offset}\t}\n")
                                         output.printf("#{offset}}\n")
-                                    when :simple, :enum, :id, :idref
+                                    when :simple, :enum, :id, :idref, :genum
                                         output.printf("#{offset}if (ptr1->%sLen != ptr2->%sLen) {\n", field.name, field.name)
                                         output.printf("#{offset}\treturn 0;\n#{offset}}\n")
                                         if (!loopVariableDefined)

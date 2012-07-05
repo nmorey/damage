@@ -153,7 +153,7 @@ uint32_t __#{libName}_#{entry.name}_binary_comp_offset(__#{libName}_#{entry.name
                     case field.qty
                     when :single
                         case field.category
-                        when :simple, :enum
+                        when :simple, :enum, :genum
                         when :string
                             output.printf("#{indent}if(#{source}->%s){\n", field.name)
                             output.printf("#{indent}\tuint32_t len = strlen(#{source}->%s) + 1;\n", field.name)
@@ -197,7 +197,7 @@ uint32_t __#{libName}_#{entry.name}_binary_comp_offset(__#{libName}_#{entry.name
                     case field.qty
                     when :single
                         case field.category
-                        when :simple, :enum
+                        when :simple, :enum, :genum
                         when :string
                         when :intern
                             output.printf("#{indent}if(#{source}->%s){\n", field.name)
@@ -312,7 +312,7 @@ uint32_t __#{libName}_#{entry.name}_binary_dump(__#{libName}_#{entry.name}* ptr,
                         case field.qty
                         when :single
                             case field.category
-                            when :simple, :enum
+                            when :simple, :enum, :genum
                             when :string
                                 output.printf("#{indent}val.%s = (void*)(unsigned long)(val._rowip_pos + rel_offset);\n", field.name)
                                 output.printf("#{indent}if(#{source}->%s){\n", field.name)
@@ -370,7 +370,7 @@ uint32_t __#{libName}_#{entry.name}_binary_dump(__#{libName}_#{entry.name}* ptr,
                     case field.qty
                     when :single
                         case field.category
-                        when :simple, :enum
+                        when :simple, :enum, :genum
                         when :string
                             output.printf("#{indent}if(#{source}->%s){\n", field.name)
                             output.printf("#{indent}\tuint32_t len = strlen(#{source}->%s) + 1;\n", field.name)
@@ -423,7 +423,7 @@ uint32_t __#{libName}_#{entry.name}_binary_dump(__#{libName}_#{entry.name}* ptr,
                     case field.qty
                     when :single
                         case field.category
-                        when :simple, :enum
+                        when :simple, :enum, :genum
                         when :string
                         when :intern
                             output.printf("#{indent}if(#{source}->%s){\n", field.name)

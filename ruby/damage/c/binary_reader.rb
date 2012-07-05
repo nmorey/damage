@@ -206,7 +206,7 @@ __#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load_partial(FILE*
                     case field.qty
                     when :single
                         case field.category
-                        when :simple, :enum
+                        when :simple, :enum, :genum
                         when :string
                             output.printf("#{indent}if(#{source}->%s){\n", field.name)
                             output.printf("#{indent}\tuint32_t len;\n")
@@ -214,11 +214,11 @@ __#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load_partial(FILE*
 
                             output.printf("#{indent}\tif(len > 0) {\n")
                             output.printf("#{indent}\t\t#{source}->%s = __#{libName}_malloc(len * sizeof(char));\n", field.name)
+                            cRead(output, libName, zipped, "#{indent}\t", "#{source}->#{field.name}", "sizeof(char)", "len", "file")
                             output.printf("#{indent}\t} else {\n")
                             output.printf("#{indent}\t\t#{source}->%s = NULL;\n", field.name)
                             output.printf("#{indent}\t} \n")
 
-                            cRead(output, libName, zipped, "#{indent}\t", "#{source}->#{field.name}", "sizeof(char)", "len", "file")
                             output.printf("#{indent}} else {\n")
                             output.printf("#{indent}\tuint32_t len;\n")
                             cRead(output, libName, zipped, "#{indent}\t", "&len", "sizeof(len)", "1", "file")
@@ -276,7 +276,7 @@ __#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load_partial(FILE*
                     case field.qty
                     when :single
                         case field.category
-                        when :simple, :enum
+                        when :simple, :enum, :genum
                         when :string
                         when :intern
                             output.printf("#{indent}if((opt->#{field.data_type} != 0) && (#{source}->%s != NULL)){\n", field.name)
@@ -322,7 +322,7 @@ __#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load_partial(FILE*
                 output.puts "}"
 
                 output.puts "__#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load#{fExt}(#{(zipped == true) ? "gzFile" : "FILE*"} file, uint32_t offset){\n"
-                output.printf("\t__#{libName}_partial_options opt;\n")
+                output.printf("\t__#{libName}_partial_options opt = __#{libName.upcase}_PARTIAL_OPTIONS_INITIALIZER;\n")
                 output.printf("\n")
 
                 output.printf("\t__#{libName}_partial_options_parse_#{entry.name}(&opt);\n");

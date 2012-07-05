@@ -34,16 +34,16 @@ module Damage
           case field.attribute
           when :container,:none
             case field.category
-            when :simple, :enum, :string,:id, :idref
+            when :simple, :enum, :string,:id, :idref, :genum
               case field.qty
               when :single
                 output.printf("\t\t\t/** Reading #{field.name} */\n");
                 output.printf("\t\t\tString _#{field.name}_tmp = attributes.getValue(\"#{field.name}\");\n");
                 output.printf("\t\t\tif (_#{field.name}_tmp != null) {\n");
-                if field.category == :enum then
-                  output.printf("\t\t\t\tfor (#{field.java_type} tmp#{field.java_type}: #{field.java_type}.values()) {\n");
-                  output.printf("\t\t\t\t\tif (_#{field.name}_tmp.equals(tmp#{field.java_type}.toString())) {\n");
-                  output.printf("\t\t\t\t\t\tret._#{field.name} = tmp#{field.java_type};\n");
+                if field.category == :enum  || field.category == :genum then
+                  output.printf("\t\t\t\tfor (#{field.java_type} tmp#{field.java_type.gsub(/\./, "_")}: #{field.java_type}.values()) {\n");
+                  output.printf("\t\t\t\t\tif (_#{field.name}_tmp.equals(tmp#{field.java_type.gsub(/\./, "_")}.toString())) {\n");
+                  output.printf("\t\t\t\t\t\tret._#{field.name} = tmp#{field.java_type.gsub(/\./, "_")};\n");
                   output.printf("\t\t\t\t\t\tbreak;\n");
                   output.printf("\t\t\t\t\t}\n");
                   output.printf("\t\t\t\t}\n");
@@ -119,7 +119,7 @@ module Damage
           case field.attribute
           when :container,:none
             case field.category
-            when :simple, :enum, :string,:id, :idref
+            when :simple, :enum, :string,:id, :idref, :genum
               case field.qty
               when :list
                 check = 1
@@ -178,39 +178,15 @@ module Damage
             check = 1
           when :container,:none
             case field.category
-            when :simple, :enum, :string,:id, :idref
+            when :simple, :enum, :string,:id, :idref, :genum
               case field.qty
               when :single
                 check = 1
               when :list
                 check = 1
-                #output.printf("\t\t\t@SuppressWarnings(\"unchecked\")\n");
-                #output.printf("\t\t\tjava.util.List<Element> tmp=(java.util.List<Element>)el.elements(\"#{field.name}\");\n")
-                #output.printf("\t\t\tthis._#{field.name}=new #{field.java_type}[tmp.size()];\n");
-                #output.printf("\t\t\tint count = 0;\n");
-                #output.printf("\t\t\tfor (Element #{field.name}Element: tmp) {\n");
-                #output.printf("\t\t\t\tString #{field.name}String = #{field.name}Element.getTextTrim();\n");
-                case field.java_type
-                when "String"
-                  #output.printf("\t\t\t\tthis._#{field.name}[count++]=#{field.name}String.intern();\n")
-                when "int"
-                  #output.printf("\t\t\t\tthis._#{field.name}[count++]=Integer.parseInt(#{field.name}String);\n")
-                when "double"
-                  #output.printf("\t\t\t\tthis._#{field.name}[count++]=Double.parseDouble(#{field.name}String);\n")
-                when "byte"
-                  #output.printf("\t\t\t\tthis._#{field.name}[count++]=Byte.parseByte(#{field.name}String);\n")
-                when "short"
-                  #output.printf("\t\t\t\tthis._#{field.name}[count++]=Short.parseShort(#{field.name}String);\n")
-                when "char"
-                  #output.printf("\t\t\t\tthis._#{field.name}[count++]=#{field.name}String.charAt(0);\n")
-                when "float"
-                  #output.printf("\t\t\t\tthis._#{field.name}[count++]=Float.parseFloat(#{field.name}String);\n")
-                when "long"
-                  #output.printf("\t\t\t\tthis._#{field.name}[count++]=Long.parseLong(#{field.name}String);\n")
-                else
-                  raise("Unsupported java-type for #{entry.name}.#{field.name}");
-                end
-                #output.printf("\t\t\t}\n");
+		output.printf("\t\tif (\"#{field.name}\".equals(qName)) {\n");
+		output.printf("\t\t\tparser.waitForElement(qName);\n");
+                output.printf("\t\t}\n");
               else
                 raise("Unsupported data qty for #{entry.name}.#{field.name}");
               end

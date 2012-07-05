@@ -33,7 +33,7 @@ module Damage
                     case field.qty
                     when :single
                         case field.category
-                        when :simple, :enum
+                        when :simple, :enum, :genum
                             output.printf("\t\tindentToString(ps, indent, listable, first);\n")
                             output.printf("\t\tfirst = false;\n")
                             output.printf("\t\tps.println(\"#{field.name}: \" + this._#{field.name});\n");

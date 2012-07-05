@@ -44,7 +44,7 @@ module Damage
                         output.printf("\tuint32_t n_%s;\n", field.name)
                     when :meta,:container,:none
                         case field.category
-                        when :simple, :enum
+                        when :simple, :enum, :genum
                             case field.qty
                             when :single
                                 output.printf("\t/** #{field.description} */\n") if field.description != nil

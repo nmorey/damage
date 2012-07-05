@@ -192,7 +192,21 @@ static VALUE #{params[:funcPrefix]}_s_#{field.name}_getRowip(VALUE self)"
     assert(ptr);
     return ID2SYM(#{entry.name}_#{field.name}_enumId[ptr->#{field.name}]);
 }
-")               else
+")
+                            when :genum
+                                output.puts("
+#{aliasFunc}
+") if rowip == true
+                                output.puts("
+#{getStr}{
+    #{params[:cType]}* ptr;
+    extern ID #{field.genumEntry}_#{field.genumField}_enumId[];
+    Data_Get_Struct(self, #{params[:cType]}, ptr);
+    assert(ptr);
+    return ID2SYM(#{field.genumEntry}_#{field.genumField}_enumId[ptr->#{field.name}]);
+}
+")
+               else
                                 raise("Unsupported data category for #{entry.name}.#{field.name}");
 
                             end
