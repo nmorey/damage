@@ -573,7 +573,7 @@ static const char *__#{libName}_get_value(xmlTextReaderPtr reader)
 void __#{libName}_eat_elnt(xmlTextReaderPtr reader)
 {
     int res = xmlTextReaderRead(reader);
-    assert(res > 0);
+    assert(res >= 0);
     __#{libName}_get_value(reader);
 }
 /**
