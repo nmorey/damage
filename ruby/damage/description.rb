@@ -428,7 +428,7 @@ module Damage
                     _field =  Field.new(libName, self, field)
                     
                     # Top cannot have attributes
-                    _field.is_attribute = false if @attribute == :top && _field.is_attribute == true
+                    #_field.is_attribute = false if @attribute == :top && _field.is_attribute == true
 
                     @fields << _field
 
