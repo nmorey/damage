@@ -109,7 +109,7 @@ module Damage
             # Build a new Field from a parsed YAML tree
             def initialize(libName, entry, field)
 
-                raise ("Field #{field} has no name!") if field["name"] == nil
+                raise ("Field #{field} of entry '#{entry.name}' has no name!") if field["name"] == nil
                 @name = field["name"]
                 
                 @default_val = field["default"]
