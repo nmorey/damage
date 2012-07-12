@@ -40,8 +40,13 @@ module Damage
 
                 entry.fields.each() {|field|
                     if field.category == :enum then
-                        output.puts("
+                        if entry.attribute == :enum then
+                            output.puts("
+/** Global enum: #{field.name} */");
+                        else
+                            output.puts("
 /** Enum for the #{field.name} field of a #__#{libName}_#{entry.name} structure */");
+                        end
                         output.printf("typedef enum {\n");
                         output.printf("\t#{field.enumPrefix}_N_A /** Undefined */= 0")
                         field.enum.each() { |val|
