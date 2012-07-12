@@ -42,11 +42,14 @@ module Damage
                     if field.category == :enum then
                         if entry.attribute == :enum then
                             output.puts("
-/** Global enum: #{field.name} */");
+/** Global enum: #{field.name} ");
                         else
                             output.puts("
-/** Enum for the #{field.name} field of a #__#{libName}_#{entry.name} structure */");
+/** Enum for the #{field.name} field of a #__#{libName}_#{entry.name} structure ");
                         end
+                        output.puts(" * #{field.description} ") if field.description != nil
+                        output.puts(" */")
+
                         output.printf("typedef enum {\n");
                         output.printf("\t#{field.enumPrefix}_N_A /** Undefined */= 0")
                         field.enum.each() { |val|
