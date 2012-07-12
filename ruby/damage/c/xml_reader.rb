@@ -269,7 +269,6 @@ __#{libName}_#{type} *__#{libName}_#{name}#{type}Container_xml_load_elements(xml
                             when :genum
                                 output.printf("\t\t\t\tswitch (__#{libName}_compare(value, __#{libName}_#{field.genumEntry}_#{field.genumField}_strings)) {\n");
                                 subCaseCount=1
-                                puts "#{field.genumEntry} #{field.genumField}"
                                 _field = description.enums[field.genumEntry].s_fields[field.genumField]
                                 _field.enum.each() {|enum|
                                     output.printf("\t\t\t\tcase %d:\n", subCaseCount);
