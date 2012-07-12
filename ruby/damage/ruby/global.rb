@@ -15,44 +15,50 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 module Damage
-  module Ruby
-    module Global
+    module Ruby
+        module Global
 
 
-      def write(description)
-        libName = description.config.libname
-        outdir = "gen/#{libName}/ruby/"
-        outputH = Damage::Files.createAndOpen(outdir, "ruby_#{libName}.h")
-        outputC = Damage::Files.createAndOpen(outdir, "ruby_#{libName}.c")
-        genGlobH(outputH, description)
-        genGlobC(outputC, description, libName)
-        outputC.close()
-        outputH.close()
-      end
-      module_function :write
+            def write(description)
+                libName = description.config.libname
+                outdir = "gen/#{libName}/ruby/"
+                outputH = Damage::Files.createAndOpen(outdir, "ruby_#{libName}.h")
+                outputC = Damage::Files.createAndOpen(outdir, "ruby_#{libName}.c")
+                genGlobH(outputH, description)
+                genGlobC(outputC, description, libName)
+                outputC.close()
+                outputH.close()
+            end
+            module_function :write
 
 
-      #Generate Headers
-      private
-      def genGlobH(output, description)
-        libName = description.config.libname
+            #Generate Headers
+            private
+            def genGlobH(output, description)
+                libName = description.config.libname
 
-        description.entries.each(){ |name, entry|
-          params=Damage::Ruby::nameToParams(libName, entry.name)
+                description.enums.each(){ |name, entry|
+                    params=Damage::Ruby::nameToParams(libName, entry.name)
 
-          output.puts("void #{params[:funcPrefix]}_init();");
-          output.puts("VALUE #{params[:funcPrefix]}_wrap(#{params[:cType]}* ptr);");
-          output.puts("VALUE #{params[:funcPrefix]}_wrapFirst(#{params[:cType]}* ptr);");
-          output.puts("VALUE #{params[:funcPrefix]}_wrapRowip(#{params[:cType]}* ptr);");
-          output.puts("VALUE #{params[:funcPrefix]}_wrapFirstRowip(#{params[:cType]}* ptr);");
-          output.puts("VALUE #{params[:funcPrefix]}_decorate(VALUE self);\n\n");
-          output.puts("VALUE #{params[:funcPrefix]}_decorateRowip(VALUE self);\n\n");
-          output.puts("void #{params[:funcPrefix]}_cleanup(#{params[:cType]}* ptr);\n\n");
-          output.puts("void #{params[:funcPrefix]}_cleanupRowip(#{params[:cType]}* ptr);\n\n");
-          output.puts("VALUE #{params[:funcPrefix]}_xml_to_string(VALUE self, int indent);\n");
-          output.puts("VALUE #{params[:funcPrefix]}_xml_to_stringRowip(VALUE self, int indent);\n");
-          if entry.attribute == :listable
-            output.puts("
+                    output.puts("void #{params[:funcPrefix]}_init();");
+ 
+                }
+                description.entries.each(){ |name, entry|
+                    params=Damage::Ruby::nameToParams(libName, entry.name)
+
+                    output.puts("void #{params[:funcPrefix]}_init();");
+                    output.puts("VALUE #{params[:funcPrefix]}_wrap(#{params[:cType]}* ptr);");
+                    output.puts("VALUE #{params[:funcPrefix]}_wrapFirst(#{params[:cType]}* ptr);");
+                    output.puts("VALUE #{params[:funcPrefix]}_wrapRowip(#{params[:cType]}* ptr);");
+                    output.puts("VALUE #{params[:funcPrefix]}_wrapFirstRowip(#{params[:cType]}* ptr);");
+                    output.puts("VALUE #{params[:funcPrefix]}_decorate(VALUE self);\n\n");
+                    output.puts("VALUE #{params[:funcPrefix]}_decorateRowip(VALUE self);\n\n");
+                    output.puts("void #{params[:funcPrefix]}_cleanup(#{params[:cType]}* ptr);\n\n");
+                    output.puts("void #{params[:funcPrefix]}_cleanupRowip(#{params[:cType]}* ptr);\n\n");
+                    output.puts("VALUE #{params[:funcPrefix]}_xml_to_string(VALUE self, int indent);\n");
+                    output.puts("VALUE #{params[:funcPrefix]}_xml_to_stringRowip(VALUE self, int indent);\n");
+                    if entry.attribute == :listable
+                        output.puts("
 typedef struct {
     #{params[:cType]} **parent;
     #{params[:cType]} *first;
@@ -66,20 +72,20 @@ VALUE #{params[:funcPrefixList]}_wrapRowip(#{params[:cTypeList]}* ptr);
 VALUE #{params[:funcPrefixList]}_decorate(VALUE self);
 
 ")
-            end
-        }
-        output.puts("
+                    end
+                }
+                output.puts("
 VALUE indentToString(VALUE string, int indent, int listable, int first);
 __#{libName}_options __#{libName}_get_options(VALUE hash);
 ");
-      end
+            end
 
 
-      # Generate the main loader file
-      def genGlobC(output, description, module_name)
-        libName = description.config.libname
-        moduleName= description.config.libname.slice(0,1).upcase + description.config.libname.slice(1..-1)
-        output.puts("
+            # Generate the main loader file
+            def genGlobC(output, description, module_name)
+                libName = description.config.libname
+                moduleName= description.config.libname.slice(0,1).upcase + description.config.libname.slice(1..-1)
+                output.puts("
 #include <ruby.h>
 #include <#{libName}.h>
 #include \"ruby_#{libName}.h\"
@@ -157,18 +163,18 @@ static void Init_#{moduleName}(void){
      * #{description.config.description}     *
      * == Classes
      *")
-          description.entries.each(){ |name, entry|
-              params=Damage::Ruby::nameToParams(libName, entry.name)
-              output.puts("     * - #{moduleName}::#{params[:className]}")
-              output.puts("     * - #{moduleName}::#{params[:classNameRowip]}") if description.config.rowip == true
-              if entry.attribute == :listable
-                  output.puts("     * - #{moduleName}::#{params[:classNameList]}")
-                  output.puts("     * - #{moduleName}::#{params[:classNameListRowip]}") if description.config.rowip == true
-              end
+                description.entries.each(){ |name, entry|
+                    params=Damage::Ruby::nameToParams(libName, entry.name)
+                    output.puts("     * - #{moduleName}::#{params[:className]}")
+                    output.puts("     * - #{moduleName}::#{params[:classNameRowip]}") if description.config.rowip == true
+                    if entry.attribute == :listable
+                        output.puts("     * - #{moduleName}::#{params[:classNameList]}")
+                        output.puts("     * - #{moduleName}::#{params[:classNameListRowip]}") if description.config.rowip == true
+                    end
 
-          }
-          output.puts(
-"     *
+                }
+                output.puts(
+                            "     *
      */
     #{moduleName} = rb_define_module(\"#{moduleName}\");
     rb_define_module_function(#{moduleName}, \"set_dtd_path\", rub#{moduleName}_set_dtd, 1);
@@ -177,14 +183,18 @@ void Init_lib#{libName}_ruby(){
     Init_#{moduleName}();
 
 ");
-        description.entries.each(){ |name, entry|
-          params=Damage::Ruby::nameToParams(libName, entry.name)
-          output.puts("    #{params[:funcPrefix]}_init();");
-        }
-        output.puts("}");
-      end
-      module_function :genGlobH, :genGlobC
+                description.entries.each(){ |name, entry|
+                    params=Damage::Ruby::nameToParams(libName, entry.name)
+                    output.puts("    #{params[:funcPrefix]}_init();");
+                }
+                description.enums.each(){ |name, entry|
+                    params=Damage::Ruby::nameToParams(libName, entry.name)
+                    output.puts("    #{params[:funcPrefix]}_init();");
+                }
+                output.puts("}");
+            end
+            module_function :genGlobH, :genGlobC
 
+        end
     end
-  end
 end

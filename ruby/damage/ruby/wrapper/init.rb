@@ -39,7 +39,10 @@ void Init_#{params[:className]}(void){
     }
 ") }
                     if entry.attribute == :enum
-                        output.puts "}"
+                        output.puts("}")
+                        output.puts("void #{params[:funcPrefix]}_init(void){");
+                        output.puts("    Init_#{params[:className]}();");
+                        output.puts("}")
                         return
                     end
                     output.puts("
