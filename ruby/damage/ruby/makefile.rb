@@ -59,8 +59,13 @@ else
     LIBDIR:=$(LIBDIR32)
 endif
 
+ifdef DO_DOC
+ALL_DEPS := doc/ruby/index.html
+INSTALL_DEPS := install-rdoc
+else
+endif
 
-all: ruby/lib#{libName}_ruby.so doc/ruby/index.html
+all: ruby/lib#{libName}_ruby.so $(ALL_DEPS)
 
 $(lib): $(srcs) $(headers)
 	+make -f Makefile
@@ -76,7 +81,7 @@ doc/ruby/index.html: ruby/ruby_#{libName}.c $(r_srcs)
 	@cat $(r_srcs) > obj/#{libName}.c
 	rdoc --quiet -o doc/ruby obj/#{libName}.c
 
-install: $(PREFIX)/share/$(SUFFIX)/lib#{libName}_ruby.so install-rdoc
+install: $(PREFIX)/share/$(SUFFIX)/lib#{libName}_ruby.so $(INSTALL_DEPS)
 
 install-rdoc: doc/ruby/index.html
 	cp -R doc/ruby $(PREFIX)/share/$(SUFFIX)/
