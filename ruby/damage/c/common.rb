@@ -407,7 +407,7 @@ __#{libName}_db_lock* __#{libName}_acquire_flock(const char* filename, int rdonl
             free(dbLock);
             return NULL;
         }
-        dbLock->file = open(dbLock->name, O_CREAT | (rdonly ? O_RDONLY : O_RDWR), 0777);
+        dbLock->file = open(dbLock->name, (rdonly ? O_RDONLY : (O_CREAT | O_RDWR)), 0777);
         if(dbLock->file == -1){
             free(dbLock->name);
             free(dbLock);
