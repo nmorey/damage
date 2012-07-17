@@ -101,7 +101,9 @@ VALUE #{params[:funcPrefix]}_xml_to_string(VALUE self, int indent){
         unsigned long i;
         for(i = 0; i < ptr->#{field.name}Len; i++){
             indentToString(string, indent + 1, 1, 1);
-            string = rb_str_concat(string, rb_str_new2(strdup(ptr->#{field.name}[i])));
+            if(ptr->#{field.name}[i]){
+                string = rb_str_concat(string, rb_str_new2(strdup(ptr->#{field.name}[i])));
+            }
             string = rb_str_concat(string, rb_str_new2(strdup(\"\\n\")));
         }
 
@@ -242,7 +244,9 @@ VALUE #{params[:funcPrefix]}_xml_to_stringRowip(VALUE self, int indent){
         unsigned long i;
         for(i = 0; i < ptr->#{field.name}Len; i++){
             indentToString(string, indent + 1, 1, 1);
-            string = rb_str_concat(string, rb_str_new2(strdup(__#{libName.upcase}_ROWIP_STR_ARRAY(ptr, #{field.name}, i))));
+            if(__#{libName.upcase}_ROWIP_STR_ARRAY(ptr, #{field.name}, i)){
+               string = rb_str_concat(string, rb_str_new2(strdup(__#{libName.upcase}_ROWIP_STR_ARRAY(ptr, #{field.name}, i))));
+            }
             string = rb_str_concat(string, rb_str_new2(strdup(\"\\n\")));
         }
 
