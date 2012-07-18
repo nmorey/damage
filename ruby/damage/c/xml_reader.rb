@@ -528,7 +528,7 @@ __#{libName}_#{type} *__#{libName}_#{name}#{type}Container_xml_load_elements(xml
                 output.printf("\t\t\twhile(sum < nbytes){\n");
                 output.printf("\t\t\t\tint ret = write(unzippedFd, &buf, nbytes);\n");
                 output.printf("\t\t\t\tif(ret == -1){\n");
-                output.printf("\t\t\t\t\tperror(\"Damage error\");\n");
+                output.printf("\t\t\t\t\tfprintf(stderr, \"#{libName} error: Failed to write to tempory file '%%s': %%s\\n\", uzName, strerror(errno));\n");
                 output.printf("\t\t\t\t\texit(EXIT_FAILURE);\n");
                 output.printf("\t\t\t\t}\n");
                 output.printf("\t\t\t\tsum += ret;\n");

@@ -456,7 +456,8 @@ gzFile __#{libName}_open_gzFile(const char* filename, int rdonly, const char* mo
             return NULL;
         if(*mode == 'w'){
             if(ftruncate(dbLock->file, 0) != 0){
-               perror(\"Damage error\");
+               fprintf(stderr, \"#{libName} error: Failed to truncate file '%s': %s\\n\",
+                   filename, strerror(errno));
                exit(EXIT_FAILURE);
             }
         }
@@ -478,7 +479,8 @@ FILE* __#{libName}_open_FILE(const char* filename, int rdonly, const char* mode)
             return NULL;
         if(*mode == 'w'){
             if(ftruncate(dbLock->file, 0) != 0){
-               perror(\"Damage error\");
+               fprintf(stderr, \"#{libName} error: Failed to truncate file '%s': %s\\n\",
+                   filename, strerror(errno));
                exit(EXIT_FAILURE);
             }
         }
