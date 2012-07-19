@@ -182,12 +182,12 @@ int main()
    char* file=\".db/test1.xml\";
 
 	__#{libName}_#{description.top_entry.name} *ptr = create#{description.top_entry.name}(1);
-	if (__#{libName}_#{description.top_entry.name}_xml_dump_file(file, ptr, 0) < 0) {
+	if (__#{libName}_#{description.top_entry.name}_xml_dump_file(file, CONSTIFY(ptr), 0) < 0) {
 		fprintf(stderr, \"Failed writing to %s\\n\", file);
 		exit(2);
 	}
     printf(\"Generated DB\\n\");
-	if (__#{libName}_#{description.top_entry.name}_xml_dump_file(file, ptr, __SIGMACDB_OPTION_GZIPPED) < 0) {
+	if (__#{libName}_#{description.top_entry.name}_xml_dump_file(file, CONSTIFY(ptr), __SIGMACDB_OPTION_GZIPPED) < 0) {
 		fprintf(stderr, \"Failed writing to %s in gzipped mode\\n\", file);
 		exit(3);
 	}
@@ -245,7 +245,7 @@ int main()
 	}
     printf(\"Wrote Binary DB\\n\");
 
-	if (__#{libName}_#{description.top_entry.name}_xml_dump_file(xml, ptr, 0) < 0) {
+	if (__#{libName}_#{description.top_entry.name}_xml_dump_file(xml, CONSTIFY(ptr), 0) < 0) {
 		fprintf(stderr, \"Failed writing to %s\\n\", xml);
 		exit(3);
 	}
@@ -262,7 +262,7 @@ int main()
         exit(5);
     }
     printf(\"Compared created and dumped DB\\n\");
-	if (__#{libName}_#{description.top_entry.name}_xml_dump_file(xml2, ptr2, 0) < 0) {
+	if (__#{libName}_#{description.top_entry.name}_xml_dump_file(xml2, CONSTIFY(ptr2), 0) < 0) {
 		fprintf(stderr, \"Failed writing to %s\\n\", xml);
 		exit(6);
 	}
@@ -304,7 +304,7 @@ int main()
 		fprintf(stderr, \"Failed writing to %s\\n\", file);
 		exit(2);
 	}
-	if (__#{libName}_#{description.top_entry.name}_xml_dump_file(xml, ptr, __SIGMACDB_OPTION_GZIPPED) < 0) {
+	if (__#{libName}_#{description.top_entry.name}_xml_dump_file(xml, CONSTIFY(ptr), __SIGMACDB_OPTION_GZIPPED) < 0) {
 		fprintf(stderr, \"Failed writing to %s\\n\", xml);
 		exit(2);
 	}
@@ -376,7 +376,7 @@ int main()
 		exit(3);
     }
     modify#{description.top_entry.name}(ptr);
-	if (__#{libName}_#{description.top_entry.name}_xml_dump_file(xml, ptr, 0) < 0) {
+	if (__#{libName}_#{description.top_entry.name}_xml_dump_file(xml, CONSTIFY(ptr), 0) < 0) {
 		fprintf(stderr, \"Failed writing to %s\\n\", xml);
 		exit(4);
 	}
@@ -398,7 +398,7 @@ int main()
 		fprintf(stderr, \"Failed to parse %s\\n\", file);
 		exit(7);
     }
-	if (__#{libName}_#{description.top_entry.name}_xml_dump_file(xml2, ptr, 0) < 0) {
+	if (__#{libName}_#{description.top_entry.name}_xml_dump_file(xml2, CONSTIFY(ptr), 0) < 0) {
 		fprintf(stderr, \"Failed writing to %s\\n\", xml);
 		exit(8);
 	}

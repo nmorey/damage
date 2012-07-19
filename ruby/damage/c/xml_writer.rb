@@ -66,12 +66,12 @@ module Damage
                     paddFunc="__#{libName}_paddOutputGz"
                     printFunc="__#{libName}_gzPrintf"
                     ext="_gz"
-                    output.printf("void __#{libName}_#{entry.name}_xml_dump_within_gz(gzFile file, const __#{libName}_#{entry.name} *ptr, int indent){\n")
+                    output.printf("void __#{libName}_#{entry.name}_xml_dump_within_gz(gzFile file, const __#{libName}_const_#{entry.name} *ptr, int indent){\n")
                 else
                     paddFunc="__#{libName}_paddOutput"
                     printFunc="fprintf"
                     ext=""
-                    output.printf("void __#{libName}_#{entry.name}_xml_dump_within(FILE* file, const __#{libName}_#{entry.name} *ptr, int indent){\n")
+                    output.printf("void __#{libName}_#{entry.name}_xml_dump_within(FILE* file, const __#{libName}_const_#{entry.name} *ptr, int indent){\n")
                 end
                 output.printf("\t#{paddFunc}(file, indent, 0, 0);\n")
                 output.printf("\t#{printFunc}(file, \"<#{entry.name}\");\n")
@@ -143,7 +143,7 @@ module Damage
                             output.printf("\t}\n");
                         when :intern
                             output.printf("\tif(ptr->#{field.name}){\n");
-                            output.printf("\t\t__#{libName}_#{field.data_type} *el;\n");
+                            output.printf("\t\tconst __#{libName}_const_#{field.data_type} *el;\n");
 
                             if field.qty == :container
                                 output.printf("\t\t#{paddFunc}(file, indent + 1, 0, 0);\n") 
@@ -175,10 +175,10 @@ module Damage
 
                 if zipped then 
                     output.printf("void __#{libName}_#{entry.name}_xml_dump_gz(gzFile file, " +
-                                  "const __#{libName}_#{entry.name} *ptr){\n")
+                                  "const __#{libName}_const_#{entry.name} *ptr){\n")
                 else 
                     output.printf("void __#{libName}_#{entry.name}_xml_dump(FILE* file, " +
-                                  "const __#{libName}_#{entry.name} *ptr){\n")
+                                  "const __#{libName}_const_#{entry.name} *ptr){\n")
                 end
                 output.printf("\t#{printFunc}(file, \"<?xml version=\\\"1.0\\\" encoding=\\\"UTF-8\\\"?>\\n" +
                               "<!DOCTYPE #{entry.name} SYSTEM \\\"sigmacDB.dtd\\\" >\\n\");\n")
@@ -211,7 +211,7 @@ module Damage
  **/
 ");
 
-                output.printf("int __#{libName}_%s_xml_dump_file(const char* file, const __#{libName}_%s *ptr, __#{libName}_options opts)\n{\n", entry.name, entry.name)
+                output.printf("int __#{libName}_%s_xml_dump_file(const char* file, const __#{libName}_const_%s *ptr, __#{libName}_options opts)\n{\n", entry.name, entry.name)
                 output.printf("\n\tuint32_t ret = 0;\n")
                 output.printf("\tFILE* output = NULL;\n")
                 output.printf("\tgzFile outputGz = NULL;\n")
@@ -277,7 +277,7 @@ module Damage
  * @param[in] indent Indentation of current node
  * @return node
  */");
-                    output.printf("\tvoid __#{libName}_#{entry.name}_xml_dump_within(FILE* file, const __#{libName}_#{entry.name} *ptr, int indent);") 
+                    output.printf("\tvoid __#{libName}_#{entry.name}_xml_dump_within(FILE* file, const __#{libName}_const_#{entry.name} *ptr, int indent);") 
                     output.puts("
 /**
  * Internal: Write a complete #__#{libName}_#{entry.name} structure and its children in XML form to an open GZ file.
@@ -288,7 +288,7 @@ module Damage
  * @param[in] indent Indentation of current node
  * @return node
  */"); 
-                   output.printf("\tvoid __#{libName}_#{entry.name}_xml_dump_within_gz(gzFile file, const __#{libName}_#{entry.name} *ptr, int indent);") 
+                   output.printf("\tvoid __#{libName}_#{entry.name}_xml_dump_within_gz(gzFile file, const __#{libName}_const_#{entry.name} *ptr, int indent);") 
 
                     output.puts("
 /**
@@ -299,7 +299,7 @@ module Damage
  * @retval 0 Success
  * @retval -1 in case of error
  */");
-                    output.printf("\tvoid __#{libName}_#{entry.name}_xml_dump(FILE* file, const __#{libName}_#{entry.name} *ptr);\n")
+                    output.printf("\tvoid __#{libName}_#{entry.name}_xml_dump(FILE* file, const __#{libName}_const_#{entry.name} *ptr);\n")
                     output.puts("
  /**
  * Write a complete #__#{libName}_#{entry.name} structure and its children in XML form to an open gzipped file
@@ -308,7 +308,7 @@ module Damage
  * @return Status
  * @retval 0 Success
  * @retval -1 in case of error
- */");                   output.printf("\tvoid __#{libName}_#{entry.name}_xml_dump_gz(gzFile file, const __#{libName}_#{entry.name} *ptr);\n")
+ */");                   output.printf("\tvoid __#{libName}_#{entry.name}_xml_dump_gz(gzFile file, const __#{libName}_const_#{entry.name} *ptr);\n")
                     output.puts("
 /**
  * Write a complete #__#{libName}_#{entry.name} structure and its children in XML form to a file
@@ -319,7 +319,7 @@ module Damage
  * @retval 0 Success
  * @retval -1 in case of error
  */");
-                    output.printf("int __#{libName}_%s_xml_dump_file(const char* file, const __#{libName}_%s *ptr, __#{libName}_options opts);\n\n", entry.name, entry.name)
+                    output.printf("int __#{libName}_%s_xml_dump_file(const char* file, const __#{libName}_const_%s *ptr, __#{libName}_options opts);\n\n", entry.name, entry.name)
                 }
                 output.puts("
 /** @} */

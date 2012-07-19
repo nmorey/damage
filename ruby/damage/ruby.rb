@@ -52,6 +52,7 @@ module Damage
             params[:classValueList] = "cDAMAGE#{params[:className]}List"
             params[:classValueListRowip] = "cDAMAGE#{params[:className]}ListRowip"
             params[:cType] = "__#{libName}_#{name}"
+            params[:cConstType] = "__#{libName}_const_#{name}"
             params[:cTypeList] = "__#{libName}_#{name}List"
             return params
         end
