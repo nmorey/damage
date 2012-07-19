@@ -30,18 +30,22 @@ module Damage
 
             private
 
-            def genStruct(output, libName, entry, rowip)
+            def genStruct(output, libName, entry, rowip, isConst)
                 nextPart=""
                 postPart=""
-                output.printf("/** Structure __#{libName}_%s: #{entry.description} */\n", entry.name)
-                output.printf("typedef struct ___#{libName}_%s {\n", entry.name);
+                if isConst == true
+                    const="const "
+                    struct_suffix="_const"
+                end
+                output.printf("/** #{const}Structure __#{libName}#{struct_suffix}_%s: #{entry.description} */\n", entry.name)
+                output.printf("typedef struct ___#{libName}#{struct_suffix}_%s {\n", entry.name);
                 entry.fields.each() {|field|
                     case field.attribute
                     when :sort
                         nextPart += "\t/** Sorted array (index) of \"#{field.sort_field}\" by #{field.sort_key} (not necessary dense) */\n"
-                        nextPart += "\tstruct ___#{libName}_#{field.data_type}** s_#{field.name} __#{libName.upcase}_ALIGN__;\n"
+                        nextPart += "\t#{const}struct ___#{libName}#{struct_suffix}_#{field.data_type}** s_#{field.name} __#{libName.upcase}_ALIGN__;\n"
                         output.printf("\t/** Length of the s_#{field.name} array */\n")
-                        output.printf("\tuint32_t n_%s;\n", field.name)
+                        output.printf("\t#{const}uint32_t n_%s;\n", field.name)
                     when :meta,:container,:none
                         case field.category
                         when :simple, :enum, :genum
@@ -50,43 +54,43 @@ module Damage
                                 output.printf("\t/** #{field.description} */\n") if field.description != nil
                                 output.printf("\t/** Field is an enum of type #__#{libName}_#{entry.name}_#{field.name} #{field.enumList}*/\n") if field.category == :enum
                                 if field.data_type == "unsigned long" || field.data_type == "signed long" then
-                                    output.printf("\t%s %s __#{libName.upcase}_ALIGN__;\n", field.data_type, field.name)
+                                    output.printf("\t#{const}%s %s __#{libName.upcase}_ALIGN__;\n", field.data_type, field.name)
                                     output.printf("#if __WORDSIZE == 32\n");
                                     output.printf("\t/** Padding field for #{field.name} as long have different size on different arch */\n")
-                                    output.printf("\tunsigned int __padding#{field.name};\n")
+                                    output.printf("\t#{const}unsigned int __padding#{field.name};\n")
                                     output.printf("#endif /* __WORDSIZE == 32 */ \n");
 
                                 elsif field.data_type == "double" || field.data_type == "unsigned long long" || 
                                         field.data_type == "signed long long"
-                                    output.printf("\t%s %s __#{libName.upcase}_ALIGN__;\n", field.data_type, field.name)
+                                    output.printf("\t#{const}%s %s __#{libName.upcase}_ALIGN__;\n", field.data_type, field.name)
                                 else
-                                    output.printf("\t%s %s;\n", field.data_type, field.name)
+                                    output.printf("\t#{const}%s %s;\n", field.data_type, field.name)
                                 end
                             when :list
                                 nextPart += "\t/** Array of elements #{field.description} */\n"
-                                nextPart += "\t#{field.data_type}* #{field.name} __#{libName.upcase}_ALIGN__;\n"
+                                nextPart += "\t#{const}#{field.data_type}* #{field.name} __#{libName.upcase}_ALIGN__;\n"
                                 output.printf("\t/** Number of elements in the %s array */\n", field.name)
-                                output.printf("\tuint32_t %sLen ;\n", field.name)
+                                output.printf("\t#{const}uint32_t %sLen ;\n", field.name)
                             end
                         when :string
                            case field.qty
                             when :single
                                nextPart += "\t/** #{field.description} */\n" if field.description != nil
-                               nextPart += "\t#{field.data_type} #{field.name} __#{libName.upcase}_ALIGN__;\n"
+                               nextPart += "\t#{const}#{field.data_type} #{field.name} __#{libName.upcase}_ALIGN__;\n"
                             when :list
                                nextPart += "\t/** Array of elements #{field.description} */\n"
-                               nextPart += "\t#{field.data_type}* #{field.name} __#{libName.upcase}_ALIGN__;\n"
+                               nextPart += "\t#{const}#{field.data_type}* #{field.name} __#{libName.upcase}_ALIGN__;\n"
                                output.printf("\t/** Number of elements in the #{field.name} array */\n")
-                               output.printf("\tuint32_t #{field.name}Len;\n")
+                               output.printf("\t#{const}uint32_t #{field.name}Len;\n")
                            end
                         when :intern
                                postPart += "\t/** #{field.description} */\n" if field.description != nil
-                               postPart += "\tstruct ___#{libName}_#{field.data_type}* #{field.name} __#{libName.upcase}_ALIGN__;\n"
+                               postPart += "\t#{const}struct ___#{libName}#{struct_suffix}_#{field.data_type}* #{field.name} __#{libName.upcase}_ALIGN__;\n"
                         when :id, :idref
                             output.printf("\t/** Field ID: #{field.description} */\n")
-                            output.printf("\tchar* %s_str; __#{libName.upcase}_ALIGN__\n", field.name)
+                            output.printf("\t#{const}char* %s_str; __#{libName.upcase}_ALIGN__\n", field.name)
                             output.printf("\t/** Field ID as string */\n")
-                            output.printf("\tunsigned long %s; __#{libName.upcase}_ALIGN__\n", field.name)
+                            output.printf("\t#{const}unsigned long %s; __#{libName.upcase}_ALIGN__\n", field.name)
                         else
                             raise("Unsupported data category for #{entry.name}.#{field.name}");
                         end
@@ -98,18 +102,18 @@ module Damage
 
                 if entry.attribute == :listable then
                     output.printf("\t/** Pointer to the next element in the list */\n")
-                    output.printf("\tstruct ___#{libName}_%s* next  __#{libName.upcase}_ALIGN__;\n", entry.name) 
+                    output.printf("\t#{const}struct ___#{libName}#{struct_suffix}_%s* next  __#{libName.upcase}_ALIGN__;\n", entry.name) 
                 end
                 output.printf("\t/** Internal: Pointer to the ruby VALUE when using the ruby wrapper  */\n")
-                output.printf("\tvoid* _private  __#{libName.upcase}_ALIGN__;\n");
+                output.printf("\t#{const}void* _private  __#{libName.upcase}_ALIGN__;\n");
                 output.printf("\t/** Internal: Offset in the binary DB */\n")
-                output.printf("\tunsigned long _rowip_pos  __#{libName.upcase}_ALIGN__;\n");
+                output.printf("\t#{const}unsigned long _rowip_pos  __#{libName.upcase}_ALIGN__;\n");
 
                 if rowip == true
                     output.printf("\t/** Internal: DB infos */\n")
-                    output.printf("\tvoid* _rowip  __#{libName.upcase}_ALIGN__;\n");
+                    output.printf("\t#{const}void* _rowip  __#{libName.upcase}_ALIGN__;\n");
                 end
-                output.printf("} __#{libName}_%s;\n\n", entry.name);
+                output.printf("} __#{libName}#{struct_suffix}_%s;\n\n", entry.name);
 
             end
             module_function :genStruct
@@ -132,7 +136,8 @@ module Damage
                 output.printf("#define __#{libName.upcase}_ALIGN__ __attribute__((aligned(8)))\n\n");
                 
                 description.entries.each() {|name, entry|
-                    genStruct(output, libName, entry, description.config.rowip)
+                    genStruct(output, libName, entry, description.config.rowip, false)
+                    genStruct(output, libName, entry, description.config.rowip, true)
 
                 }
                 output.printf("\n\n");
