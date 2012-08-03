@@ -151,7 +151,9 @@ public class XMLParser extends DefaultHandler {
             list = new LinkedList<String>();
             po.mapOfList.put(po.elementQName, list);
           }
-          list.add(new String(ch,start,length).intern());
+          String ret = new String(ch,start,length);
+          if (ret.length() < 256) ret = ret.intern();
+          list.add(ret);
         }
       }
     }
