@@ -188,7 +188,7 @@ module Damage
               entry.fields.each() { |field|
                 case field.attribute
                   when :sort
-                    output.printf("\t\tobj.sort_#{field.name}_by_#{field.sort_key}();\n")
+                    output.printf("\t\tobj.sort_#{field.sort_field}_by_#{field.sort_key}();\n")
                   end
                 }
 		output.printf("\t\t\tCleanup#{params[:uppercase_libname]}ObjectVisitor.instance.visit(obj);\n");
@@ -353,7 +353,7 @@ module Damage
               entry.fields.each() { |field|
                 case field.attribute
                   when :sort
-                    output.printf("\t\tobj.sort_#{field.name}_by_#{field.sort_key}();\n")
+                    output.printf("\t\tobj.sort_#{field.sort_field}_by_#{field.sort_key}();\n")
                   end
                 }
 		output.printf("\t\t\tCleanup#{params[:uppercase_libname]}ObjectVisitor.instance.visit(obj);\n");

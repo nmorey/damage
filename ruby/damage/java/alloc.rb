@@ -25,7 +25,7 @@ module Damage
                 entry.fields.each() { |field|
                     case field.attribute
                     when :sort
-                        output.printf("\t\t_%s_by_%s = null;\n", field.name, field.sort_key)
+                        output.printf("\t\t_%s_by_%s = null;\n", field.sort_field, field.sort_key)
                     else
                         output.printf("\t\t_%s = %s;\n", field.name, field.java_default_val)
                     end
@@ -41,14 +41,14 @@ module Damage
                   case field.attribute
                   when :sort
                     output.printf("\t/** Sort #{field.sort_field}\ by #{field.sort_key} */\n")
-                    output.printf("\tpublic void sort_#{field.name}_by_#{field.sort_key}() {\n")
-                    output.printf("\t\tif (_#{field.name}_by_#{field.sort_key} == null) {\n")
-                    output.printf("\t\t\t_#{field.name}_by_#{field.sort_key} = new java.util.HashMap<Integer, #{field.java_type}>();\n")
+                    output.printf("\tpublic void sort_#{field.sort_field}_by_#{field.sort_key}() {\n")
+                    output.printf("\t\tif (_#{field.sort_field}_by_#{field.sort_key} == null) {\n")
+                    output.printf("\t\t\t_#{field.sort_field}_by_#{field.sort_key} = new java.util.HashMap<Integer, #{field.java_type}>();\n")
                     output.printf("\t\t} else {\n")
-                    output.printf("\t\t\t_#{field.name}_by_#{field.sort_key}.clear();\n")
+                    output.printf("\t\t\t_#{field.sort_field}_by_#{field.sort_key}.clear();\n")
                     output.printf("\t\t}\n")
-                    output.printf("\t\tfor (#{field.java_type} obj: _#{field.name}) {\n")
-                    output.printf("\t\t\t_#{field.name}_by_#{field.sort_key}.put(obj._#{field.sort_key}, obj);\n")
+                    output.printf("\t\tfor (#{field.java_type} obj: _#{field.sort_field}) {\n")
+                    output.printf("\t\t\t_#{field.sort_field}_by_#{field.sort_key}.put(obj._#{field.sort_key}, obj);\n")
                     output.printf("\t\t}\n")
                     output.printf("\t}\n\n")
                   end

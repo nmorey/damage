@@ -49,7 +49,7 @@ public class #{params[:class]} ")
                 case field.attribute
                 when :sort
                     output.printf("\t/** Map of \"#{field.sort_field}\" by #{field.sort_key} */\n")
-                    output.printf("\tpublic java.util.HashMap<Integer, #{field.java_type}> _#{field.name}_by_#{field.sort_key};\n")
+                    output.printf("\tpublic java.util.HashMap<Integer, #{field.java_type}> _#{field.sort_field}_by_#{field.sort_key};\n")
                 when :meta,:container,:none
                     case field.category
                     when :simple, :enum, :string, :genum
