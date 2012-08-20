@@ -68,6 +68,8 @@ static VALUE #{params[:funcPrefixList]}_arrayAdd(VALUE self, VALUE obj){
     Data_Get_Struct(obj, #{params[:cType]}, elnt);
     assert(ptr);
 
+    elnt->next = NULL;
+
     if(ptr->first == NULL){
         ptr->last = ptr->first = elnt;
         *ptr->parent = elnt;
