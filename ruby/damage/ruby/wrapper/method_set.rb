@@ -213,7 +213,7 @@ static VALUE #{params[:funcPrefix]}_#{field.name}_setRowip(VALUE self, VALUE val
     if(ptr->#{field.name}){
         free(ptr->#{field.name});
     }
-    ptr->#{field.name}Len = RARRAY_LEN(val);
+    ptr->#{field.name}Len = NUM2ULONG(rb_funcall(val, rb_intern(\"length\"), 0));
     ptr->#{field.name} = __#{libName}_malloc(ptr->#{field.name}Len * sizeof(*ptr->#{field.name}));
 
     for(i = 0; i < ptr->#{field.name}Len; i++){
@@ -231,7 +231,7 @@ static VALUE #{params[:funcPrefix]}_#{field.name}_setRowip(VALUE self, VALUE val
     unsigned long i;
     assert(ptr);
     Check_Type(val, T_ARRAY); 
-    if(ptr->#{field.name}Len != RARRAY_LEN(val)){
+    if(ptr->#{field.name}Len != NUM2ULONG(rb_funcall(val, rb_intern(\"length\"), 0))){
         rb_raise(rb_eArgError, \"Can not set an array of different size\");
     }
     for(i = 0; i < ptr->#{field.name}Len; i++){
