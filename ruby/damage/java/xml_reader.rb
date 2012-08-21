@@ -50,7 +50,8 @@ module Damage
                 else
                   case field.java_type
                   when "String"
-                    output.printf("\t\t\t\tret._#{field.name}=_#{field.name}_tmp.intern();\n")
+                    output.printf("\t\t\t\tif (_#{field.name}_tmp.length() < 256) _#{field.name}_tmp = _#{field.name}_tmp.intern();\n");
+                    output.printf("\t\t\t\tret._#{field.name}=_#{field.name}_tmp;\n")
                   when "int"
                     output.printf("\t\t\t\tif (\"4294967295\".equals(_#{field.name}_tmp)) ret._#{field.name}=-1;\n");
                     output.printf("\t\t\t\telse ret._#{field.name}=Integer.parseInt(_#{field.name}_tmp);\n")
@@ -130,7 +131,8 @@ module Damage
                 output.printf("\t\t\tfor (String #{field.name}String: tmp_#{field.name}) {\n");
                 case field.java_type
                 when "String"
-                  output.printf("\t\t\t\tthis._#{field.name}[count_#{field.name}++]=#{field.name}String.intern();\n")
+                  output.printf("\t\t\t\tif (#{field.name}String.length() < 256) #{field.name}String = #{field.name}String.intern();\n");
+                  output.printf("\t\t\t\tthis._#{field.name}[count_#{field.name}++]=#{field.name}String;\n")
                 when "int"
                   output.printf("\t\t\t\tif (\"4294967295\".equals(#{field.name}String)) this._#{field.name}[count_#{field.name}++]=-1;\n");
                   output.printf("\t\t\t\telse this._#{field.name}[count_#{field.name}++]=Integer.parseInt(#{field.name}String);\n")

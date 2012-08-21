@@ -261,7 +261,8 @@ public abstract class #{uppercaseLibName}Object {
 			readFully(is, array);
 			// reads end of String
 			if (is.read() == -1) throw new EOFException();
-			ret = new String(array, UTF8_CHARSET).intern();
+			ret = new String(array, UTF8_CHARSET);
+                        if (ret.length() < 256) ret = ret.intern();
 		} else if (strLen == 1) {
 			if (is.read() == -1) throw new EOFException();
 			ret = \"\";
@@ -295,7 +296,8 @@ public abstract class #{uppercaseLibName}Object {
         throw new EOFException(\"Unexpected EOF at offset \" + fc.position());
       bb.position(0);
       bb.get(strCopy);
-      ret = new String(strCopy, UTF8_CHARSET).intern();
+      ret = new String(strCopy, UTF8_CHARSET);
+      if (ret.length() < 256) ret = ret.intern();
     } else if (strLen == 1) {
       ret = \"\";
       bb = ByteBuffer.allocate(1);

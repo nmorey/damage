@@ -42,6 +42,7 @@ module Damage
                   when :sort
                     output.printf("\t/** Sort #{field.sort_field}\ by #{field.sort_key} */\n")
                     output.printf("\tpublic void sort_#{field.sort_field}_by_#{field.sort_key}() {\n")
+                    output.printf("\t\tif (_#{field.sort_field} != null) {\n") 
                     output.printf("\t\tif (_#{field.sort_field}_by_#{field.sort_key} == null) {\n")
                     output.printf("\t\t\t_#{field.sort_field}_by_#{field.sort_key} = new java.util.HashMap<Integer, #{field.java_type}>();\n")
                     output.printf("\t\t} else {\n")
@@ -49,6 +50,7 @@ module Damage
                     output.printf("\t\t}\n")
                     output.printf("\t\tfor (#{field.java_type} obj: _#{field.sort_field}) {\n")
                     output.printf("\t\t\t_#{field.sort_field}_by_#{field.sort_key}.put(obj._#{field.sort_key}, obj);\n")
+                    output.printf("\t\t\t}\n")
                     output.printf("\t\t}\n")
                     output.printf("\t}\n\n")
                   end
