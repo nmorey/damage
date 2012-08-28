@@ -198,7 +198,7 @@ module Damage
                 check = 1
                 output.printf("
         if (\"#{field.name}\".equals(qName)) {
-            #{field.java_type} obj = #{field.java_type}.createFromXML(parser, attributes);
+            _#{field.java_type} = #{field.java_type}.createFromXML(parser, attributes);
             return;
         }
 ");
