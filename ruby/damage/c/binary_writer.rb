@@ -328,20 +328,31 @@ uint32_t __#{libName}_#{entry.name}_binary_dump(__#{libName}_#{entry.name}* ptr,
                             case field.category
                             when :simple
                                 output.printf("#{indent}if(#{source}->%s){\n", field.name)
-                                output.printf("#{indent}val.%s = (void*)(unsigned long)(val._rowip_pos + rel_offset);\n", field.name)
-                                output.printf("#{indent}\trel_offset += sizeof(*#{source}->%s) * #{source}->%sLen;\n", field.name, field.name)
+                                output.printf("#{indent}\tif(#{source}->#{field.name}Len){\n")
+                                output.printf("#{indent}\t\tval.%s = (void*)(unsigned long)(val._rowip_pos + rel_offset);\n", field.name)
+                                output.printf("#{indent}\t\trel_offset += sizeof(*#{source}->%s) * #{source}->%sLen;\n",
+                                              field.name, field.name)
+              
+                                output.printf("#{indent}\t} else {\n")
+                                output.printf("#{indent}\t\tval.%s = NULL;\n", field.name)
+                                output.printf("#{indent}\t}\n")
                                 output.printf("#{indent}}\n")
                             when :string
                                 output.printf("#{indent}if(#{source}->%s){\n", field.name)
-                                output.printf("#{indent}val.%s = (void*)(unsigned long)(val._rowip_pos + rel_offset);\n", field.name)
-                                output.printf("#{indent}\tunsigned int i; for(i = 0; i < #{source}->%sLen; i++){\n", 
+                                output.printf("#{indent}\tif(#{source}->#{field.name}Len){\n")
+                                output.printf("#{indent}\t\tval.%s = (void*)(unsigned long)(val._rowip_pos + rel_offset);\n", field.name)
+                                output.printf("#{indent}\t\tunsigned int i; for(i = 0; i < #{source}->%sLen; i++){\n", 
                                               field.name);
-                                output.printf("#{indent}\t\tif(#{source}->%s[i]){\n", field.name);
-                                output.printf("#{indent}\t\t\trel_offset += strlen(#{source}->%s[i]) + 1 + sizeof(rel_offset);\n", field.name)
-                                output.printf("#{indent}\t\t} else {\n")
-                                output.printf("#{indent}\t\t\trel_offset += sizeof(rel_offset);\n", field.name)
-                                output.printf("#{indent}\t\t}\n")
-                                output.printf("#{indent}\t}\n\n");
+                                output.printf("#{indent}\t\t\tif(#{source}->%s[i]){\n", field.name);
+                                output.printf("#{indent}\t\t\t\trel_offset += strlen(#{source}->%s[i]) + 1 + sizeof(rel_offset);\n", field.name)
+                                output.printf("#{indent}\t\t\t} else {\n")
+                                output.printf("#{indent}\t\t\t\trel_offset += sizeof(rel_offset);\n", field.name)
+                                output.printf("#{indent}\t\t\t}\n")
+                                output.printf("#{indent}\t\t}\n\n");
+                                output.printf("#{indent}\t} else {\n")
+                                output.printf("#{indent}\t\tval.%s = NULL;\n", field.name)
+                                output.printf("#{indent}\t}\n")
+
                                 output.printf("#{indent}}\n")
                                 
                             when :intern
