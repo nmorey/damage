@@ -231,7 +231,7 @@ __#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load_partial(FILE*
                         case field.category
                             
                         when :simple
-                            output.printf("#{indent}if(#{source}->%s){\n", field.name)
+                            output.printf("#{indent}if(#{source}->%s && #{source}->#{field.name}Len){\n", field.name)
                             # Alloc and read the array of data
                             output.printf("#{indent}\t%s* array = __#{libName}_malloc(#{source}->%sLen * sizeof(*array));\n", 
                                           field.data_type, field.name, field.data_type)
