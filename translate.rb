@@ -49,8 +49,13 @@ optsParser.separator "Options:"
 
 optsParser.on("-f", "--file <file.yaml>", String, "YAML DB description.") {|val| opts[:file] << val}
 optsParser.on("-p", "--pahole <pahole.result>", String, "Path to pahole size infos.") {|val| opts[:pahole] = val}
+optsParser.on("-P", "--sizes ", nil, "Dump only sizes ond offset infos.") {|val| opts[:sizeOnly] = true}
 optsParser.on("-h", "--help",  "Display usage.") { |val| puts optsParser.to_s; exit 0 }
 rest = optsParser.parse(ARGV);
+
+if opts[:sizeOnly] == true && opts[:pahole] == nil then
+    raise("sizes mode requires a pahole file")
+end
 
 raise("Required YAML files")  if opts[:file].length == 0
 tree = nil
@@ -64,15 +69,23 @@ opts[:file].each(){|fName|
     end
     f.close()
 }
+
 desc = Damage::Description::Description.new(tree)
 desc.config.damage_version = `cd #{File.dirname(__FILE__)}; git rev-parse HEAD; cd - > /dev/null`.chomp()
 
-if opts[:pahole] == nil then 
-    Damage::Doc::generate(desc)
-    Damage::C::generate(desc)
-    Damage::Ruby::generate(desc)
-else
+if opts[:pahole] != nil then 
     input = File.open(opts[:pahole])
     desc.pahole = Damage::Description::Pahole.new(desc.config.libname, input)
-    Damage::Java::generate(desc, desc.pahole)
+end
+
+if opts[:sizeOnly] != true then
+    if opts[:pahole] == nil then 
+        Damage::Doc::generate(desc)
+        Damage::C::generate(desc)
+        Damage::Ruby::generate(desc)
+    else
+        Damage::Java::generate(desc, desc.pahole)
+    end
+else
+    puts desc.pahole
 end
