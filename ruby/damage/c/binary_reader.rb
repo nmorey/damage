@@ -233,36 +233,47 @@ __#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load_partial(FILE*
                         when :simple
                             output.printf("#{indent}if(#{source}->%s){\n", field.name)
                             # Alloc and read the array of data
-                            output.printf("#{indent}\t%s* array = __#{libName}_malloc(#{source}->%sLen * sizeof(*array));\n", 
+                            output.printf("#{indent}\tif(#{source}->#{field.name}Len){\n")
+                            output.printf("#{indent}\t\t%s* array = __#{libName}_malloc(#{source}->%sLen * sizeof(*array));\n", 
                                           field.data_type, field.name, field.data_type)
-                            cRead(output, libName, zipped, "#{indent}\t", "array", "sizeof(*array)", "#{source}->#{field.name}Len", "file")
+                            cRead(output, libName, zipped, "#{indent}\t\t", "array", "sizeof(*array)",
+                                  "#{source}->#{field.name}Len", "file")
 
-                            output.printf("#{indent}\t#{source}->%s = array;\n", field.name)              
+                            output.printf("#{indent}\t\t#{source}->%s = array;\n", field.name)              
+                            output.printf("#{indent}\t} else {\n")
+                            output.printf("#{indent}\t\t#{source}->%s = NULL;\n", field.name)
+                            output.printf("#{indent}\t}\n")
                             output.printf("#{indent}}\n")
                         when :string
                             output.printf("#{indent}if(#{source}->%s){\n", field.name)
-                            output.printf("#{indent}\tuint32_t len;\n")
+                            output.printf("#{indent}\tif(#{source}->#{field.name}Len){\n")
+
+                            output.printf("#{indent}\t\tuint32_t len;\n")
                             # Alloc and read the array of data
-                            output.printf("#{indent}\t%s* array = __#{libName}_malloc(#{source}->%sLen * sizeof(*array));\n", 
+                            output.printf("#{indent}\t\t%s* array = __#{libName}_malloc(#{source}->%sLen * sizeof(*array));\n", 
                                           field.data_type, field.name)
 
-                            output.printf("#{indent}\t#{source}->%s = array;\n", field.name)
+                            output.printf("#{indent}\t\t#{source}->%s = array;\n", field.name)
 
                             # Read the string at each index
-                            output.printf("#{indent}\tunsigned int i;\n")
-                            output.printf("#{indent}\t\tfor(i = 0; i < #{source}->%sLen; i++){\n", 
+                            output.printf("#{indent}\t\tunsigned int i;\n")
+                            output.printf("#{indent}\t\t\tfor(i = 0; i < #{source}->%sLen; i++){\n", 
                                           field.name);
 
                             # get the string size
-                            cRead(output, libName, zipped, "#{indent}\t\t", "&len", "sizeof(len)", "1", "file")
+                            cRead(output, libName, zipped, "#{indent}\t\t\t", "&len", "sizeof(len)", "1", "file")
                             # Alloc it and read it
-                            output.printf("#{indent}\t\tif(len > 0) {\n");
-                            output.printf("#{indent}\t\t\tarray[i] = __#{libName}_malloc(sizeof(char) * len);\n")
-                            cRead(output, libName, zipped, "#{indent}\t\t\t", "array[i]", "sizeof(char)", "len", "file")
-                            output.printf("#{indent}\t\t} else {\n")
-                            output.printf("#{indent}\t\t\tarray[i] = NULL;\n")
+                            output.printf("#{indent}\t\t\tif(len > 0) {\n");
+                            output.printf("#{indent}\t\t\t\tarray[i] = __#{libName}_malloc(sizeof(char) * len);\n")
+                            cRead(output, libName, zipped, "#{indent}\t\t\t\t", "array[i]", "sizeof(char)", "len", "file")
+                            output.printf("#{indent}\t\t\t} else {\n")
+                            output.printf("#{indent}\t\t\t\tarray[i] = NULL;\n")
+                            output.printf("#{indent}\t\t\t}\n")
                             output.printf("#{indent}\t\t}\n")
+                            output.printf("#{indent}\t} else {\n")
+                            output.printf("#{indent}\t\t#{source}->%s = NULL;\n", field.name)
                             output.printf("#{indent}\t}\n")
+
                             output.printf("#{indent}}\n")
                         when :intern
                         else
