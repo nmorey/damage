@@ -526,6 +526,9 @@ module Damage
                         @containers[name] = data_type
 
                     }
+                    if @enums[_entry.name] != nil || @entries[_entry.name] != nil then
+                        raise("Multiple entries named '#{_entry.name}'")
+                    end
                     if _entry.attribute == :enum then
                         @enums[_entry.name] = _entry
                     else
