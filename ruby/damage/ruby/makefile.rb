@@ -47,6 +47,7 @@ ARCH	:= $(shell uname -m)
 
 PREFIX  := /usr
 SUFFIX  := #{libName}
+LIB_SUFFIX  := $(SUFFIX)
 
 CFLAGS= -Iinclude/ $(cflags) -Wall -Wextra -Werror -g -I/usr/include/libxml2 -Werror -O3 -fPIC
 ifeq ($(ARCH), x86_64)

@@ -53,6 +53,7 @@ ARCH	:= $(shell uname -m)
 
 PREFIX  := /usr
 SUFFIX  := #{libName}
+LIB_SUFFIX  := $(SUFFIX)
 
 CC=gcc
 CFLAGS_COMMON  := -Iinclude/ $(cflags) -Wall -Wextra -Werror -g -I/usr/include/libxml2 -Werror -fPIC -I. -std=gnu99
@@ -135,18 +136,18 @@ $(PREFIX)/include/$(SUFFIX)/%.h: include/%.h
 	@mkdir -p $$(dirname $@) || true
 	install $< $@
 
-install-lib: $(patsubst obj/i686/%, $(PREFIX)/$(LIBDIR32)/$(SUFFIX)/%, $(lib) $(dlib))
-install-lib64: $(patsubst obj/x86_64/%, $(PREFIX)/$(LIBDIR64)/$(SUFFIX)/%, $(lib64) $(dlib64))
+install-lib: $(patsubst obj/i686/%, $(PREFIX)/$(LIBDIR32)/$(LIB_SUFFIX)/%, $(lib) $(dlib))
+install-lib64: $(patsubst obj/x86_64/%, $(PREFIX)/$(LIBDIR64)/$(LIB_SUFFIX)/%, $(lib64) $(dlib64))
 
-$(PREFIX)/$(LIBDIR32)/$(SUFFIX)/%: obj/i686/%
+$(PREFIX)/$(LIBDIR32)/$(LIB_SUFFIX)/%: obj/i686/%
 	@mkdir -p $$(dirname $@) || true
 	install $< $@
 
-$(PREFIX)/$(LIBDIR)/$(SUFFIX)/%: obj/x86_64/%
+$(PREFIX)/$(LIBDIR)/$(LIB_SUFFIX)/%: obj/x86_64/%
 	@mkdir -p $$(dirname $@) || true
 	install $< $@
 
-$(PREFIX)/$(LIBDIR)/$(SUFFIX)/$(dlib64): $(dlib64)
+$(PREFIX)/$(LIBDIR)/$(LIB_SUFFIX)/$(dlib64): $(dlib64)
 	@mkdir -p $$(dirname $@) || true
 	install $< $@
 
