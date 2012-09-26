@@ -187,13 +187,13 @@ int main()
 		exit(2);
 	}
     printf(\"Generated DB\\n\");
-	if (__#{libName}_#{description.top_entry.name}_xml_dump_file(file, CONSTIFY(ptr), __SIGMACDB_OPTION_GZIPPED) < 0) {
+	if (__#{libName}_#{description.top_entry.name}_xml_dump_file(file, CONSTIFY(ptr), __#{libName.upcase}_OPTION_GZIPPED) < 0) {
 		fprintf(stderr, \"Failed writing to %s in gzipped mode\\n\", file);
 		exit(3);
 	}
     printf(\"Wrote XML DB\\n\");
 	__#{libName}_#{description.top_entry.name} *ptr2;
-	ptr2 = __#{libName}_#{description.top_entry.name}_xml_load_file(file, __SIGMACDB_OPTION_GZIPPED);
+	ptr2 = __#{libName}_#{description.top_entry.name}_xml_load_file(file, __#{libName.upcase}_OPTION_GZIPPED);
 	if (ptr2 == NULL) {
 		fprintf(stderr, \"Failed to parse %s\\n\", file);
 		exit(4);
@@ -239,7 +239,7 @@ int main()
 	__#{libName}_#{description.top_entry.name} *ptr = create#{description.top_entry.name}(1);
 	__#{libName}_#{description.top_entry.name} *ptr2;
 
-	if (__#{libName}_#{description.top_entry.name}_binary_dump_file(file, ptr, __SIGMACDB_OPTION_GZIPPED) == 0) {
+	if (__#{libName}_#{description.top_entry.name}_binary_dump_file(file, ptr, __#{libName.upcase}_OPTION_GZIPPED) == 0) {
 		fprintf(stderr, \"Failed writing to %s\\n\", file);
 		exit(2);
 	}
@@ -251,7 +251,7 @@ int main()
 	}
     printf(\"Wrote XML DB\\n\");
 
-	ptr2 = __#{libName}_#{description.top_entry.name}_binary_load_file(file, __SIGMACDB_OPTION_GZIPPED);
+	ptr2 = __#{libName}_#{description.top_entry.name}_binary_load_file(file, __#{libName.upcase}_OPTION_GZIPPED);
 	if (ptr2 == NULL) {
 		fprintf(stderr, \"Failed to parse %s\\n\", file);
 		exit(4);
@@ -304,7 +304,7 @@ int main()
 		fprintf(stderr, \"Failed writing to %s\\n\", file);
 		exit(2);
 	}
-	if (__#{libName}_#{description.top_entry.name}_xml_dump_file(xml, CONSTIFY(ptr), __SIGMACDB_OPTION_GZIPPED) < 0) {
+	if (__#{libName}_#{description.top_entry.name}_xml_dump_file(xml, CONSTIFY(ptr), __#{libName.upcase}_OPTION_GZIPPED) < 0) {
 		fprintf(stderr, \"Failed writing to %s\\n\", xml);
 		exit(2);
 	}
@@ -320,7 +320,7 @@ int main()
 	__#{libName}_#{description.top_entry.name}_free(ptr2);
 
 
-    ptr3 = __#{libName}_#{description.top_entry.name}_xml_load_file(xml, __SIGMACDB_OPTION_GZIPPED);
+    ptr3 = __#{libName}_#{description.top_entry.name}_xml_load_file(xml, __#{libName.upcase}_OPTION_GZIPPED);
 	if (ptr3 == NULL) {
 		fprintf(stderr, \"Failed to parse %s\\n\", xml);
 		exit(5);

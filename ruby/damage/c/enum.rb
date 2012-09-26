@@ -128,7 +128,7 @@ module Damage
             def genC(output, description)
                 libName = description.config.libname
 
-                output.printf("#include <sigmacDB.h>\n");
+                output.printf("#include <#{libName}.h>\n");
 
                 
                 description.entries.each() {|name, entry|

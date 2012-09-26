@@ -505,7 +505,7 @@ uint32_t __#{libName}_#{entry.name}_binary_dump(__#{libName}_#{entry.name}* ptr,
                 output.printf("\tFILE* output = NULL;\n")
                 output.printf("\tgzFile outputGz = NULL;\n")
                 output.printf("\t__#{libName}_binary_header header = { __#{libName.upcase}_DB_FORMAT, 0, __#{libName.upcase}_DAMAGE_VERSION};\n")
-                output.printf("\tmemset(((char *) &header) + __builtin_offsetof(__sigmacDB_binary_header, damage_version) + sizeof(header.damage_version), 0, sizeof(header) - (__builtin_offsetof(__sigmacDB_binary_header, damage_version) + sizeof(header.damage_version)));\n");
+                output.printf("\tmemset(((char *) &header) + __builtin_offsetof(__#{libName}_binary_header, damage_version) + sizeof(header.damage_version), 0, sizeof(header) - (__builtin_offsetof(__#{libName}_binary_header, damage_version) + sizeof(header.damage_version)));\n");
                 output.printf("\n")
 
                 output.printf("\tret = setjmp(__#{libName}_error_happened);\n");

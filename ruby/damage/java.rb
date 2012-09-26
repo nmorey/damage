@@ -111,14 +111,14 @@ public interface I#{uppercaseLibName}ObjectVisitor {
 	/**
 	 * @return the delegateVisitor
 	 */
-	public ISigmacDBObjectVisitor getDelegateVisitor() {
+	public I#{uppercaseLibName}ObjectVisitor getDelegateVisitor() {
 		return delegateVisitor;
 	}
 
 	/**
 	 * @param delegateVisitor the delegateVisitor to set
 	 */
-	public void setDelegateVisitor(ISigmacDBObjectVisitor delegateVisitor) {
+	public void setDelegateVisitor(I#{uppercaseLibName}ObjectVisitor delegateVisitor) {
 		this.delegateVisitor = delegateVisitor;
 	}
 
@@ -337,7 +337,7 @@ public abstract class #{uppercaseLibName}Object {
 
   public void writeToXML(java.io.Writer w, boolean indent) throws IOException {
     w.write(\"<?xml version=\\\"1.0\\\" encoding=\\\"UTF-8\\\"?>\\n\");
-    w.write(\"<!DOCTYPE \" + getXMLName() + \" SYSTEM \\\"sigmacDB.dtd\\\" >\\n\");
+    w.write(\"<!DOCTYPE \" + getXMLName() + \" SYSTEM \\\"#{libName}.dtd\\\" >\\n\");
     xmlWrite(w, indent?0:-1);
   } 
 
