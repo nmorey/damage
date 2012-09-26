@@ -136,7 +136,7 @@ void __#{libName}_gzseek(gzFile stream, long offset, int whence);
 
 void __#{libName}_paddOutput(FILE* file, int indent, int listable, int first);
 void __#{libName}_paddOutputGz(gzFile file, int indent, int listable, int first);
-int __sigmacDB_gzPrintf(gzFile file, const char* format, ...);
+int __#{libName}_gzPrintf(gzFile file, const char* format, ...);
 
 
 char *__#{libName}_read_value_str(xmlNodePtr reader);
