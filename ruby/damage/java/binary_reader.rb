@@ -395,30 +395,30 @@ module Damage
                 output.printf("\t\tbyte[] header_dVersion = new byte[40];\n")
                 output.printf("\t\tByteBuffer in; int nbytes;\n");
                 output.printf("\t\tint val;\n\n");
-                
-                output.printf("\t\tfc.lock(0, Long.MAX_VALUE, readOnly);\n\n");
-                ByteBuffer(output, "in", "\t\t", "#{params[:bin_header][:size]}", "0")
-                output.printf("\n\t\tval = in.getInt(#{params[:bin_header]["version"][:offset]});\n")
-                output.printf("\t\tif(val  != #{params[:version]})\n");
-                output.printf("\t\t\tthrow new java.io.UnsupportedEncodingException(\"Incompatible #{libName} format (got version \" + val + \", expecting #{params[:version]})\");\n\n")
+                output.printf("\t\ttry {\n"); 
+                output.printf("\t\t\tfc.lock(0, Long.MAX_VALUE, readOnly);\n\n");
+                ByteBuffer(output, "in", "\t\t\t", "#{params[:bin_header][:size]}", "0")
+                output.printf("\n\t\t\tval = in.getInt(#{params[:bin_header]["version"][:offset]});\n")
+                output.printf("\t\t\tif(val  != #{params[:version]})\n");
+                output.printf("\t\t\t\tthrow new java.io.UnsupportedEncodingException(\"Incompatible #{libName} format (got version \" + val + \", expecting #{params[:version]})\");\n\n")
 
-                output.printf("\t\tin.position(#{params[:bin_header]["damage_version[41]"][:offset]});\n")
-                output.printf("\t\tin.get(header_dVersion);\n")
+                output.printf("\t\t\tin.position(#{params[:bin_header]["damage_version[41]"][:offset]});\n")
+                output.printf("\t\t\tin.get(header_dVersion);\n")
                 output.printf("\t\tString damage_versionStr = new String(header_dVersion, UTF8_CHARSET);\n")
 
-                output.printf("\t\tif(!DAMAGE_VERSION.equals(damage_versionStr))\n")
-                output.printf("\t\t\tthrow new java.io.UnsupportedEncodingException(\"Incompatible #{libName} format (got damage_version \" + damage_versionStr + \", expecting \" + DAMAGE_VERSION);\n\n")
+                output.printf("\t\t\tif(!DAMAGE_VERSION.equals(damage_versionStr))\n")
+                output.printf("\t\t\t\tthrow new java.io.UnsupportedEncodingException(\"Incompatible #{libName} format (got damage_version \" + damage_versionStr + \", expecting \" + DAMAGE_VERSION);\n\n")
 
-                output.printf("\t\tval = in.getInt(#{params[:bin_header]["length"][:offset]});\n")
-                output.printf("\t\tif(val  != file.length())\n");
-                output.printf("\t\t\tthrow new IOException(\"Corrupted file. Size does not match header\");\n\n")
+                output.printf("\t\t\tval = in.getInt(#{params[:bin_header]["length"][:offset]});\n")
+                output.printf("\t\t\tif(val  != file.length())\n");
+                output.printf("\t\t\t\tthrow new IOException(\"Corrupted file. Size does not match header\");\n\n")
 
-                output.printf("\t\t#{retType} obj = loadFromBinaryPartial(fc, #{params[:bin_header][:size]}, pOpts) ;\n")
-                output.printf("\t\tfc.close();\n\n");
-                output.printf("\t\treturn obj;\n")
+                output.printf("\t\t\t#{retType} obj = loadFromBinaryPartial(fc, #{params[:bin_header][:size]}, pOpts) ;\n");
+		output.printf("\t\t\treturn obj;\n");
+                output.printf("\t\t} finally {\n");
+                output.printf("\t\t\tfc.close();\n");
+                output.printf("\t\t}\n\n");
                 output.printf("\t}\n\n")
-
-
 
 
                 output.puts("
