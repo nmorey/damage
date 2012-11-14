@@ -258,7 +258,7 @@ static inline void __#{libName}_rowip_header_free(__#{libName}_rowip_header* ptr
 
                 output.printf("\theader = __#{libName}_rowip_header_alloc();\n\n");
                 output.printf("\theader->filename = strdup(file);\n");
-                output.printf("\tif((output = __#{libName}_open_fd(header->filename, opts & __#{libName.upcase}_OPTION_READONLY)) == -1)\n");
+                output.printf("\tif((output = __#{libName}_open_fd(header->filename, opts)) == -1)\n");
                 output.printf("\t\t__#{libName}_error(\"Failed to open %%s\", errno, header->filename);\n");
                 output.printf("\theader->file = output;\n");
 

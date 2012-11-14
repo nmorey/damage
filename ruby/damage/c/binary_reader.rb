@@ -387,7 +387,7 @@ __#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load_partial(FILE*
                 
 ;
                 output.printf("\tif(opts & __#{libName.upcase}_OPTION_GZIPPED){\n")
-                output.printf("\t\tif((outputGz = __#{libName}_open_gzFile(file, opts & __#{libName.upcase}_OPTION_READONLY, \"r\")) == NULL)\n")
+                output.printf("\t\tif((outputGz = __#{libName}_open_gzFile(file, opts, \"r\")) == NULL)\n")
                 output.printf("\t\t\t__#{libName}_error(\"Failed to open output file %%s: %%s\", ENOENT, file, strerror(errno));\n\n"); 
 
                 cRead(output, libName, true, "\t\t", "&header", "sizeof(header)", "1", "outputGz")
@@ -400,7 +400,7 @@ __#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load_partial(FILE*
 
 
                 output.printf("\t} else {\n")
-                output.printf("\t\tif((output = __#{libName}_open_FILE(file, opts & __#{libName.upcase}_OPTION_READONLY, \"r\")) == NULL)\n")
+                output.printf("\t\tif((output = __#{libName}_open_FILE(file, opts, \"r\")) == NULL)\n")
                 output.printf("\t\t\t__#{libName}_error(\"Failed to open output file %%s: %%s\", ENOENT, file, strerror(errno));\n\n");
 
                 cRead(output, libName, false, "\t\t", "&header", "sizeof(header)", "1", "output")

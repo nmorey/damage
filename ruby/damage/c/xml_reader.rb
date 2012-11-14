@@ -511,7 +511,7 @@ __#{libName}_#{type} *__#{libName}_#{name}#{type}Container_xml_load_elements(xml
                 output.printf("\t\treturn NULL;\n");
                 output.printf("\t}\n\n");
                 
-                output.printf("\tif((fd = __#{libName}_open_fd(file, opts & __#{libName.upcase}_OPTION_READONLY)) == -1)\n");
+                output.printf("\tif((fd = __#{libName}_open_fd(file, opts)) == -1)\n");
                 output.printf("\t\t__#{libName}_error(\"Failed to lock input file %%s: %%s\", ENOENT, file, strerror(errno));\n");
                 output.printf("\tif (opts & __#{libName.upcase}_OPTION_GZIPPED) {\n");
                 output.printf("\t\tint nbytes;\n");

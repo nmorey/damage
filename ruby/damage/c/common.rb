@@ -50,11 +50,11 @@ module Damage
  * and it should not be necessary to call it manually.
  * Note that acquiring the lock is acquirable if it already belong to the calling process.
  * @param[in] filename DB file name
- * @param[in] rdonly Is lock read only?
+ * @param[in] options Parser options
  * @return File descriptor
  * @retval NULL Error
  */
-int __#{libName}_open_fd(const char* filename, int rdonly);
+int __#{libName}_open_fd(const char* filename, int options);
 
 /**
  * Acquire a lock on a #{libName} file (stalls if lock is not ready) and returns a file descriptor .
@@ -62,12 +62,12 @@ int __#{libName}_open_fd(const char* filename, int rdonly);
  * and it should not be necessary to call it manually.
  * Note that acquiring the lock is acquirable if it already belong to the calling process.
  * @param[in] filename DB file name
- * @param[in] rdonly Is lock read only?
+ * @param[in] options Parser options
  * @param[in] mode Mode for gzdopen
  * @return File descriptor
  * @retval NULL Error
  */
-gzFile __#{libName}_open_gzFile(const char* filename, int rdonly, const char* mode);
+gzFile __#{libName}_open_gzFile(const char* filename, int options, const char* mode);
 
 /**
  * Acquire a lock on a #{libName} file (stalls if lock is not ready) and returns a file descriptor .
@@ -75,12 +75,12 @@ gzFile __#{libName}_open_gzFile(const char* filename, int rdonly, const char* mo
  * and it should not be necessary to call it manually.
  * Note that acquiring the lock is acquirable if it already belong to the calling process.
  * @param[in] filename DB file name
- * @param[in] rdonly Is lock read only?
+ * @param[in] options Parser options
  * @param[in] mode Mode for fdopen
  * @return File descriptor
  * @retval NULL Error
  */
-FILE* __#{libName}_open_FILE(const char* filename, int rdonly, const char* mode);
+FILE* __#{libName}_open_FILE(const char* filename, int options, const char* mode);
 
 /**
  * Release a lock on a #{libName} file acquire by #__#{libName}_acquire_flock.
@@ -209,7 +209,7 @@ typedef struct ___#{libName}_db_lock{
     /** Pointer to the next lock */
     struct ___#{libName}_db_lock* next;
     /** File mode */
-    int rdonly;
+    int options;
     /** Opened files */
     FILE *oFiles[MAX_OPENED_FILE];
     /** Opened files count */
@@ -378,10 +378,10 @@ static inline void __#{libName}_free_dblock(__#{libName}_db_lock* dbLock)
 	free(dbLock);
 
 }
-__#{libName}_db_lock* __#{libName}_acquire_flock(const char* filename, int rdonly){
+__#{libName}_db_lock* __#{libName}_acquire_flock(const char* filename, int options){
     __#{libName}_db_lock* dbLock;
     struct flock lock;
-
+    int rdonly = (options & __#{libName.upcase}_OPTION_READONLY);
     if(filename == NULL){
         return NULL;
     }
@@ -391,7 +391,8 @@ __#{libName}_db_lock* __#{libName}_acquire_flock(const char* filename, int rdonl
                 break;
     }
 
-    if(dbLock && dbLock->rdonly == 1 && rdonly == 0){
+    if(dbLock && 
+       (dbLock->options & __#{libName.upcase}_OPTION_READONLY) && rdonly){
         /* File was locked in readonly. We can't allow to open in RW */
         return NULL;
     } else if(!dbLock){
@@ -400,7 +401,7 @@ __#{libName}_db_lock* __#{libName}_acquire_flock(const char* filename, int rdonl
             return NULL;
         dbLock->next = lockedDBs;
         dbLock->name = strdup(filename);
-        dbLock->rdonly = rdonly;
+        dbLock->options = options;
         dbLock->oFilesCount = 0;
         dbLock->oGzFilesCount = 0;
         if(!dbLock->name){
@@ -413,24 +414,25 @@ __#{libName}_db_lock* __#{libName}_acquire_flock(const char* filename, int rdonl
             free(dbLock);
             return NULL;
         }
-
-    	lock.l_whence = SEEK_SET;
-    	lock.l_start = 0;
-    	lock.l_len = 0;
-    	lock.l_pid = getpid();
-        if(rdonly){
-            lock.l_type = F_RDLCK;
-        } else {
-            lock.l_type = F_WRLCK;
-        }
-
-    	while(fcntl(dbLock->file, F_SETLKW, &lock)){
-    		if(errno != EINTR){
-                __#{libName}_free_dblock(dbLock);
-    			return NULL;
+        if((options & __#{libName.upcase}_OPTION_NOLOCK) == 0){
+        	lock.l_whence = SEEK_SET;
+        	lock.l_start = 0;
+        	lock.l_len = 0;
+        	lock.l_pid = getpid();
+            if(rdonly){
+                lock.l_type = F_RDLCK;
+            } else {
+                lock.l_type = F_WRLCK;
             }
+
+        	while(fcntl(dbLock->file, F_SETLKW, &lock)){
+        		if(errno != EINTR){
+                    __#{libName}_free_dblock(dbLock);
+        			return NULL;
+                }
+            }
+            lockedDBs = dbLock;
         }
-        lockedDBs = dbLock;
     } else {
         lseek(dbLock->file, SEEK_SET, 0);
     }
@@ -438,16 +440,16 @@ __#{libName}_db_lock* __#{libName}_acquire_flock(const char* filename, int rdonl
  	return dbLock;
 }
 
-int __#{libName}_open_fd(const char* filename, int rdonly){
-    __#{libName}_db_lock* dbLock = __#{libName}_acquire_flock(filename, rdonly);
+int __#{libName}_open_fd(const char* filename, int options){
+    __#{libName}_db_lock* dbLock = __#{libName}_acquire_flock(filename, options);
     if(dbLock)
         return dbLock->file;
 
     return -1;
 }
     
-gzFile __#{libName}_open_gzFile(const char* filename, int rdonly, const char* mode){
-    __#{libName}_db_lock* dbLock = __#{libName}_acquire_flock(filename, rdonly);
+gzFile __#{libName}_open_gzFile(const char* filename, int options, const char* mode){
+    __#{libName}_db_lock* dbLock = __#{libName}_acquire_flock(filename, options);
     gzFile file;
     if(dbLock){
         if(dbLock->oGzFilesCount == MAX_OPENED_FILE)
@@ -469,8 +471,8 @@ gzFile __#{libName}_open_gzFile(const char* filename, int rdonly, const char* mo
 }
 
     
-FILE* __#{libName}_open_FILE(const char* filename, int rdonly, const char* mode){
-    __#{libName}_db_lock* dbLock = __#{libName}_acquire_flock(filename, rdonly);
+FILE* __#{libName}_open_FILE(const char* filename, int options, const char* mode){
+    __#{libName}_db_lock* dbLock = __#{libName}_acquire_flock(filename, options);
     FILE* file;
     if(dbLock){
         if(dbLock->oFilesCount == MAX_OPENED_FILE)
@@ -506,15 +508,17 @@ int __#{libName}_release_flock(const char* filename){
 
     *dbPred=dbLock->next;
 
-	lock.l_whence = SEEK_SET;
-	lock.l_start = 0;
-	lock.l_len = 0;
-	lock.l_pid = getpid();
-	lock.l_type = F_UNLCK;
-
-	while(fcntl(dbLock->file, F_SETLKW, &lock))
-		if(errno != EINTR)
-			return 1;
+    if((dbLock->options & __#{libName.upcase}_OPTION_NOLOCK) == 0){
+		lock.l_whence = SEEK_SET;
+		lock.l_start = 0;
+		lock.l_len = 0;
+		lock.l_pid = getpid();
+		lock.l_type = F_UNLCK;
+	
+		while(fcntl(dbLock->file, F_SETLKW, &lock))
+			if(errno != EINTR)
+				return 1;
+	}
 
     __#{libName}_free_dblock(dbLock);
 	return 0;

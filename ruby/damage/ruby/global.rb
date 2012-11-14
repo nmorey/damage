@@ -124,6 +124,10 @@ __#{libName}_options __#{libName}_get_options(VALUE hash){
     if(val == Qtrue)
         opts |= __#{libName.upcase}_OPTION_READONLY;
 
+    val = rb_hash_aref(hash, ID2SYM(rb_intern(\"nolock\")));
+    if(val == Qtrue)
+        opts |= __#{libName.upcase}_OPTION_NOLOCK;
+
     val = rb_hash_aref(hash, ID2SYM(rb_intern(\"keeplocked\")));
     if(val == Qtrue)
         opts |= __#{libName.upcase}_OPTION_KEEPLOCKED;
