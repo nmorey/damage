@@ -431,8 +431,8 @@ __#{libName}_db_lock* __#{libName}_acquire_flock(const char* filename, int optio
         			return NULL;
                 }
             }
-            lockedDBs = dbLock;
         }
+        lockedDBs = dbLock;
     } else {
         lseek(dbLock->file, SEEK_SET, 0);
     }
