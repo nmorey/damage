@@ -284,7 +284,7 @@ void __#{libName}_fread(void* buf, size_t elSize, int nbElem, FILE* input){
     int ret;
     ret = fread(buf, elSize, nbElem, input);
     if(ret != nbElem){
-        __#{libName}_error(\"Unexpected end of DB when reading.\");
+        __#{libName}_error(\"Unexpected end of DB when reading: %s.\", EIO, strerror(EIO));
     }
 }
 
