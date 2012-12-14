@@ -77,7 +77,7 @@ module Damage
 /** \\addtogroup #{libName} DAMAGE #{libName} Library
  * @{
 **/
-/** \\addtogroup enum Enum definitions
+/** \\addtogroup #{libName}_enum Enum definitions
  * @{
  **/
 ");

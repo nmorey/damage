@@ -50,7 +50,7 @@ module Damage
 /** \\addtogroup #{libName} DAMAGE #{libName} Library
  * @{
 **/
-/** \\addtogroup binary_rowip Binary ROWIP (Read Or Write In Place) API
+/** \\addtogroup #{libName}_binary_rowip Binary ROWIP (Read Or Write In Place) API
  * @{
  **/
 ");
@@ -175,7 +175,7 @@ static inline void __#{libName}_rowip_header_free(__#{libName}_rowip_header* ptr
 /** \\addtogroup #{libName} DAMAGE #{libName} Library
  * @{
 **/
-/** \\addtogroup binary_rowip Binary ROWIP (Read Or Write In Place) API
+/** \\addtogroup #{libName}_binary_rowip Binary ROWIP (Read Or Write In Place) API
  * @{
  **/
 ");
@@ -233,7 +233,7 @@ static inline void __#{libName}_rowip_header_free(__#{libName}_rowip_header* ptr
 /** \\addtogroup #{libName} DAMAGE #{libName} Library
  * @{
 **/
-/** \\addtogroup binary_rowip Binary ROWIP (Read Or Write In Place) API
+/** \\addtogroup #{libName}_binary_rowip Binary ROWIP (Read Or Write In Place) API
  * @{
  **/
 ");

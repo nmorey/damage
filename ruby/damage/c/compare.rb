@@ -56,7 +56,7 @@ module Damage
 /** \\addtogroup #{libName} DAMAGE #{libName} Library
  * @{
 **/
-/** \\addtogroup compare Comparison API
+/** \\addtogroup #{libName}_compare Comparison API
  * @{
  **/
 ");
@@ -214,7 +214,7 @@ module Damage
 /** \\addtogroup #{libName} DAMAGE #{libName} Library
  * @{
 **/
-/** \\addtogroup compare Comparison API
+/** \\addtogroup #{libName}_compare Comparison API
  * @{
  **/
 ");

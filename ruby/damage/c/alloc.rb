@@ -54,7 +54,7 @@ module Damage
 /** \\addtogroup #{libName} DAMAGE #{libName} Library
  * @{
 **/
-/** \\addtogroup alloc Allocation API
+/** \\addtogroup #{libName}_alloc Allocation API
  * @{
  **/
 ");
@@ -177,7 +177,7 @@ module Damage
 /** \\addtogroup #{libName} DAMAGE #{libName} Library
  * @{
 **/
-/** \\addtogroup alloc Allocation API
+/** \\addtogroup #{libName}_alloc Allocation API
  * @{
  **/
 ");

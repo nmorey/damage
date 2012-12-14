@@ -56,7 +56,7 @@ module Damage
 /** \\addtogroup #{libName} DAMAGE #{libName} Library
  * @{
 **/
-/** \\addtogroup alloc Allocation API
+/** \\addtogroup #{libName}_alloc Allocation API
  * @{
  **/
 ");
@@ -89,7 +89,7 @@ module Damage
 /** \\addtogroup #{libName} DAMAGE #{libName} Library
  * @{
 **/
-/** \\addtogroup parser_options Configuration API for partial binary reader
+/** \\addtogroup #{libName}_parser_options Configuration API for partial binary reader
  * @{
  **/
 ");

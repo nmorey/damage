@@ -57,7 +57,7 @@ module Damage
 /** \\addtogroup #{libName} DAMAGE #{libName} Library
  * @{
 **/
-/** \\addtogroup xml_write XML Writer API
+/** \\addtogroup #{libName}_xml_write XML Writer API
  * @{
  **/
 ");
@@ -206,7 +206,7 @@ module Damage
 /** \\addtogroup #{libName} DAMAGE #{libName} Library
  * @{
 **/
-/** \\addtogroup dump Dump API
+/** \\addtogroup #{libName}_dump Dump API
  * @{
  **/
 ");
@@ -261,7 +261,7 @@ module Damage
 /** \\addtogroup #{libName} DAMAGE #{libName} Library
  * @{
 **/
-/** \\addtogroup xml_write XML Writer API
+/** \\addtogroup #{libName}_xml_write XML Writer API
  * @{
  **/
 

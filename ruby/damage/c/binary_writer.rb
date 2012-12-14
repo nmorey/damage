@@ -54,7 +54,7 @@ module Damage
 /** \\addtogroup #{libName} DAMAGE #{libName} Library
  * @{
 **/
-/** \\addtogroup binary_writer Binary Writer API
+/** \\addtogroup #{libName}_binary_writer Binary Writer API
  * @{
  **/
 ");
@@ -127,7 +127,7 @@ module Damage
 /** \\addtogroup #{libName} DAMAGE #{libName} Library
  * @{
 **/
-/** \\addtogroup binary_writer Binary Writer API
+/** \\addtogroup #{libName}_binary_writer Binary Writer API
  * @{
  **/
 ");
@@ -266,7 +266,7 @@ uint32_t __#{libName}_#{entry.name}_binary_comp_offset(__#{libName}_#{entry.name
 /** \\addtogroup #{libName} DAMAGE #{libName} Library
  * @{
 **/
-/** \\addtogroup binary_writer Binary Writer API
+/** \\addtogroup #{libName}_binary_writer Binary Writer API
  * @{
  **/
 ");
@@ -491,7 +491,7 @@ uint32_t __#{libName}_#{entry.name}_binary_dump(__#{libName}_#{entry.name}* ptr,
 /** \\addtogroup #{libName} DAMAGE #{libName} Library
  * @{
 **/
-/** \\addtogroup binary_writer Binary Writer API
+/** \\addtogroup #{libName}_binary_writer Binary Writer API
  * @{
  **/
 ");

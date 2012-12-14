@@ -128,7 +128,7 @@ module Damage
 /** \\addtogroup #{libName} DAMAGE #{libName} Library
  * @{
 **/
-/** \\addtogroup structs Structure definitions
+/** \\addtogroup #{libName}_structs Structure definitions
  * @{
  **/
 ");

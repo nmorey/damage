@@ -101,7 +101,7 @@ __#{libName}_#{type} *__#{libName}_#{name}#{type}Container_xml_load_elements(xml
 /** \\addtogroup #{libName} DAMAGE #{libName} Library
  * @{
 **/
-/** \\addtogroup xml_reader XML Reader API
+/** \\addtogroup #{libName}_xml_reader XML Reader API
  * @{
  **/
 ");
@@ -173,7 +173,7 @@ __#{libName}_#{type} *__#{libName}_#{name}#{type}Container_xml_load_elements(xml
 /** \\addtogroup #{libName} DAMAGE #{libName} Library
  * @{
 **/
-/** \\addtogroup xml_reader XML Reader API
+/** \\addtogroup #{libName}_xml_reader XML Reader API
  * @{
  **/
 ");
@@ -487,7 +487,7 @@ __#{libName}_#{type} *__#{libName}_#{name}#{type}Container_xml_load_elements(xml
 /** \\addtogroup #{libName} DAMAGE #{libName} Library
  * @{
 **/
-/** \\addtogroup xml_reader XML Reader API
+/** \\addtogroup #{libName}_xml_reader XML Reader API
  * @{
  **/
 ");

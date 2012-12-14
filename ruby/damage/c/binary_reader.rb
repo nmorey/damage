@@ -52,7 +52,7 @@ module Damage
 /** \\addtogroup #{libName} DAMAGE #{libName} Library
  * @{
 **/
-/** \\addtogroup binary_reader Binary Reader API
+/** \\addtogroup #{libName}_binary_reader Binary Reader API
  * @{
  **/
 ");
@@ -163,7 +163,7 @@ module Damage
 /** \\addtogroup #{libName} DAMAGE #{libName} Library
  * @{
 **/
-/** \\addtogroup binary_reader Binary Reader API
+/** \\addtogroup #{libName}_binary_reader Binary Reader API
  * @{
  **/
 ");
@@ -363,7 +363,7 @@ __#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load_partial(FILE*
 /** \\addtogroup #{libName} DAMAGE #{libName} Library
  * @{
 **/
-/** \\addtogroup binary_reader Binary Reader API
+/** \\addtogroup #{libName}_binary_reader Binary Reader API
  * @{
  **/
 ");

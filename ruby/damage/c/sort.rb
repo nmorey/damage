@@ -45,7 +45,7 @@ module Damage
 /** \\addtogroup #{libName} DAMAGE #{libName} Library
  * @{
 **/
-/** \\addtogroup sort Sort API
+/** \\addtogroup #{libName}_sort Sort API
  * @{
  **/
 ");
@@ -81,7 +81,7 @@ module Damage
 /** \\addtogroup #{libName} DAMAGE #{libName} Library
  * @{
 **/
-/** \\addtogroup sort Sort API
+/** \\addtogroup #{libName}_sort Sort API
  * @{
  **/
 ");

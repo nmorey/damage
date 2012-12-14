@@ -56,7 +56,7 @@ module Damage
 /** \\addtogroup #{libName} DAMAGE #{libName} Library
  * @{
 **/
-/** \\addtogroup duplicate Duplication API
+/** \\addtogroup #{libName}_duplicate Duplication API
  * @{
  **/
 ");
@@ -167,7 +167,7 @@ module Damage
 /** \\addtogroup #{libName} DAMAGE #{libName} Library
  * @{
 **/
-/** \\addtogroup duplicate Duplication API
+/** \\addtogroup #{libName}_duplicate Duplication API
  * @{
  **/
 ");
