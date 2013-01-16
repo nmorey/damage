@@ -270,6 +270,8 @@ void __#{libName}_set_dtd_path(const char* path){
     dtd_path = __#{libName}_strdup(path);
 }
 const char* __#{libName}_get_dtd_path(void){
+    if(getenv(\"__#{libName.upcase}_NO_DTD\") != NULL)
+        return NULL;
     return dtd_path;
 }
 void __#{libName}_free(void *ptr)
