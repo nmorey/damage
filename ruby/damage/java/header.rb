@@ -89,6 +89,8 @@ public class #{params[:class]} ")
                         else
                             output.printf("\tpublic java.util.List<#{field.java_type}> _#{field.name};\n")
                         end
+                    when :raw
+                        #Ignore
                     else
                         raise("Unsupported data category for #{entry.name}.#{field.name}");
                     end

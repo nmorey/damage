@@ -94,6 +94,10 @@ module Damage
                             when :string
                                 output.printf("#{indent}if(#{source}->%s)\n", field.name)
                                 output.printf("#{indent}\t#{dest}->#{field.name} = __#{libName}_strdup(#{source}->#{field.name});\n")
+                            when :raw
+                                output.printf("#{indent}if(#{source}->%s)\n", field.name)
+                                output.printf("#{indent}\t#{dest}->#{field.name} = __#{libName}_memdup(#{source}->#{field.name}, #{source}->#{field.name}Length);\n")
+                                output.printf("#{indent}\t#{dest}->#{field.name}Length = #{source}->#{field.name}Length;\n")
                             when :intern
                                 if field.attribute == :sort then
                                     # We will regen it at the end
@@ -126,6 +130,19 @@ module Damage
                                               field.name);
                                 output.printf("#{indent}\t\tif(#{source}->%s[i])\n", field.name);
                                 output.printf("#{indent}\t\t\t#{dest}->#{field.name}[i] = __#{libName}_strdup(#{source}->#{field.name}[i]);\n")
+                                output.printf("#{indent}\t}\n");
+                                output.printf("#{indent}}\n")
+                            when :raw
+                                output.printf("#{indent}if(#{source}->%s){\n", field.name)
+                                output.printf("#{indent}\tunsigned int i;\n");
+                                output.printf("#{indent}\t#{dest}->#{field.name}Len = #{source}->#{field.name}Len;\n")
+                                output.printf("#{indent}\t#{dest}->#{field.name} = __#{libName}_malloc(#{dest}->#{field.name}Len * sizeof(*#{dest}->#{field.name}));\n")
+                                output.printf("#{indent}\t#{dest}->#{field.name}Length = __#{libName}_malloc(#{dest}->#{field.name}Len * sizeof(*#{dest}->#{field.name}Length));\n")
+                                output.printf("#{indent}\tfor(i = 0; i < #{source}->%sLen; i++){\n", 
+                                              field.name);
+                                output.printf("#{indent}\t\tif(#{source}->%s[i])\n", field.name);
+                                output.printf("#{indent}\t\t\t#{dest}->#{field.name}[i] = __#{libName}_memdup(#{source}->#{field.name}[i], #{source}->#{field.name}Length[i]);\n")
+                                output.printf("#{indent}\t\t\t#{dest}->#{field.name}Length[i] = #{source}->#{field.name}Length[i];\n")
                                 output.printf("#{indent}\t}\n");
                                 output.printf("#{indent}}\n")
                             when :intern

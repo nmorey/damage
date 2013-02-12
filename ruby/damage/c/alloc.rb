@@ -103,7 +103,7 @@ module Damage
                             case field.category
                             when :simple, :enum, :genum
                                 # Do nothing
-                            when :string
+                            when :string, :raw
                                 output.printf("#{indent}if(#{source}->%s)\n", field.name)
                                 output.printf("#{indent}\t__#{libName}_free(#{source}->%s);\n", field.name)
                             when :intern
@@ -135,6 +135,17 @@ module Damage
                                               field.name) ;
                                 output.printf("#{indent}\t} }\n");
                                 output.printf("#{indent}\t__#{libName}_free(#{source}->%s);\n", field.name)
+                                output.printf("#{indent}}\n")
+                            when :raw
+                                output.printf("#{indent}if(#{source}->%s){\n", field.name)
+                                output.printf("#{indent}\t{ unsigned int i; for(i = 0; i < #{source}->%sLen; i++){\n", 
+                                              field.name);
+                                output.printf("#{indent}\t\tif(#{source}->%s[i])\n", field.name);
+                                output.printf("#{indent}\t\t\t__#{libName}_free(#{source}->%s[i]);\n", 
+                                              field.name) ;
+                                output.printf("#{indent}\t} }\n");
+                                output.printf("#{indent}\t__#{libName}_free(#{source}->%s);\n", field.name)
+                                output.printf("#{indent}\t__#{libName}_free(#{source}->%sLength);\n", field.name)
                                 output.printf("#{indent}}\n")
                             when :intern
                                 output.printf("#{indent}if(#{source}->%s)\n", field.name)

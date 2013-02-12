@@ -58,6 +58,16 @@ VALUE #{params[:funcPrefix]}_xml_to_string(VALUE self, int indent){
     string = rb_str_concat(string, rb_str_new2(strdup(numstr)));
     }
 ")
+                            when :raw
+                                output.puts("
+    {
+    char numstr[256];
+    indentToString(string, indent, listable, first);
+    first = 0;    
+    sprintf(numstr, \"#{field.name}: N/A\\n\");
+    string = rb_str_concat(string, rb_str_new2(strdup(numstr)));
+    }
+")
                             when :intern
                                 tParams = Damage::Ruby::nameToParams(libName, field.data_type)
                                 output.puts("
@@ -123,6 +133,24 @@ VALUE #{params[:funcPrefix]}_xml_to_string(VALUE self, int indent){
         for(i = 0; i < ptr->#{field.name}Len; i++){
             char numstr[256];
             sprintf(numstr, \"#{field.name}: %#{field.printf}\\n\", ptr->#{field.name}[i]);
+            indentToString(string, indent + 1, 1, 1);
+            string = rb_str_concat(string, rb_str_new2(strdup(numstr)));
+            string = rb_str_concat(string, rb_str_new2(strdup(\"\\n\")));
+        }
+
+    }
+");                   when :raw
+
+                                output.puts("
+   indentToString(string, indent, listable, first);
+    first = 0;
+    string = rb_str_concat(string, rb_str_new2(strdup(\"#{field.name}: \")));
+    string = rb_str_concat(string, rb_str_new2(strdup(\"\\n\")));
+    if(ptr->#{field.name} != NULL){
+        unsigned long i;
+        for(i = 0; i < ptr->#{field.name}Len; i++){
+            char numstr[256];
+            sprintf(numstr, \"#{field.name}: N/A\\n\");
             indentToString(string, indent + 1, 1, 1);
             string = rb_str_concat(string, rb_str_new2(strdup(numstr)));
             string = rb_str_concat(string, rb_str_new2(strdup(\"\\n\")));

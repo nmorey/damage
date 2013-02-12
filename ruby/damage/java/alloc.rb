@@ -27,6 +27,7 @@ module Damage
                     when :sort
                         output.printf("\t\t_%s_by_%s = null;\n", field.sort_field, field.sort_key)
                     else
+                        next if field.category == :raw
                         output.printf("\t\t_%s = %s;\n", field.name, field.java_default_val)
                     end
                 }

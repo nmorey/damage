@@ -70,6 +70,14 @@ module Damage
                                 output.puts "\t\tptr->#{field.name} = strdup(_str);\n"
                             end
                             output.puts "\t}\n"
+                        when :raw
+                            next if field.qty != :single
+
+                            output.puts "\t{\n"
+                            output.puts "\t\tunsigned long i;\n ptr->#{field.name}Length = rand()%128;\n"
+                            output.puts "\t\tptr->#{field.name} = ptr->#{field.name}Length ? malloc(ptr->#{field.name}Length) : NULL;\n"
+                            output.puts "\t\tfor(i=0; i < ptr->#{field.name}Length; i++){ ptr->#{field.name}[i] = rand();}\n"
+                            output.puts "\t}\n"
                         when :simple
                             next if field.qty != :single
                             case field.data_type

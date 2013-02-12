@@ -83,6 +83,21 @@ module Damage
                                output.printf("\t/** Number of elements in the #{field.name} array */\n")
                                output.printf("\t#{const}uint32_t #{field.name}Len;\n")
                            end
+                        when :raw
+                           case field.qty
+                            when :single
+                               nextPart += "\t/** #{field.description} */\n" if field.description != nil
+                               nextPart += "\t#{const}#{field.data_type} #{field.name} __#{libName.upcase}_ALIGN__;\n"
+                               output.printf("\t/** Size of the raw  #{field.name} field */\n")
+                               output.printf("\t#{const}uint32_t #{field.name}Length;\n")
+                            when :list
+                               nextPart += "\t/** Array of elements #{field.description} */\n"
+                               nextPart += "\t#{const}#{field.data_type}* #{field.name} __#{libName.upcase}_ALIGN__;\n"
+                               nextPart += "\t/** Array of the length of raw elements in  #{field.name} array */\n"
+                               nextPart += "\t#{const}uint32_t* #{field.name}Length __#{libName.upcase}_ALIGN__;\n"
+                               output.printf("\t/** Number of elements in the #{field.name} array */\n")
+                               output.printf("\t#{const}uint32_t #{field.name}Len;\n")
+                           end
                         when :intern
                                postPart += "\t/** #{field.description} */\n" if field.description != nil
                                postPart += "\t#{const}struct ___#{libName}#{struct_suffix}_#{field.data_type}* #{field.name} __#{libName.upcase}_ALIGN__;\n"

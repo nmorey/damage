@@ -206,7 +206,9 @@ static VALUE #{params[:funcPrefix]}_s_#{field.name}_getRowip(VALUE self)"
     return ID2SYM(#{field.genumEntry}_#{field.genumField}_enumId[ptr->#{field.name}]);
 }
 ")
-               else
+                            when :raw
+                                #Ignore
+                            else
                                 raise("Unsupported data category for #{entry.name}.#{field.name}");
 
                             end
@@ -316,6 +318,9 @@ static VALUE #{params[:funcPrefix]}_s_#{field.name}_getRowip(VALUE self)"
     return #{tParams[:funcPrefixList]}_wrapRowip(list);
 }
 ") if rowip == true
+                            when :raw
+                                #Ignore
+
                             else
                                 raise("Unsupported data category for #{entry.name}.#{field.name}");
 

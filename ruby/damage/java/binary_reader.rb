@@ -98,6 +98,8 @@ module Damage
                         when :string
                             output.printf("#{indent}obj._#{field.name} = readString(fc);\n")
                         when :intern
+                        when :raw
+                            #Ignore
                         else
                             raise("Unsupported data category for #{entry.name}.#{field.name}");
                         end
@@ -141,6 +143,8 @@ module Damage
                             output.printf("#{indent}}\n")
 
                         when :intern
+                        when :raw
+                            #Ignore
                         else
                             raise("Unsupported data category for #{entry.name}.#{field.name}");
                         end                  
@@ -159,6 +163,9 @@ module Damage
                         when :simple
                         when :enum, :genum
                         when :string
+                        when :raw
+                            #Ignore
+
                         when :intern
                             output.printf("#{indent}field_offset = in.getInt(#{pahole[field.name][:offset]});\n")
                             output.printf("#{indent}if((pOpts._#{field.data_type} != false) && (field_offset != 0))\n")
@@ -170,6 +177,7 @@ module Damage
                         case field.category
                         when :simple
                         when :string
+
                         when :intern
                             output.printf("#{indent}field_offset = in.getInt(#{pahole[field.name][:offset]});\n")
                             output.printf("#{indent}if((pOpts._#{field.data_type} != false) && (field_offset != 0)){\n")
@@ -256,6 +264,8 @@ module Damage
                             output.printf("#{indent}\tint _val = in.getInt(#{pahole[field.name][:offset]});\n")
                             output.printf("#{indent}\tobj._#{field.name} = #{field.genumEntry.slice(0,1).upcase + field.genumEntry.slice(1..-1)}.idTo#{field.genumField.slice(0,1).upcase + field.genumField.slice(1..-1)}(_val);\n")
                             output.printf("#{indent}}\n")
+                        when :raw
+                            #Ignore
 
                         when :string
                             output.printf("#{indent}obj._#{field.name} = readString(zip);\n")
@@ -291,6 +301,8 @@ module Damage
                             output.printf("#{indent}\t}\n")
                             output.printf("#{indent}}\n")
 
+                        when :raw
+                            #Ignore
 
                         when :string
                             output.printf("#{indent}{\n")
@@ -324,6 +336,9 @@ module Damage
                         when :simple
                         when :enum, :genum
                         when :string
+                        when :raw
+                            #Ignore
+
                         when :intern
                             output.printf("#{indent}field_offset = in.getInt(#{pahole[field.name][:offset]});\n")
                             output.printf("#{indent}if(field_offset != 0)\n")
@@ -335,6 +350,9 @@ module Damage
                         case field.category
                         when :simple
                         when :string
+                        when :raw
+                            #Ignore
+
                         when :intern
                             output.printf("#{indent}field_offset = in.getInt(#{pahole[field.name][:offset]});\n")
                             output.printf("#{indent}if (field_offset != 0) {\n")

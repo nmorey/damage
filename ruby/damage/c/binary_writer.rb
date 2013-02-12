@@ -161,6 +161,10 @@ uint32_t __#{libName}_#{entry.name}_binary_comp_offset(__#{libName}_#{entry.name
                             output.printf("#{indent}} else {\n")
                             output.printf("#{indent}\tchild_offset += sizeof(uint32_t);\n", field.name)
                             output.printf("#{indent}}\n")
+                        when :raw
+                            output.printf("#{indent}if(#{source}->%s){\n", field.name)
+                            output.printf("#{indent}\tchild_offset += #{source}->%sLength;\n", field.name)
+                            output.printf("#{indent}}\n")
                         when :intern
                         else
                             raise("Unsupported data category for #{entry.name}.#{field.name}");
@@ -184,6 +188,18 @@ uint32_t __#{libName}_#{entry.name}_binary_comp_offset(__#{libName}_#{entry.name
                             output.printf("#{indent}\t\t}\n")
                             output.printf("#{indent}\t}\n\n");
                             output.printf("#{indent}}\n")
+                        when :raw
+                            output.printf("#{indent}if(#{source}->%s){\n", field.name)
+                            output.printf("#{indent}\tunsigned int i; for(i = 0; i < #{source}->%sLen; i++){\n", 
+                                          field.name);
+                            output.printf("#{indent}\t\tif(#{source}->%s[i]){\n", field.name);
+                            output.printf("#{indent}\t\t\tuint32_t len = #{source}->%sLength[i];\n", field.name)
+                            output.printf("#{indent}\t\t\tchild_offset += len + sizeof(len);\n", field.name)
+                            output.printf("#{indent}\t\t} else {\n")
+                            output.printf("#{indent}\t\t\tchild_offset += sizeof(uint32_t);\n", field.name)
+                            output.printf("#{indent}\t\t}\n")
+                            output.printf("#{indent}\t}\n\n");
+                            output.printf("#{indent}}\n")
 
                         when :intern
                         else
@@ -198,7 +214,7 @@ uint32_t __#{libName}_#{entry.name}_binary_comp_offset(__#{libName}_#{entry.name
                     when :single
                         case field.category
                         when :simple, :enum, :genum
-                        when :string
+                        when :string, :raw
                         when :intern
                             output.printf("#{indent}if(#{source}->%s){\n", field.name)
                             output.printf("#{indent}\tchild_offset = __#{libName}_%s_binary_comp_offset(#{source}->%s, child_offset);\n", 
@@ -210,7 +226,7 @@ uint32_t __#{libName}_#{entry.name}_binary_comp_offset(__#{libName}_#{entry.name
                     when :list, :container
                         case field.category
                         when :simple
-                        when :string
+                        when :string, :raw
                         when :intern
                             output.printf("#{indent}if(#{source}->%s){\n", field.name)
                             output.printf("#{indent}\tchild_offset = __#{libName}_%s_binary_comp_offset(#{source}->%s, child_offset, 1);\n", 
@@ -320,6 +336,11 @@ uint32_t __#{libName}_#{entry.name}_binary_dump(__#{libName}_#{entry.name}* ptr,
                                 output.printf("#{indent}} else {\n")
                                 output.printf("#{indent}\trel_offset += sizeof(rel_offset);\n", field.name)
                                 output.printf("#{indent}} \n")
+                            when :raw
+                                output.printf("#{indent}val.%s = (void*)(unsigned long)(val._rowip_pos + rel_offset);\n", field.name)
+                                output.printf("#{indent}if(#{source}->%s){\n", field.name)
+                                output.printf("#{indent}\trel_offset  += #{source}->%sLength;\n", field.name)
+                                output.printf("#{indent}} \n")
                             when :intern
                             else
                                 raise("Unsupported data category for #{entry.name}.#{field.name}");
@@ -345,6 +366,23 @@ uint32_t __#{libName}_#{entry.name}_binary_dump(__#{libName}_#{entry.name}* ptr,
                                               field.name);
                                 output.printf("#{indent}\t\t\tif(#{source}->%s[i]){\n", field.name);
                                 output.printf("#{indent}\t\t\t\trel_offset += strlen(#{source}->%s[i]) + 1 + sizeof(rel_offset);\n", field.name)
+                                output.printf("#{indent}\t\t\t} else {\n")
+                                output.printf("#{indent}\t\t\t\trel_offset += sizeof(rel_offset);\n", field.name)
+                                output.printf("#{indent}\t\t\t}\n")
+                                output.printf("#{indent}\t\t}\n\n");
+                                output.printf("#{indent}\t} else {\n")
+                                output.printf("#{indent}\t\tval.%s = NULL;\n", field.name)
+                                output.printf("#{indent}\t}\n")
+
+                                output.printf("#{indent}}\n")
+                            when :raw
+                                output.printf("#{indent}if(#{source}->%s){\n", field.name)
+                                output.printf("#{indent}\tif(#{source}->#{field.name}Len){\n")
+                                output.printf("#{indent}\t\tval.%s = (void*)(unsigned long)(val._rowip_pos + rel_offset);\n", field.name)
+                                output.printf("#{indent}\t\tunsigned int i; for(i = 0; i < #{source}->%sLen; i++){\n", 
+                                              field.name);
+                                output.printf("#{indent}\t\t\tif(#{source}->%s[i]){\n", field.name);
+                                output.printf("#{indent}\t\t\t\trel_offset += #{source}->%s[i]Length + sizeof(rel_offset);\n", field.name)
                                 output.printf("#{indent}\t\t\t} else {\n")
                                 output.printf("#{indent}\t\t\t\trel_offset += sizeof(rel_offset);\n", field.name)
                                 output.printf("#{indent}\t\t\t}\n")
@@ -393,6 +431,12 @@ uint32_t __#{libName}_#{entry.name}_binary_dump(__#{libName}_#{entry.name}* ptr,
                             output.printf("#{indent}\tuint32_t len = 0;\n", field.name)
                             cWrite(output, libName, zipped, indent, "&len", "sizeof(len)", "1", "file")
                             output.printf("#{indent}} \n")
+                        when :raw
+                            output.printf("#{indent}if(#{source}->%s){\n", field.name)
+                            cWrite(output, libName, zipped, indent, "#{source}->#{field.name}", "sizeof(char)",
+                                   "#{source}->#{field.name}Length", "file")
+
+                            output.printf("#{indent}} \n")
                         when :intern
                         else
                             raise("Unsupported data category for #{entry.name}.#{field.name}");
@@ -422,6 +466,23 @@ uint32_t __#{libName}_#{entry.name}_binary_dump(__#{libName}_#{entry.name}* ptr,
                             output.printf("#{indent}\t\t}\n")
                             output.printf("#{indent}\t}\n\n");
                             output.printf("#{indent}}\n")
+                        when :raw
+                            output.printf("#{indent}if(#{source}->%s){\n", field.name)
+                            cWrite(output, libName, zipped, indent, "#{source}->#{field.name}Length",
+                                   "sizeof(uint32_t)", "#{source}->#{field.name}Len", "file")
+
+                            output.printf("#{indent}\tunsigned int i; for(i = 0; i < #{source}->%sLen; i++){\n", 
+                                          field.name);
+                            output.printf("#{indent}\t\tif(#{source}->%s[i]){\n", field.name);
+                            cWrite(output, libName, zipped, indent, "#{source}->#{field.name}[i]", "sizeof(char)",
+                                   "#{source}->#{field.name}Length[i]", "file")
+
+                            output.printf("#{indent}\t\t\tnbytes += sizeof(uint32_t) + #{source}->#{field.name}Length[i];\n")
+                            output.printf("#{indent}\t\t} else {\n")
+                            output.printf("#{indent}\t\t\tnbytes += sizeof(uint32_t);\n")
+                            output.printf("#{indent}\t\t}\n")
+                            output.printf("#{indent}\t}\n\n");
+                            output.printf("#{indent}}\n")
 
                         when :intern
                         else
@@ -435,7 +496,7 @@ uint32_t __#{libName}_#{entry.name}_binary_dump(__#{libName}_#{entry.name}* ptr,
                     when :single
                         case field.category
                         when :simple, :enum, :genum
-                        when :string
+                        when :string, :raw
                         when :intern
                             output.printf("#{indent}if(#{source}->%s){\n", field.name)
                             output.printf("#{indent}\tnbytes +=__#{libName}_%s_binary_dump#{fext}(#{source}->%s, file);\n", 
@@ -447,7 +508,7 @@ uint32_t __#{libName}_#{entry.name}_binary_dump(__#{libName}_#{entry.name}* ptr,
                     when :list, :container
                         case field.category
                         when :simple
-                        when :string
+                        when :string, :raw
                         when :intern
                             output.printf("#{indent}if(#{source}->%s){\n", field.name)
                             output.printf("#{indent}\tnbytes += __#{libName}_%s_binary_dump#{fext}(#{source}->%s, file, 1);\n", 

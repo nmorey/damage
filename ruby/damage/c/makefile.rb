@@ -57,7 +57,7 @@ LIB_SUFFIX  := $(SUFFIX)
 
 CC=gcc
 CFLAGS_COMMON  := -Iinclude/ $(cflags) -Wall -Wextra -Werror -g -I/usr/include/libxml2 -Werror -fPIC -I. -std=gnu99
-CFLAGS         := $(CFLAGS_COMMON) -O3
+CFLAGS         := $(CFLAGS_COMMON) -O0 -g3
 
 
 ifeq ($(ARCH), x86_64)

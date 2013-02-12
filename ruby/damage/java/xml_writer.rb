@@ -64,6 +64,8 @@ module Damage
           case field.attribute
           when :container,:none
             case field.category
+            when :raw
+                #Ignore
             when :simple, :enum, :string,:id, :idref, :genum
               case field.qty
               when :single
@@ -96,6 +98,8 @@ module Damage
           case field.attribute
           when :container,:none
             case field.category
+            when :raw
+                #Ignore
             when :simple, :enum, :string,:id, :idref, :genum
               case field.qty
               when :single

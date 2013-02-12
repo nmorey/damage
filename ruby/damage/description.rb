@@ -177,6 +177,17 @@ module Damage
                         @java_default_val="null"
                     end
                     @rubyType = "T_STRING"
+                when "Raw"
+                    @data_type = "unsigned char*"
+                    @java_type = "byte[]"
+                    @ruby_type = "string"
+                    @category = :raw
+                    @is_attribute = true if @qty == :single
+                    if @default_val == nil then
+                        @default_val = "NULL"
+                        @java_default_val="null"
+                    end
+                    @rubyType = "T_DATA"
                 when "UL"
                     @data_type="unsigned long long"
                     @java_type = "long"

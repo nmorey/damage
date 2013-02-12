@@ -223,6 +223,13 @@ __#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load_partial(FILE*
                             output.printf("#{indent}\tuint32_t len;\n")
                             cRead(output, libName, zipped, "#{indent}\t", "&len", "sizeof(len)", "1", "file")
                             output.printf("#{indent}}\n")
+                        when :raw
+                            output.printf("#{indent}if(#{source}->#{field.name}Length > 0) {\n")
+                            output.printf("#{indent}\t#{source}->%s = __#{libName}_malloc(#{source}->#{field.name}Length * sizeof(char));\n", field.name)
+                            cRead(output, libName, zipped, "#{indent}\t", "#{source}->#{field.name}", "sizeof(char)", "#{source}->#{field.name}Length", "file")
+                            output.printf("#{indent}} else {\n")
+                            output.printf("#{indent}\t#{source}->%s = NULL;\n", field.name)
+                            output.printf("#{indent}} \n")
                         when :intern
                         else
                             raise("Unsupported data category for #{entry.name}.#{field.name}");
@@ -275,6 +282,39 @@ __#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load_partial(FILE*
                             output.printf("#{indent}\t}\n")
 
                             output.printf("#{indent}}\n")
+                        when :raw
+                            output.printf("#{indent}if(#{source}->%s){\n", field.name)
+                            output.printf("#{indent}\tif(#{source}->#{field.name}Len){\n")
+
+                            output.printf("#{indent}\t\t#{source}->%s = __#{libName}_malloc(#{source}->%sLen * sizeof(#{source}->%s);\n",
+                                          field.name, field.name)
+                            output.printf("#{indent}\t\t#{source}->%sLength = __#{libName}_malloc(#{source}->%sLen * sizeof(#{source}->%sLength);\n",
+                                          field.name, field.name)
+
+                            # get the byte array sizes
+                            cRead(output, libName, zipped, "#{indent}\t\t", "#{source}->%sLength", "sizeof(*#{source}->%sLength)", "#{source}->%sLen", "file",
+                                  field.name, field.name, field.name)
+
+                            # Read the string at each index
+                            output.printf("#{indent}\t\tunsigned int i;\n")
+                            output.printf("#{indent}\t\t\tfor(i = 0; i < #{source}->%sLen; i++){\n", 
+                                          field.name);
+
+                            # Alloc it and read it
+                            output.printf("#{indent}\t\t\tif(#{source}->%sLength[i] > 0) {\n", field.name);
+                            output.printf("#{indent}\t\t\t\t#{source}->%s[i] = __#{libName}_malloc(sizeof(char) * #{source}->%sLength[i]);\n",
+                                          field.name, field.name)
+                            cRead(output, libName, zipped, "#{indent}\t\t\t\t", "#{source}->#{field.name}[i]", "sizeof(char)", "#{source}->#{field.name}Length[i]", "file")
+                            output.printf("#{indent}\t\t\t} else {\n")
+                            output.printf("#{indent}\t\t\t\t#{source}->#{field.name}[i] = NULL;\n")
+                            output.printf("#{indent}\t\t\t}\n")
+                            output.printf("#{indent}\t\t}\n")
+                            output.printf("#{indent}\t} else {\n")
+                            output.printf("#{indent}\t\t#{source}->%s = NULL;\n", field.name)
+                            output.printf("#{indent}\t\t#{source}->%sLength = NULL;\n", field.name)
+                            output.printf("#{indent}\t}\n")
+
+                            output.printf("#{indent}}\n")
                         when :intern
                         else
                             raise("Unsupported data category for #{entry.name}.#{field.name}");
@@ -289,6 +329,7 @@ __#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load_partial(FILE*
                         case field.category
                         when :simple, :enum, :genum
                         when :string
+                        when :raw
                         when :intern
                             output.printf("#{indent}if((opt->#{field.data_type} != 0) && (#{source}->%s != NULL)){\n", field.name)
                             output.printf("#{indent}\t#{source}->%s = __#{libName}_%s_binary_load_partial#{fExt}(file, (uint32_t)(unsigned long)(#{source}->%s), opt);\n", 
@@ -302,6 +343,7 @@ __#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load_partial(FILE*
                             
                         when :simple
                         when :string
+                        when :raw
                         when :intern
                             output.printf("#{indent}if((opt->#{field.data_type} != 0) && (#{source}->%s != NULL)){\n", field.name)
                             output.printf("#{indent}\t#{source}->%s = __#{libName}_%s_binary_load_partial#{fExt}(file, (uint32_t)(unsigned long)(#{source}->%s), opt);\n", 

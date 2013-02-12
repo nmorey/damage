@@ -63,6 +63,7 @@ void Init_#{params[:className]}(void){
     rb_define_method(#{params[:classValue]}, \"to_s\", #{params[:funcPrefix]}_to_s, 0);
 ")
                     entry.fields.each() {|field|
+                        next if field.category == :raw
                         if field.attribute == :sort then
                             getStr="#{params[:funcPrefix]}_s_#{field.name}_get"
                             output.puts("    rb_define_method(#{params[:classValue]}, \"s_#{field.name}\", #{getStr}, 0);");

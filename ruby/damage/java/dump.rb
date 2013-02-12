@@ -33,6 +33,9 @@ module Damage
                     case field.qty
                     when :single
                         case field.category
+                        when :raw
+                            #Ignore
+
                         when :simple, :enum, :genum
                             output.printf("\t\tindentToString(ps, indent, listable, first);\n")
                             output.printf("\t\tfirst = false;\n")
@@ -60,6 +63,9 @@ module Damage
                     when :list, :container
                         output.printf("\t\tif (this._#{field.name} != null) {\n");
                         case field.category
+                        when :raw
+                            #Ignore
+
                         when :simple
                             output.printf("\t\t\tindentToString(ps, indent, listable, first);\n")
                             output.printf("\t\t\tfirst = false;\n")

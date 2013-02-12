@@ -94,6 +94,16 @@ module Damage
                             output.printf("\t\t\tfirst = 0;\n")
                             output.printf("\t\t\tfprintf(file, \"#{field.name}: \\\"%%s\\\"\\n\", ptr->#{field.name});\n");
                             output.printf("\t\t}\n");
+                       when :raw
+                            output.printf("\t\tif(ptr->#{field.name} != NULL){\n");
+                            output.printf("\t\t\t__#{libName}_paddOutput(file, indent, listable, first);\n")
+                            output.printf("\t\t\tfirst = 0;\n")
+                            output.printf("\t\t\tchar* data = __#{libName}_malloc(ptr->#{field.name}Length * 4 / 3 + 3);\n");
+                            output.printf("\t\t\t__#{libName}_base64_encode(ptr->#{field.name}, ptr->#{field.name}Length," +
+                                          "data, ptr->#{field.name}Length * 4 / 3 + 3);\n");
+                            output.printf("\t\t\tfprintf(file, \"#{field.name}: \\\"%%s\\\"\\n\", data);\n");
+                            output.printf("\t\t\tfree(data);\n");
+                            output.printf("\t\t}\n");
                         when :intern
                             output.printf("\t\tif(ptr->#{field.name} != NULL){\n");
                             output.printf("\t\t\t__#{libName}_paddOutput(file, indent, listable, first);\n")
@@ -127,6 +137,21 @@ module Damage
                             output.printf("\t\t\tfor(i = 0; i < ptr->#{field.name}Len; i++){\n");
                             output.printf("\t\t\t\t__#{libName}_paddOutput(file, indent + 1, 1, 1);\n")
                             output.printf("\t\t\t\tfprintf(file, \"\\\"%%s\\\"\\n\", ptr->#{field.name}[i]);\n");
+                            output.printf("\t\t\t}\n");
+                            output.printf("\t\t}\n");
+                        when :raw
+                            output.printf("\t\t{\n");
+                            output.printf("\t\t\tunsigned int i;\n");
+                            output.printf("\t\t\t__#{libName}_paddOutput(file, indent, listable, first);\n")
+                            output.printf("\t\t\tfirst = 0;\n")
+                            output.printf("\t\t\tfprintf(file, \"#{field.name}:\\n\");\n");
+                            output.printf("\t\t\tfor(i = 0; i < ptr->#{field.name}Len; i++){\n");
+                            output.printf("\t\t\t\t__#{libName}_paddOutput(file, indent + 1, 1, 1);\n")
+                            output.printf("\t\t\t\tchar* data = __#{libName}_malloc(ptr->#{field.name}Length[i] * 4 / 3 + 3);\n");
+                            output.printf("\t\t\t\t__#{libName}_base64_encode(ptr->#{field.name}[i], ptr->#{field.name}Length[i]," +
+                                          "data, ptr->#{field.name}Length[i] * 4 / 3 + 3);\n");
+                            output.printf("\t\t\t\tfprintf(file, \"\\\"%%s\\\"\\n\", data);\n");
+                            output.printf("\t\t\t\tfree(data);\n");
                             output.printf("\t\t\t}\n");
                             output.printf("\t\t}\n");
                         when :intern

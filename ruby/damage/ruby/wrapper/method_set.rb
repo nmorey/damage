@@ -168,6 +168,8 @@ static VALUE #{params[:funcPrefix]}_#{field.name}_setRowip(VALUE self, VALUE val
     return self;
 }
 ");
+                            when :raw
+                                #Ignore
                             else
                                 raise("Unsupported data category for #{entry.name}.#{field.name}");
 
@@ -264,7 +266,9 @@ extern VALUE #{subParams[:classValueList]};
     return self;
 }
 ");
-                            else
+                             when :raw
+                                #Ignore
+                           else
                                 raise("Unsupported data category for #{entry.name}.#{field.name}");
 
                             end

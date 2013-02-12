@@ -249,6 +249,13 @@ __#{libName}_#{type} *__#{libName}_#{name}#{type}Container_xml_load_elements(xml
                                 else
                                     raise("Unsupported type #{field.data_type}\n")
                                 end
+                            when :raw
+                                output.printf("\t\t\t\tif(strlen(value)){\n")
+                                output.printf("\t\t\t\t\tptr->%s = __#{libName}_malloc(strlen(value));\n",
+                                              field.name) ;
+                                output.printf("\t\t\t\t\tptr->%sLength = __#{libName}_base64_decode(value, ptr->%s, strlen(value));\n",
+                                              field.name, field.name);
+                                output.printf("\t\t\t}\n")
                             when :enum
                                 output.printf("\t\t\t\tswitch (__#{libName}_compare(value, __#{libName}_#{entry.name}_#{field.name}_strings)) {\n");
                                 subCaseCount=1
@@ -408,6 +415,15 @@ __#{libName}_#{type} *__#{libName}_#{name}#{type}Container_xml_load_elements(xml
                                 else
                                     raise("Unsupported type #{field.data_type}\n")
                                 end
+                            when :raw
+                                output.printf("\t\t\t\tptr->%s = __#{libName}_realloc(ptr->%s, sizeof(*(ptr->%s))" +
+                                              "* (ptr->%sLen + 1));\n",
+                                              field.name, field.name, field.name, field.name) ;
+
+                                output.printf("\t\t\t\tptr->%s[ptr->%sLen] = __#{libName}_malloc(strlen(value));\n",
+                                              field.name, field.name) ;
+                                output.printf("\t\t\t\tptr->%sLength[ptr->%sLen++] = __#{libName}_base64_decode(value, ptr->%s[ptr->%sLen], strlen(value));\n",
+                                              field.name, field.name, field.name, field.name) ;
                             when :intern
                                 output.printf("\t\t\t\t*last_%s = __#{libName}_%s_xml_load_element(reader, name);\n",
                                               field.name, field.data_type) ;

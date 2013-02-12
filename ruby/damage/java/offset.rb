@@ -31,6 +31,8 @@ module Damage
                     when :single
                         case field.category
                         when :simple, :enum, :genum
+                        when :raw
+                            #Ignore
                         when :string
                             output.printf("\t\tcur_offset += computeStringLength(this._#{field.name});\n")
                         when :intern
@@ -43,6 +45,8 @@ module Damage
                         end
                     when :list, :container
                         case field.category
+                        when :raw
+                            #Ignore
                         when :simple
                             output.printf("\t\tif(this._%s != null){\n", field.name)
                             output.printf("\t\t\tcur_offset += (#{field.type_size} * this._%s.length);\n",

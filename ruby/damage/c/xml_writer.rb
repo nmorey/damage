@@ -93,6 +93,14 @@ module Damage
                             output.printf("\tif(ptr->#{field.name} != NULL){\n");
                             output.printf("\t\t#{printFunc}(file, \" #{field.name}=\\\"%%s\\\"\", ptr->#{field.name});\n");
                             output.printf("\t}\n");
+                        when :raw
+                            output.printf("\tif(ptr->#{field.name} != NULL){\n");
+                            output.printf("\t\tchar* data = __#{libName}_malloc(ptr->#{field.name}Length * 4 / 3 + 4);\n");
+                            output.printf("\t\t__#{libName}_base64_encode(ptr->#{field.name}, ptr->#{field.name}Length," +
+                                          "data, ptr->#{field.name}Length * 4 / 3 + 4);\n");
+                            output.printf("\t\t#{printFunc}(file, \" #{field.name}=\\\"%%s\\\"\", data);\n");
+                            output.printf("\t\tfree(data);\n");
+                            output.printf("\t}\n");
                         when :intern
                             hasChildren = true
                         else
@@ -115,6 +123,7 @@ module Damage
                         when :simple
                         when :enum, :genum
                         when :string
+                        when :raw
                         when :intern
                             output.printf("\tif(ptr->#{field.name} != NULL){\n");
                             output.printf("\t\t__#{libName}_#{field.data_type}_xml_dump_within#{ext}(file, ptr->#{field.name}, indent+1);\n");
@@ -139,6 +148,20 @@ module Damage
                             output.printf("\t\tfor(i = 0; i < ptr->#{field.name}Len; i++){\n");
                             output.printf("\t\t\t#{paddFunc}(file, indent + 1, 0, 0);\n")
                             output.printf("\t\t\t#{printFunc}(file, \"<#{field.name}>%%s</#{field.name}>\\n\", ptr->#{field.name}[i]);\n");
+                            output.printf("\t\t}\n");
+                            output.printf("\t}\n");
+                        when :raw
+                            output.printf("\t{\n");
+                            output.printf("\t\tunsigned int i;\n");
+                            output.printf("\t\tfor(i = 0; i < ptr->#{field.name}Len; i++){\n");
+                            output.printf("\t\t\t#{paddFunc}(file, indent + 1, 0, 0);\n")
+                            output.printf("\t\t\tif(ptr->#{field.name}[i] != NULL){\n");
+                            output.printf("\t\t\t\tchar* data = __#{libName}_malloc(ptr->#{field.name}Length[i] * 4 / 3 + 4);\n");
+                            output.printf("\t\t\t\t__#{libName}_base64_encode(ptr->#{field.name}[i], ptr->#{field.name}Length[i]," +
+                                          "data, ptr->#{field.name}Length[i] * 4 / 3 + 4);\n");
+                            output.printf("\t\t\t\t#{printFunc}(file, \" #{field.name}=\\\"%%s\\\"\", data);\n");
+                            output.printf("\t\t\t\tfree(data);\n");
+                            output.printf("\t\t\t}\n");
                             output.printf("\t\t}\n");
                             output.printf("\t}\n");
                         when :intern

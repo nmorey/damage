@@ -64,6 +64,9 @@ output.puts("
                             output.printf("\t\t} else {\n")
                             output.printf("\t\tstruct.putLong(#{pahole[field.name][:offset]}, 0);\n")
                             output.printf("\t\t}\n", field.name)
+                        when :raw
+                            #Ignore
+
                         else
                             raise("Unsupported data category for #{entry.name}.#{field.name}");
                         end
@@ -90,6 +93,9 @@ output.puts("
                             output.printf("\t\t} else {\n")
                             output.printf("\t\tstruct.putLong(#{pahole[field.name][:offset]}, 0);\n")
                             output.printf("\t\t}\n", field.name)
+                        when :raw
+                            #Ignore
+
                         else
                             raise("Unsupported data category for #{entry.name}.#{field.name}");
                         end                  
@@ -115,6 +121,9 @@ output.puts("
                             output.printf("\t\twriteStringToFile(output, this._#{field.name});\n")
                         when :intern
                             #Not possible
+                        when :raw
+                            #Ignore
+
                         else
                             raise("Unsupported data category for #{entry.name}.#{field.name} ");
                         end
@@ -146,6 +155,9 @@ output.puts("
                             output.printf("\t\t}\n")
                         when :string
                           output.printf("\t\twriteStringArrayToFile(output, this._#{field.name});\n")
+                        when :raw
+                            #Ignore
+
                         when :intern
                             #Cannot happen
                         else
