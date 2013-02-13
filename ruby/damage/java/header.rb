@@ -52,7 +52,7 @@ public class #{params[:class]} ")
                     output.printf("\tpublic java.util.HashMap<Integer, #{field.java_type}> _#{field.sort_field}_by_#{field.sort_key};\n")
                 when :meta,:container,:none
                     case field.category
-                    when :simple, :enum, :string, :genum
+                    when :simple, :enum, :string, :genum, :raw
                         case field.qty
                         when :single
                             if field.category == :enum then
@@ -89,8 +89,6 @@ public class #{params[:class]} ")
                         else
                             output.printf("\tpublic java.util.List<#{field.java_type}> _#{field.name};\n")
                         end
-                    when :raw
-                        #Ignore
                     else
                         raise("Unsupported data category for #{entry.name}.#{field.name}");
                     end

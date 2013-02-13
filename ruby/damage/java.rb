@@ -309,6 +309,42 @@ public abstract class #{uppercaseLibName}Object {
   }
 
 	/**
+	 * Read a raw strinstream from given inputstream
+	 */
+	public static byte[] readRaw(InputStream is, int len) throws IOException {
+        byte[] array = null;
+		if (len > 0) {
+			array = new byte[len];
+			readFully(is, array);
+			// reads end of String
+			if (is.read() == -1) throw new EOFException();
+		} 
+		return array;
+	}
+
+  /**
+   * Read a raw stream from given inputstream
+   */
+  public static byte[] readRaw(FileChannel fc, int len) throws IOException {
+    byte[] array = null;
+    int nbytes;
+
+    if (len > 0) {
+      array = new byte[len];
+      ByteBuffer bb = ByteBuffer.allocate(len);
+      bb.order(ByteOrder.LITTLE_ENDIAN);
+      do {
+        nbytes = fc.read(bb);
+      } while(nbytes != -1 && bb.hasRemaining());
+
+      if(nbytes == -1 && bb.hasRemaining())
+        throw new EOFException(\"Unexpected EOF at offset \" + fc.position());
+      bb.position(0);
+      bb.get(array);
+    }
+    return array;
+  }
+	/**
 	 * Intendation method, used when dumping objects.
 	 */
 	public static void indentToString(PrintStream ps, int indent, boolean listable, boolean first) {
@@ -441,6 +477,34 @@ public abstract class #{uppercaseLibName}Object {
                output.writeInt(4);
            }
            output.writeByte(0);
+      }
+
+    /**
+     * Write a raw stream array in binary format to a DataOutputStream
+     * @return Nothing
+     */
+     protected static void writeRawArrayToFile(DataOutputStream output, byte[] array[]) throws IOException {
+          if(array == null || array.length == 0){
+             return;
+          }
+          ByteBuffer struct = ByteBuffer.allocate(4 * array.length);
+          struct.order(ByteOrder.LITTLE_ENDIAN);
+          int i; for(i = 0; i < array.length; ++i){
+              struct.putLong(i * 4, array[i].length);
+          }
+          output.write(struct.array(), 0, 4 * array.length);
+          for(i = 0; i < array.length; i++){
+              writeRawToFile(output, array[i]);
+          }
+     }
+     /**
+      * Write a raw stream in binary format to a DataOutputStream
+      * @return Nothing
+      */
+      protected static void writeRawToFile(DataOutputStream output, byte[] array) throws IOException {
+           if(array != null){
+               output.write(array);
+           }
       }
 }");
 

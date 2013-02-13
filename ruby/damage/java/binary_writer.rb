@@ -65,7 +65,8 @@ output.puts("
                             output.printf("\t\tstruct.putLong(#{pahole[field.name][:offset]}, 0);\n")
                             output.printf("\t\t}\n", field.name)
                         when :raw
-                            #Ignore
+                            output.printf("\t\tstruct.putLong(#{pahole[field.name][:offset]}, cur_offset);\n")
+                            output.printf("\t\tcur_offset += this._#{field.name}.length ;\n")
 
                         else
                             raise("Unsupported data category for #{entry.name}.#{field.name}");
@@ -94,6 +95,11 @@ output.puts("
                             output.printf("\t\tstruct.putLong(#{pahole[field.name][:offset]}, 0);\n")
                             output.printf("\t\t}\n", field.name)
                         when :raw
+                            output.printf("\t\tstruct.putLong(#{pahole[field.name][:offset] + "Length"}, cur_offset);\n")
+                            output.printf("\t\tcur_offset += this._#{field.name}.length * 4 ;\n")
+                            output.printf("\t\tstruct.putLong(#{pahole[field.name][:offset]}, cur_offset);\n")
+                            output.printf("\t\t{ int i; for(i = 0; i < this._#{field.name}.length: ++i){ cur_offset += this._#{field.name}[i].length;}}\n")
+
                             #Ignore
 
                         else
@@ -122,7 +128,8 @@ output.puts("
                         when :intern
                             #Not possible
                         when :raw
-                            #Ignore
+                            output.printf("\t\twriteRawToFile(output, this._#{field.name});\n")
+
 
                         else
                             raise("Unsupported data category for #{entry.name}.#{field.name} ");
@@ -156,7 +163,8 @@ output.puts("
                         when :string
                           output.printf("\t\twriteStringArrayToFile(output, this._#{field.name});\n")
                         when :raw
-                            #Ignore
+                            output.printf("\t\twriteRawArrayToFile(output, this._#{field.name});\n")
+
 
                         when :intern
                             #Cannot happen

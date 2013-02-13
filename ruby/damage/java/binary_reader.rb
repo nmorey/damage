@@ -99,7 +99,10 @@ module Damage
                             output.printf("#{indent}obj._#{field.name} = readString(fc);\n")
                         when :intern
                         when :raw
-                            #Ignore
+                            output.printf("#{indent}{\n")
+                            output.printf("#{indent}\tint _val = in.getInt(#{pahole[field.name + "Length"][:offset]});\n")
+                            output.printf("#{indent}\tobj._#{field.name} = readRaw(fc, _val);\n")
+                            output.printf("#{indent}}\n")
                         else
                             raise("Unsupported data category for #{entry.name}.#{field.name}");
                         end
@@ -265,7 +268,11 @@ module Damage
                             output.printf("#{indent}\tobj._#{field.name} = #{field.genumEntry.slice(0,1).upcase + field.genumEntry.slice(1..-1)}.idTo#{field.genumField.slice(0,1).upcase + field.genumField.slice(1..-1)}(_val);\n")
                             output.printf("#{indent}}\n")
                         when :raw
-                            #Ignore
+                            output.printf("#{indent}{\n")
+                            output.printf("#{indent}\tint _val = in.getInt(#{pahole[field.name + "Length"][:offset]});\n")
+                            output.printf("#{indent}\tobj._#{field.name} = readRaw(zip, _val);\n")
+                            output.printf("#{indent}}\n")
+
 
                         when :string
                             output.printf("#{indent}obj._#{field.name} = readString(zip);\n")
