@@ -245,7 +245,7 @@ char *__#{libName}_strdup(const char* str)
 }
 unsigned char *__#{libName}_memdup(const unsigned char* data, const unsigned long len)
 {
-	unsigned char *ptr = malloc(sizeof(len));
+	unsigned char *ptr = malloc(len);
 	if (ptr == NULL) {
 		fprintf(stderr, \"Failed to allocate memory: %s\\n\", strerror(errno));
         exit(1);
