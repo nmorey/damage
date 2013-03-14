@@ -91,7 +91,9 @@ module Damage
                             output.printf("\t\t#{printFunc}(file, \" #{field.name}=\\\"%%s\\\"\", __#{libName}_#{field.genumEntry}_#{field.genumField}_strings[ptr->#{field.name}]);\n")
                         when :string
                             output.printf("\tif(ptr->#{field.name} != NULL){\n");
-                            output.printf("\t\t#{printFunc}(file, \" #{field.name}=\\\"%%s\\\"\", ptr->#{field.name});\n");
+                            output.printf("\t\t char *str = __#{libName}_xml_encode_str(ptr->#{field.name});\n");
+                            output.printf("\t\t#{printFunc}(file, \" #{field.name}=\\\"%%s\\\"\", str);\n");
+                            output.printf("\t\tfree(str);\n");
                             output.printf("\t}\n");
                         when :raw
                             output.printf("\tif(ptr->#{field.name} != NULL){\n");
@@ -147,7 +149,9 @@ module Damage
                             output.printf("\t\tunsigned int i;\n");
                             output.printf("\t\tfor(i = 0; i < ptr->#{field.name}Len; i++){\n");
                             output.printf("\t\t\t#{paddFunc}(file, indent + 1, 0, 0);\n")
-                            output.printf("\t\t\t#{printFunc}(file, \"<#{field.name}>%%s</#{field.name}>\\n\", ptr->#{field.name}[i]);\n");
+                            output.printf("\t\t\tchar *str = __#{libName}_xml_encode_str(ptr->#{field.name[i]});\n");
+                            output.printf("\t\t\t#{printFunc}(file, \"<#{field.name}>%%s</#{field.name}>\\n\", str);\n");
+                            output.printf("\t\t\tfree(str);\n");
                             output.printf("\t\t}\n");
                             output.printf("\t}\n");
                         when :raw

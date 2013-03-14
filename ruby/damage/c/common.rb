@@ -165,6 +165,7 @@ double __#{libName}_xml_read_value_double(xmlTextReaderPtr reader);
 const char *__#{libName}_get_name(xmlTextReaderPtr reader);
 void __#{libName}_eat_elnt(xmlTextReaderPtr reader);
 
+char *__#{libName}_xml_encode_str(const char* str);
 const char* __#{libName}_get_dtd_path(void);
 void __#{libName}_xmlTextReaderError(void *arg, const char * msg, 
                                      xmlParserSeverities severity,
@@ -654,6 +655,24 @@ char *__#{libName}_xml_read_value_str(xmlTextReaderPtr reader)
 {
 	char *val;
 	val = strdup(__#{libName}_get_value(reader));
+	return val;
+}
+
+
+/**
+ * Encode a XML string to replace non ASCII value and entities
+ * @param[in] str String to encode
+ * @return Newly allocated string
+ */
+char *__#{libName}_xml_encode_str(const char* str)
+{
+	char *val;
+	val = (char*)xmlEncodeEntitiesReentrant(NULL, (xmlChar*)str);
+	if (val == NULL) {
+		fprintf(stderr, \"Failed to allocate memory: %s\\n\", strerror(errno));
+        exit(1);
+	}
+
 	return val;
 }
 
