@@ -266,16 +266,25 @@ module Damage
                         @java_default_val = @default_val = "0"
                     end
                     @rubyType = "T_FIXNUM"
-                when /GENUM\( *([^),]*) *, *([^),]*) *\)/
+                when /GENUM\((.*)\)/
+                    elements = $1.split(",")
+                    raise("type: GENUM expects 2 arguments") if elements.length != 2
+
+                    elements[0].gsub!(/^ */,"")
+                    elements[1].gsub!(/^ */,"")
+
+                    elements[0].gsub!(/ *$/,"")
+                    elements[1].gsub!(/ *$/,"")
+
                     @data_type = "unsigned int"
-                    @java_type = $1.slice(0,1).upcase + $1.slice(1..-1) +
-                        "." + $2.slice(0,1).upcase + $2.slice(1..-1)
+                    @java_type = elements[0].slice(0,1).upcase + elements[0].slice(1..-1) +
+                        "." + elements[1].slice(0,1).upcase + elements[1].slice(1..-1)
                     @ruby_type = ":label"
                     @category = :genum
                     @type_size = 4
-                    @genumEntry = $1
-                    @genumField = $2
-                    @enumPrefix="__#{libName.upcase}_#{$1.upcase}_#{$2.upcase}"
+                    @genumEntry = elements[0]
+                    @genumField = elements[1]
+                    @enumPrefix="__#{libName.upcase}_#{elements[0].upcase}_#{elements[1].upcase}"
                     raise("Enums cannot be used as containers or list") if @qty != :single
                     @is_attribute = true if @qty == :single
                     @printf="u"
