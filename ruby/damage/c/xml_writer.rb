@@ -149,7 +149,7 @@ module Damage
                             output.printf("\t\tunsigned int i;\n");
                             output.printf("\t\tfor(i = 0; i < ptr->#{field.name}Len; i++){\n");
                             output.printf("\t\t\t#{paddFunc}(file, indent + 1, 0, 0);\n")
-                            output.printf("\t\t\tchar *str = __#{libName}_xml_encode_str(ptr->#{field.name[i]});\n");
+                            output.printf("\t\t\tchar *str = __#{libName}_xml_encode_str(ptr->#{field.name}[i]);\n");
                             output.printf("\t\t\t#{printFunc}(file, \"<#{field.name}>%%s</#{field.name}>\\n\", str);\n");
                             output.printf("\t\t\tfree(str);\n");
                             output.printf("\t\t}\n");
