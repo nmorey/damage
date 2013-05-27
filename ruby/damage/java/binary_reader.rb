@@ -59,7 +59,7 @@ module Damage
 
                 indent="\t\t"
                 if (entry.attribute == :listable) then
-                    output.printf("\t\tjava.util.List<#{params[:class]}> list = new java.util.ArrayList<#{params[:class]}>();\n")
+                    output.printf("\t\tArrayList<#{params[:class]}> list = new ArrayList<#{params[:class]}>();\n")
                     output.printf("\t\tdo {\n")
                     indent="\t\t\t"
                 end
@@ -186,7 +186,7 @@ module Damage
                             output.printf("#{indent}if((pOpts._#{field.data_type} != false) && (field_offset != 0)){\n")
                             output.printf("#{indent}\tobj._#{field.name} = #{field.java_type}.loadFromBinaryPartial(fc, field_offset, pOpts);\n")
                             output.printf("#{indent}} else {\n")
-                            output.printf("#{indent}\tobj._#{field.name} = new java.util.ArrayList<#{field.java_type}>(0);\n")
+                            output.printf("#{indent}\tobj._#{field.name} = new ArrayList<#{field.java_type}>(0);\n")
                             output.printf("#{indent}}\n")
                         else
                             raise("Unsupported data category for #{entry.name}.#{field.name}");
@@ -208,7 +208,7 @@ module Damage
                     output.printf("#{indent}list.add(obj);\n") 
                     output.printf("#{indent}offset = in.getInt(#{pahole["next"][:offset]});\n");
                     output.printf("\t\t} while (offset != 0);\n") 
-                    
+                    output.printf("\t\tlist.trimToSize();\n")
                     output.printf("\t\treturn list;\n")
                 else
                     output.printf("\t\treturn obj;\n")
@@ -228,7 +228,7 @@ module Damage
                 indent="\t\t"
                 if (entry.attribute == :listable) then
                     output.printf("\t\tint offset;\n")
-                    output.printf("\t\tjava.util.List<#{params[:class]}> list = new java.util.ArrayList<#{params[:class]}>();\n")
+                    output.printf("\t\tArrayList<#{params[:class]}> list = new ArrayList<#{params[:class]}>();\n")
                     output.printf("\t\tdo {\n")
                     indent="\t\t\t"
                 end
@@ -387,7 +387,7 @@ module Damage
                     output.printf("#{indent}list.add(obj);\n") 
                     output.printf("#{indent}offset = in.getInt(#{pahole["next"][:offset]});\n");
                     output.printf("\t\t} while (offset != 0);\n") 
-                    
+                    output.printf("\t\tlist.trimToSize();\n")
                     output.printf("\t\treturn list;\n")
                 else
                     output.printf("\t\treturn obj;\n")
