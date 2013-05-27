@@ -48,8 +48,15 @@ public class #{params[:class]} ")
             entry.fields.each() {|field|
                 case field.attribute
                 when :sort
-                    output.printf("\t/** Map of \"#{field.sort_field}\" by #{field.sort_key} */\n")
-                    output.printf("\tpublic java.util.HashMap<Integer, #{field.java_type}> _#{field.sort_field}_by_#{field.sort_key};\n")
+                    output.printf("\t/** \"#{field.sort_field}\" indexed by #{field.sort_key} */\n")
+                    output.printf("\tprivate #{field.java_type}[] _#{field.sort_field}_by_#{field.sort_key};\n")
+                    output.printf("\tpublic #{field.java_type} get_#{field.sort_field}_by_#{field.sort_key}(int key) {\n")
+                    output.printf("\t\tif (_#{field.sort_field}_by_#{field.sort_key} != null || key < _#{field.sort_field}_by_#{field.sort_key}.length) {\n")
+                    output.printf("\t\t\treturn _#{field.sort_field}_by_#{field.sort_key}[key];\n")
+                    output.printf("\t\t}")
+                    output.printf("\t\treturn null;\n")
+                    output.printf("\t}\n")
+
                 when :meta,:container,:none
                     case field.category
                     when :simple, :enum, :string, :genum, :raw
