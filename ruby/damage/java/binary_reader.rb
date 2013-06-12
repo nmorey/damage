@@ -421,7 +421,7 @@ module Damage
                 output.printf("\t\tByteBuffer in; int nbytes;\n");
                 output.printf("\t\tint val;\n\n");
                 output.printf("\t\ttry {\n"); 
-                output.printf("\t\t\tfc.lock(0, Long.MAX_VALUE, readOnly);\n\n");
+                output.printf("\t\t\tlockChannel(fc, readOnly);\n");
                 ByteBuffer(output, "in", "\t\t\t", "#{params[:bin_header][:size]}", "0")
                 output.printf("\n\t\t\tval = in.getInt(#{params[:bin_header]["version"][:offset]});\n")
                 output.printf("\t\t\tif(val  != #{params[:version]})\n");
@@ -453,7 +453,7 @@ module Damage
 	public static #{retType} createFromZip(String filename) throws IOException {
 		java.io.File file = new java.io.File(filename);
 		FileInputStream fileInputStream = new FileInputStream(file);
-		fileInputStream.getChannel().lock(0, Long.MAX_VALUE, true);
+		lockChannel(fileInputStream.getChannel(), true);
 		GZIPInputStream zip = new GZIPInputStream(fileInputStream);
 		byte[] header_dVersion = new byte[40];
 		int val;

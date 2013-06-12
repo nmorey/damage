@@ -170,6 +170,7 @@ import java.io.PrintStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
+import java.nio.channels.FileLockInterruptionException;
 import java.nio.charset.Charset;
 
 public abstract class #{uppercaseLibName}Object {
@@ -237,6 +238,20 @@ public abstract class #{uppercaseLibName}Object {
 			nbytes += count;
 		}
 	}
+
+    /**
+     * Locks a channel, handling FileLockInterruptionException
+     */
+     public static void lockChannel(FileChannel fc, boolean shared) throws IOException {
+        do {
+            try {
+                fc.lock(0, Long.MAX_VALUE, shared);
+                return;
+            } catch (FileLockInterruptionException _) {
+                // retry
+            }
+        } while (true);
+     }
 
 	/**
 	 * Read from given inputstream until the given array is full,

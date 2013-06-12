@@ -206,7 +206,7 @@ output.puts("
                 # output.printf("\t\tByteBuffer in; int nbytes;\n");
                 # output.printf("\t\tint val;\n\n");
                 
-                # output.printf("\t\tfc.lock(0, Long.MAX_VALUE, readOnly);\n\n");
+                # output.printf("\t\tlockChannel(fc, readOnly);\n\n");
                 # ByteBuffer(output, "in", "\t\t", "#{params[:bin_header][:size]}", "0")
                 # output.printf("\n\t\tval = in.getInt(#{params[:bin_header]["version"][:offset]});\n")
                 # output.printf("\t\tif(val  != #{params[:version]})\n");
