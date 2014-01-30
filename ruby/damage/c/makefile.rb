@@ -130,7 +130,7 @@ obj/x86_64/big.o:obj/big.c $(headers)
 obj/big.c: $(srcs) $(headers)
 	cat  $(srcs) > $@
 
-install: $(install-libs) install-doc $(patsubst include/%.h, $(PREFIX)/include/$(SUFFIX)/%.h, $(main_header) $(install_headers))
+install: install-doc $(install-libs) $(patsubst include/%.h, $(PREFIX)/include/$(SUFFIX)/%.h, $(main_header) $(install_headers))
 
 $(PREFIX)/include/$(SUFFIX)/%.h: include/%.h
 	@mkdir -p $$(dirname $@) || true
