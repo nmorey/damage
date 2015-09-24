@@ -121,11 +121,11 @@ obj/x86_64/%.o:src/%.c $(headers)
 
 obj/i686/big.o:obj/big.c $(headers)
 	@if [ ! -d obj/i686/ ]; then mkdir -p obj/i686/; fi
-	$(CC) $(CFLAGS_COMMON) -O0 -m32 -o $@ -c $<
+	$(CC) $(CFLAGS_COMMON) -O0 -m32 -o $@ -gdwarf-2 -gstrict-dwarf -c $<
 
 obj/x86_64/big.o:obj/big.c $(headers)
 	@if [ ! -d obj/x86_64/ ]; then mkdir -p obj/x86_64/; fi
-	$(CC) $(CFLAGS_COMMON) -O0 -o $@ -c $<
+	$(CC) $(CFLAGS_COMMON) -O0 -o $@ -gdwarf-2 -gstrict-dwarf -c $<
 
 obj/big.c: $(srcs) $(headers)
 	cat  $(srcs) > $@
