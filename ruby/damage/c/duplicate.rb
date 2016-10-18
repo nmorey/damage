@@ -95,9 +95,10 @@ module Damage
                                 output.printf("#{indent}if(#{source}->%s)\n", field.name)
                                 output.printf("#{indent}\t#{dest}->#{field.name} = __#{libName}_strdup(#{source}->#{field.name});\n")
                             when :raw
-                                output.printf("#{indent}if(#{source}->%s)\n", field.name)
+                                output.printf("#{indent}if(#{source}->%s){\n", field.name)
                                 output.printf("#{indent}\t#{dest}->#{field.name} = __#{libName}_memdup(#{source}->#{field.name}, #{source}->#{field.name}Length);\n")
                                 output.printf("#{indent}\t#{dest}->#{field.name}Length = #{source}->#{field.name}Length;\n")
+                                output.printf("#{indent}}\n")
                             when :intern
                                 if field.attribute == :sort then
                                     # We will regen it at the end
