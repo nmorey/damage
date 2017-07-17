@@ -59,7 +59,7 @@ module Damage
  **/
 ");
                 
-                output.printf("__#{libName}_%s *__#{libName}_%s_alloc()\n",
+                output.printf("__#{libName}_%s *__#{libName}_%s_alloc(void)\n",
                               entry.name, entry.name)
                 output.printf("{\n")
                 output.printf("\t__#{libName}_%s *ptr;\n", entry.name)
@@ -198,7 +198,7 @@ module Damage
  * Allocate a #__#{libName}_#{entry.name} and initialize its elements with their default values
  * @return A valid pointer to a #__#{libName}_#{entry.name}. Exit with an error message if alloc failed.
 */")
-                    output.printf("__#{libName}_%s *__#{libName}_%s_alloc();\n", entry.name, entry.name)
+                    output.printf("__#{libName}_%s *__#{libName}_%s_alloc(void);\n", entry.name, entry.name)
                     output.puts("
 /**
  * Free #__#{libName}_#{entry.name}, its siblings and children (if any).

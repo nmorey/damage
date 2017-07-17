@@ -140,7 +140,7 @@ module Damage
 
 #ifndef ___#{libName}_binary_rowip_internals
 #define ___#{libName}_binary_rowip_internals
-static inline __#{libName}_rowip_header* __#{libName}_rowip_header_alloc(){
+static inline __#{libName}_rowip_header* __#{libName}_rowip_header_alloc(void){
 \t__#{libName}_rowip_header* ptr = __#{libName}_malloc(sizeof(*ptr));
 \tptr->filename = NULL;
 \tptr->file = -1;
