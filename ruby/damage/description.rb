@@ -588,13 +588,13 @@ module Damage
                         @entries[inStruct][:order] = []
                         @order << inStruct
                     else
-                        if line =~ /^\};.*$/ then
+                        if line =~ /^\}(\s__attribute__[^;]+)?;.*$/ then
                             inStruct = false
                             next
-                        elsif line =~ /^(.*)\s(\S+);\s+\/\*\s+([0-9]+)\s+([0-9]+)\s+\*\/\s*$/
+                        elsif line =~ /^(.*)\s([a-zA-Z0-9_\[\]]+)(\s__attribute__[^;]+)?;\s+\/\*\s+([0-9]+)\s+([0-9]+)\s+\*\/\s*$/
                             field=$2
-                            offset=$3
-                            size=$4
+                            offset=$4
+                            size=$5
                             @entries[inStruct][field]={}
                             @entries[inStruct][field][:offset] = offset
                             @entries[inStruct][field][:size] = size
