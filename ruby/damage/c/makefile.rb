@@ -56,7 +56,7 @@ SUFFIX  := #{libName}
 LIB_SUFFIX  := $(SUFFIX)
 
 CC=gcc
-CFLAGS_COMMON  := -Iinclude/ $(cflags) -Wall -Wextra -Werror -g -I/usr/include/libxml2 -Werror -fPIC -I. -std=gnu99
+CFLAGS_COMMON  := -Iinclude/ $(cflags) -Wall -Wextra -Werror -Wno-clobbered -g -I/usr/include/libxml2 -Werror -fPIC -I. -std=gnu99
 CFLAGS         := $(CFLAGS_COMMON) -O3
 
 
