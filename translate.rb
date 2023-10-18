@@ -71,8 +71,11 @@ opts[:file].each(){|fName|
 }
 
 desc = Damage::Description::Description.new(tree)
-desc.config.damage_version = `cd #{File.dirname(__FILE__)}; git rev-parse HEAD; cd - > /dev/null`.chomp()
-
+if ENV["DAMAGE_VERSION"].to_s == "" then
+    desc.config.damage_version = `cd #{File.dirname(__FILE__)}; git rev-parse HEAD; cd - > /dev/null`.chomp()
+else
+    desc.config.damage_version = ENV["DAMAGE_VERSION"]
+end
 if opts[:pahole] != nil then 
     input = File.open(opts[:pahole])
     desc.pahole = Damage::Description::Pahole.new(desc.config.libname, input)
