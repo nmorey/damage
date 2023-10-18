@@ -26,7 +26,7 @@ module Damage
             FileUtils.mkdir_p dir
             @dir = dir
             @name = name
-            if File.exists?("#{dir}/#{name}") then
+            if File.exist?("#{dir}/#{name}") then
                 super("#{dir}/#{name}_", mode);
                 @copyOnClose = true
             else
