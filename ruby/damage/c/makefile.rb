@@ -136,8 +136,13 @@ $(PREFIX)/include/$(SUFFIX)/%.h: include/%.h
 	@mkdir -p $$(dirname $@) || true
 	install $< $@
 
-install-lib: $(patsubst obj/i686/%, $(PREFIX)/$(LIBDIR32)/$(LIB_SUFFIX)/%, $(lib) $(dlib))
-install-lib64: $(patsubst obj/x86_64/%, $(PREFIX)/$(LIBDIR64)/$(LIB_SUFFIX)/%, $(lib64) $(dlib64))
+install-lib: install-alib install-dlib
+install-lib64: install-alib64 install-dlib64
+
+install-alib: $(patsubst obj/i686/%, $(PREFIX)/$(LIBDIR32)/$(LIB_SUFFIX)/%, $(lib))
+install-alib64: $(patsubst obj/x86_64/%, $(PREFIX)/$(LIBDIR64)/$(LIB_SUFFIX)/%, $(lib64))
+install-dlib: $(patsubst obj/i686/%, $(PREFIX)/$(LIBDIR32)/$(LIB_SUFFIX)/%, $(dlib))
+install-dlib64: $(patsubst obj/x86_64/%, $(PREFIX)/$(LIBDIR64)/$(LIB_SUFFIX)/%, $(dlib64))
 
 $(PREFIX)/$(LIBDIR32)/$(LIB_SUFFIX)/%: obj/i686/%
 	@mkdir -p $$(dirname $@) || true
