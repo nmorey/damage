@@ -152,6 +152,7 @@ module Damage
                 libName = description.config.libname
                 fExt= (zipped == true) ? "_gz" : ""
 
+                output.printf("#define _FILE_OFFSET_BITS 64\n")
                 output.printf("#include \"#{libName}.h\"\n")
                 output.printf("#include \"_#{libName}/_common.h\"\n")
                 output.printf("#include <stdint.h>\n")
@@ -394,6 +395,7 @@ __#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load_partial(FILE*
             def genBinaryReaderWrapper(output, description, entry)
                 libName = description.config.libname
 
+                output.printf("#define _FILE_OFFSET_BITS 64\n")
                 output.printf("#include \"#{libName}.h\"\n")
                 output.printf("#include \"_#{libName}/_common.h\"\n")
                 output.printf("#include <stdint.h>\n")

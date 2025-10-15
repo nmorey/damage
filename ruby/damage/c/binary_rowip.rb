@@ -219,6 +219,7 @@ static inline void __#{libName}_rowip_header_free(__#{libName}_rowip_header* ptr
             def genBinaryReader(output, description, entry)
                 libName = description.config.libname
 
+                output.printf("#define _FILE_OFFSET_BITS 64\n")
                 output.printf("#include <sys/mman.h>\n")
                 output.printf("#include <sys/types.h>\n")
                 output.printf("#include <sys/stat.h>\n")
