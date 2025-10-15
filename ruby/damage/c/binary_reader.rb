@@ -413,8 +413,8 @@ __#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load_partial(FILE*
                 output.printf("__#{libName}_%s* __#{libName}_%s_binary_load_file_partial(const char* file, __#{libName}_options opts, __#{libName}_partial_options *partial_opts)\n{\n", entry.name, entry.name)
                 output.printf("\tint ret;\n")
                 output.printf("\t__#{libName}_%s *ptr = NULL;\n", entry.name);
-                output.printf("\tFILE* output;\n")
-                output.printf("\tgzFile outputGz;\n")
+                output.printf("\tFILE* input;\n")
+                output.printf("\tgzFile inputGz;\n")
                 output.printf("\t__#{libName}_binary_header header;\n")
                 output.printf("\tstruct stat fStat;\n")
                 output.printf("\n")
@@ -429,36 +429,36 @@ __#{libName}_#{entry.name}* __#{libName}_#{entry.name}_binary_load_partial(FILE*
                 
 ;
                 output.printf("\tif(opts & __#{libName.upcase}_OPTION_GZIPPED){\n")
-                output.printf("\t\tif((outputGz = __#{libName}_open_gzFile(file, opts, \"r\")) == NULL)\n")
-                output.printf("\t\t\t__#{libName}_error(\"Failed to open output file %%s: %%s\", ENOENT, file, strerror(errno));\n\n"); 
+                output.printf("\t\tif((inputGz = __#{libName}_open_gzFile(file, opts, \"r\")) == NULL)\n")
+                output.printf("\t\t\t__#{libName}_error(\"Failed to open input file %%s: %%s\", ENOENT, file, strerror(errno));\n\n"); 
 
-                cRead(output, libName, true, "\t\t", "&header", "sizeof(header)", "1", "outputGz")
+                cRead(output, libName, true, "\t\t", "&header", "sizeof(header)", "1", "inputGz")
                 output.printf("\t\tif(header.version != __#{libName.upcase}_DB_FORMAT)\n")
                 output.printf("\t\t__#{libName}_error(\"Version from file %%s is incompatible.\", EACCES, file);\n\n");
 
                 output.printf("\t\tif(strcmp(header.damage_version, __#{libName.upcase}_DAMAGE_VERSION))\n")
                 output.printf("\t\t__#{libName}_error(\"Version from file %%s is incompatible.\", EACCES, file);\n\n");
-                output.printf("\tptr = __#{libName}_%s_binary_load_partial_gz(outputGz, sizeof(header), partial_opts);\n\n", entry.name)
+                output.printf("\tptr = __#{libName}_%s_binary_load_partial_gz(inputGz, sizeof(header), partial_opts);\n\n", entry.name)
 
 
                 output.printf("\t} else {\n")
-                output.printf("\t\tif((output = __#{libName}_open_FILE(file, opts, \"r\")) == NULL)\n")
-                output.printf("\t\t\t__#{libName}_error(\"Failed to open output file %%s: %%s\", ENOENT, file, strerror(errno));\n\n");
+                output.printf("\t\tif((input = __#{libName}_open_FILE(file, opts, \"r\")) == NULL)\n")
+                output.printf("\t\t\t__#{libName}_error(\"Failed to open input file %%s: %%s\", ENOENT, file, strerror(errno));\n\n");
 
-                cRead(output, libName, false, "\t\t", "&header", "sizeof(header)", "1", "output")
+                cRead(output, libName, false, "\t\t", "&header", "sizeof(header)", "1", "input")
                 output.printf("\t\tif(header.version != __#{libName.upcase}_DB_FORMAT)\n")
                 output.printf("\t\t__#{libName}_error(\"Version from file %%s is incompatible.\", EACCES, file);\n\n");
 
                 output.printf("\t\tif(strcmp(header.damage_version, __#{libName.upcase}_DAMAGE_VERSION))\n")
                 output.printf("\t\t__#{libName}_error(\"Version from file %%s is incompatible.\", EACCES, file);\n\n");
 
-                output.printf("\t\tret = fstat(fileno(output), &fStat);\n")
+                output.printf("\t\tret = fstat(fileno(input), &fStat);\n")
                 output.printf("\t\tif(ret != 0){\n")
                 output.printf("\t\t\t__#{libName}_error(\"Failed to read from DB.\", errno);\n")
                 output.printf("\t\t}\n")
                 output.printf("\t\tif(header.length != fStat.st_size)\n")
                 output.printf("\t\t__#{libName}_error(\"DB file %%s is corrupted: size does not match header.\", EIO, file);\n\n");
-                output.printf("\tptr = __#{libName}_%s_binary_load_partial(output, sizeof(header), partial_opts);\n\n", entry.name)
+                output.printf("\tptr = __#{libName}_%s_binary_load_partial(input, sizeof(header), partial_opts);\n\n", entry.name)
                 output.printf("\t}\n")
 
 
