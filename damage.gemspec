@@ -11,8 +11,7 @@ Gem::Specification.new do |s|
     "COPYING",
     "README.md",
   ] + Dir['lib/**/*.rb'].keep_if { |file| File.file?(file) }
-  p s.files
   s.homepage    =
     'https://github.com/nmorey/git-maintain'
-  s.license       = 'GPL-3.0-or-later'
+  s.license       = 'GPL-2.0-or-later'
 end
